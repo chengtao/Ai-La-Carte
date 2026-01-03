@@ -77,6 +77,9 @@ struct MainView: View {
                     )
                 }
             }
+            .sheet(isPresented: $viewModel.showAccount) {
+                AccountView()
+            }
         }
     }
 
@@ -118,8 +121,7 @@ struct MainView: View {
 
             // Account button
             Button {
-                print("Account button tapped")
-                // TODO: Navigate to account view
+                viewModel.showAccount = true
             } label: {
                 Image(systemName: "person.circle.fill")
                     .font(.title2)

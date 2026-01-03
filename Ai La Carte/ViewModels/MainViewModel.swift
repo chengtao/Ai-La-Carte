@@ -27,6 +27,7 @@ final class MainViewModel: BaseViewModel {
     // Navigation
     var showPhotoReview = false
     var showPreferences = false
+    var showAccount = false
     var pendingPhoto: UIImage?
 
     private let restaurantService: RestaurantAPIServiceProtocol
