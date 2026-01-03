@@ -37,7 +37,8 @@ final class MockDependencyContainer: DependencyContainer {
     // MARK: - Device Services
 
     lazy var locationService: LocationServiceProtocol = {
-        MockLocationService()
+        // Use real location service even in mock mode for permission dialogs
+        LocationService()
     }()
 
     lazy var cameraService: CameraServiceProtocol = {

@@ -151,9 +151,12 @@ struct MainView: View {
 
             // Capture Button + Photo Count
             HStack(alignment: .bottom) {
-                // Photo thumbnails
+                // Photo thumbnails or placeholder for centering
                 if !viewModel.capturedPhotos.isEmpty {
                     photoThumbnails
+                } else {
+                    // Placeholder to balance the right side
+                    Color.clear.frame(width: 80, height: 48)
                 }
 
                 Spacer()
@@ -163,11 +166,11 @@ struct MainView: View {
 
                 Spacer()
 
-                // Recommend button (if has photos)
+                // Recommend button (if has photos) or placeholder
                 if viewModel.hasPhotosOrRestaurant {
                     recommendButton
                 } else {
-                    Color.clear.frame(width: 60)
+                    Color.clear.frame(width: 80, height: 48)
                 }
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
@@ -287,20 +290,14 @@ struct CameraPreviewRepresentable: UIViewRepresentable {
     func makeUIView(context: Context) -> CameraPreviewUIView {
         let view = CameraPreviewUIView()
         view.backgroundColor = .black
-
-        if let realService = cameraService as? CameraService,
-           let layer = realService.previewLayer {
-            view.layer.addSublayer(layer)
-            layer.frame = view.bounds
-        }
-
         return view
     }
 
     func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {
+        // Use the session directly with CameraPreviewUIView's built-in layer
         if let realService = cameraService as? CameraService,
-           let layer = realService.previewLayer {
-            layer.frame = uiView.bounds
+           let session = realService.session {
+            uiView.updateSession(session)
         }
     }
 }

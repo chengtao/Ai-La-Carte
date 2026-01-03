@@ -52,8 +52,21 @@ final class MainViewModel: BaseViewModel {
 
     // MARK: - Camera
 
+    var cameraPermissionStatus: CameraAuthorizationStatus {
+        cameraService.authorizationStatus
+    }
+
     @MainActor
     func startCamera() async {
+        // Request permission if not determined
+        if cameraService.authorizationStatus == .notDetermined {
+            let status = await cameraService.requestAuthorization()
+            if !status.isAuthorized {
+                cameraState = .permissionDenied
+                return
+            }
+        }
+
         guard cameraService.authorizationStatus.isAuthorized else {
             cameraState = .permissionDenied
             return
@@ -92,8 +105,25 @@ final class MainViewModel: BaseViewModel {
 
     // MARK: - Location & Restaurants
 
+    var locationPermissionStatus: LocationAuthorizationStatus {
+        locationService.authorizationStatus
+    }
+
+    @MainActor
+    func requestLocationPermission() async {
+        _ = await locationService.requestWhenInUseAuthorization()
+    }
+
     @MainActor
     func fetchNearbyRestaurants() async {
+        // Request permission if not determined
+        if locationService.authorizationStatus == .notDetermined {
+            let status = await locationService.requestWhenInUseAuthorization()
+            if !status.isAuthorized {
+                return
+            }
+        }
+
         guard locationService.authorizationStatus.isAuthorized else {
             return
         }

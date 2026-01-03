@@ -10,9 +10,14 @@ import AVFoundation
 import UIKit
 
 final class CameraService: NSObject, CameraServiceProtocol {
-    private var captureSession: AVCaptureSession?
+    private var _captureSession: AVCaptureSession?
     private var photoOutput: AVCapturePhotoOutput?
     private var photoContinuation: CheckedContinuation<UIImage, Error>?
+
+    /// Expose the capture session for the preview layer
+    var session: AVCaptureSession? {
+        _captureSession
+    }
 
     var authorizationStatus: CameraAuthorizationStatus {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -63,7 +68,7 @@ final class CameraService: NSObject, CameraServiceProtocol {
                 throw CameraError.captureSessionFailed
             }
 
-            self.captureSession = session
+            self._captureSession = session
 
             await MainActor.run {
                 session.startRunning()
@@ -77,8 +82,8 @@ final class CameraService: NSObject, CameraServiceProtocol {
     }
 
     func stopSession() {
-        captureSession?.stopRunning()
-        captureSession = nil
+        _captureSession?.stopRunning()
+        _captureSession = nil
         photoOutput = nil
         AppLogger.shared.info("Camera session stopped", category: AppLogger.Category.camera)
     }
@@ -99,7 +104,7 @@ final class CameraService: NSObject, CameraServiceProtocol {
     }
 
     var previewLayer: AVCaptureVideoPreviewLayer? {
-        guard let session = captureSession else { return nil }
+        guard let session = _captureSession else { return nil }
         let layer = AVCaptureVideoPreviewLayer(session: session)
         layer.videoGravity = .resizeAspectFill
         return layer
