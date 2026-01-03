@@ -14,18 +14,25 @@ struct NearbyRestaurantCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 8) {
-                // Restaurant name and distance
+                // Restaurant name
+                Text(restaurant.name)
+                    .font(.headline)
+                    .foregroundColor(.black)
+                    .lineLimit(1)
+
+                // Distance and update time
                 HStack {
-                    Text(restaurant.name)
-                        .font(.titleMedium)
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
+                    Text(restaurant.formattedDistance)
+                        .font(.caption)
+                        .foregroundColor(.gray)
 
                     Spacer()
 
-                    Text(restaurant.formattedDistance)
-                        .font(.labelSmall)
-                        .foregroundStyle(.secondary)
+                    if let age = restaurant.menuAgeDescription {
+                        Text("Updated \(age)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
                 }
 
                 // Menu badges
@@ -36,15 +43,6 @@ struct NearbyRestaurantCard: View {
 
                     if restaurant.hasWineMenu {
                         MenuBadge(type: .wine, available: true)
-                    }
-
-                    Spacer()
-
-                    // Last updated
-                    if let age = restaurant.menuAgeDescription {
-                        Text(age)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
                 }
 
