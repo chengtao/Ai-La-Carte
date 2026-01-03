@@ -61,9 +61,46 @@ struct RootView: View {
 
     var body: some View {
         if onboardingCompleted {
-            MainView(viewModel: dependencyContainer.makeMainViewModel())
+            MainViewContainer()
         } else {
-            WelcomeView(viewModel: dependencyContainer.makeWelcomeViewModel())
+            WelcomeViewContainer()
+        }
+    }
+}
+
+// Separate containers to hold @State viewModels
+struct MainViewContainer: View {
+    @Environment(\.dependencyContainer) private var dependencyContainer
+    @State private var viewModel: MainViewModel?
+
+    var body: some View {
+        Group {
+            if let viewModel = viewModel {
+                MainView(viewModel: viewModel)
+            } else {
+                Color.black
+                    .onAppear {
+                        viewModel = dependencyContainer.makeMainViewModel()
+                    }
+            }
+        }
+    }
+}
+
+struct WelcomeViewContainer: View {
+    @Environment(\.dependencyContainer) private var dependencyContainer
+    @State private var viewModel: WelcomeViewModel?
+
+    var body: some View {
+        Group {
+            if let viewModel = viewModel {
+                WelcomeView(viewModel: viewModel)
+            } else {
+                Color.black
+                    .onAppear {
+                        viewModel = dependencyContainer.makeWelcomeViewModel()
+                    }
+            }
         }
     }
 }

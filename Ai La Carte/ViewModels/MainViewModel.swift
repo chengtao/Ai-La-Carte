@@ -76,8 +76,10 @@ final class MainViewModel: BaseViewModel {
 
         do {
             try await cameraService.startSession()
+            AppLogger.shared.info("MainViewModel: Camera state -> running", category: AppLogger.Category.camera)
             cameraState = .running
         } catch {
+            AppLogger.shared.error("MainViewModel: Camera error: \(error)", category: AppLogger.Category.camera)
             self.error = handleNetworkError(error)
             cameraState = .error
         }

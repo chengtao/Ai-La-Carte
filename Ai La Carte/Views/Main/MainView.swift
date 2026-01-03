@@ -16,7 +16,18 @@ struct MainView: View {
         NavigationStack {
             ZStack {
                 // Camera Preview
-                cameraLayer
+                Color.black
+                    .ignoresSafeArea()
+
+                if viewModel.cameraState == .running {
+                    CameraPreviewRepresentable(cameraService: viewModel.cameraService)
+                        .ignoresSafeArea()
+                } else if viewModel.cameraState == .starting {
+                    ProgressView()
+                        .tint(.white)
+                } else if viewModel.cameraState == .permissionDenied {
+                    cameraPermissionView
+                }
 
                 // Overlay UI
                 VStack {
@@ -29,7 +40,6 @@ struct MainView: View {
                     bottomSection
                 }
             }
-            .ignoresSafeArea(edges: .top)
             .task {
                 await viewModel.startCamera()
                 await viewModel.fetchNearbyRestaurants()
@@ -69,26 +79,7 @@ struct MainView: View {
         }
     }
 
-    // MARK: - Camera Layer
-
-    private var cameraLayer: some View {
-        Group {
-            switch viewModel.cameraState {
-            case .running:
-                CameraPreviewRepresentable(cameraService: viewModel.cameraService)
-            case .starting:
-                Color.black
-                    .overlay {
-                        ProgressView()
-                            .tint(.white)
-                    }
-            case .permissionDenied:
-                cameraPermissionView
-            case .error, .stopped:
-                Color.black
-            }
-        }
-    }
+    // MARK: - Camera Permission View
 
     private var cameraPermissionView: some View {
         VStack(spacing: 20) {
@@ -176,6 +167,14 @@ struct MainView: View {
             .padding(.horizontal, AppConstants.UI.defaultPadding)
             .padding(.bottom, 40)
         }
+        .background(
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.8)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .bottom)
+        )
     }
 
     // MARK: - Nearby Restaurants
@@ -208,13 +207,6 @@ struct MainView: View {
         }
         .padding(.horizontal, AppConstants.UI.defaultPadding)
         .padding(.vertical, 16)
-        .background(
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.7)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
     }
 
     // MARK: - Capture Button
@@ -288,13 +280,26 @@ struct CameraPreviewRepresentable: UIViewRepresentable {
     let cameraService: CameraServiceProtocol
 
     func makeUIView(context: Context) -> CameraPreviewUIView {
+        AppLogger.shared.info("CameraPreviewRepresentable: makeUIView called", category: AppLogger.Category.camera)
         let view = CameraPreviewUIView()
         view.backgroundColor = .black
+
+        // Set up session immediately if available
+        if let realService = cameraService as? CameraService {
+            AppLogger.shared.info("CameraPreviewRepresentable: cast succeeded, session: \(realService.session != nil)", category: AppLogger.Category.camera)
+            if let session = realService.session {
+                view.updateSession(session)
+            }
+        } else {
+            AppLogger.shared.error("CameraPreviewRepresentable: cast to CameraService FAILED", category: AppLogger.Category.camera)
+        }
+
         return view
     }
 
     func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {
-        // Use the session directly with CameraPreviewUIView's built-in layer
+        AppLogger.shared.debug("CameraPreviewRepresentable: updateUIView called", category: AppLogger.Category.camera)
+        // Update session when view updates
         if let realService = cameraService as? CameraService,
            let session = realService.session {
             uiView.updateSession(session)

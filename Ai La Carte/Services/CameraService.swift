@@ -14,6 +14,9 @@ final class CameraService: NSObject, CameraServiceProtocol {
     private var photoOutput: AVCapturePhotoOutput?
     private var photoContinuation: CheckedContinuation<UIImage, Error>?
 
+    /// Dedicated queue for camera session operations
+    private let sessionQueue = DispatchQueue(label: "com.ailacarte.camera.session")
+
     /// Expose the capture session for the preview layer
     var session: AVCaptureSession? {
         _captureSession
@@ -70,11 +73,15 @@ final class CameraService: NSObject, CameraServiceProtocol {
 
             self._captureSession = session
 
-            await MainActor.run {
-                session.startRunning()
+            // Start session on background queue (Apple recommends not blocking main thread)
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                sessionQueue.async {
+                    session.startRunning()
+                    continuation.resume()
+                }
             }
 
-            AppLogger.shared.info("Camera session started", category: AppLogger.Category.camera)
+            AppLogger.shared.info("Camera session started, isRunning: \(session.isRunning)", category: AppLogger.Category.camera)
         } catch {
             AppLogger.shared.error("Failed to start camera session: \(error)", category: AppLogger.Category.camera)
             throw CameraError.captureSessionFailed
@@ -82,9 +89,13 @@ final class CameraService: NSObject, CameraServiceProtocol {
     }
 
     func stopSession() {
-        _captureSession?.stopRunning()
+        let session = _captureSession
         _captureSession = nil
         photoOutput = nil
+
+        sessionQueue.async {
+            session?.stopRunning()
+        }
         AppLogger.shared.info("Camera session stopped", category: AppLogger.Category.camera)
     }
 
@@ -176,8 +187,6 @@ struct CameraPreviewView: UIViewRepresentable {
 }
 
 class CameraPreviewUIView: UIView {
-    private var previewLayer: AVCaptureVideoPreviewLayer?
-
     override class var layerClass: AnyClass {
         AVCaptureVideoPreviewLayer.self
     }
@@ -187,6 +196,12 @@ class CameraPreviewUIView: UIView {
     }
 
     func updateSession(_ session: AVCaptureSession) {
+        guard videoPreviewLayer.session !== session else {
+            AppLogger.shared.debug("Preview: Session already set", category: AppLogger.Category.camera)
+            return
+        }
+
+        AppLogger.shared.info("Preview: Setting session, isRunning: \(session.isRunning)", category: AppLogger.Category.camera)
         videoPreviewLayer.session = session
         videoPreviewLayer.videoGravity = .resizeAspectFill
     }
@@ -194,5 +209,6 @@ class CameraPreviewUIView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         videoPreviewLayer.frame = bounds
+        AppLogger.shared.debug("Preview: layoutSubviews, bounds: \(bounds), session: \(videoPreviewLayer.session != nil)", category: AppLogger.Category.camera)
     }
 }
