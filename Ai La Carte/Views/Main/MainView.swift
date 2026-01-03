@@ -22,6 +22,7 @@ struct MainView: View {
                 if viewModel.cameraState == .running {
                     CameraPreviewRepresentable(cameraService: viewModel.cameraService)
                         .ignoresSafeArea()
+                        .allowsHitTesting(false)
                 } else if viewModel.cameraState == .starting {
                     ProgressView()
                         .tint(.white)
@@ -117,7 +118,8 @@ struct MainView: View {
 
             // Account button
             Button {
-                // TODO: Show account
+                print("Account button tapped")
+                // TODO: Navigate to account view
             } label: {
                 Image(systemName: "person.circle.fill")
                     .font(.title2)
