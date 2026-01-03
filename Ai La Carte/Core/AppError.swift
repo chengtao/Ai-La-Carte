@@ -7,7 +7,8 @@
 
 import Foundation
 
-enum AppError: LocalizedError {
+enum AppError: LocalizedError, @unchecked Sendable {
+    // Note: @unchecked because of unknown(Error) case - Error is not Sendable
     case network(NetworkError)
     case authentication(AuthError)
     case validation(ValidationError)
@@ -65,7 +66,7 @@ enum AppError: LocalizedError {
     }
 }
 
-enum ValidationError: LocalizedError {
+enum ValidationError: LocalizedError, Sendable {
     case invalidEmail
     case invalidPhoneNumber
     case fieldRequired(String)
@@ -91,7 +92,7 @@ enum ValidationError: LocalizedError {
     }
 }
 
-enum StorageError: LocalizedError {
+enum StorageError: LocalizedError, Sendable {
     case saveFailed
     case loadFailed
     case deleteFailed
@@ -111,7 +112,7 @@ enum StorageError: LocalizedError {
     }
 }
 
-enum AuthError: Error, LocalizedError {
+enum AuthError: Error, LocalizedError, Sendable {
     case notAuthenticated
     case userNotFound
     case networkError
@@ -134,7 +135,7 @@ enum AuthError: Error, LocalizedError {
     }
 }
 
-enum CameraError: Error, LocalizedError {
+enum CameraError: Error, LocalizedError, Sendable {
     case accessDenied
     case notAvailable
     case captureSessionFailed
@@ -157,7 +158,7 @@ enum CameraError: Error, LocalizedError {
     }
 }
 
-enum LocationError: Error, LocalizedError {
+enum LocationError: Error, LocalizedError, Sendable {
     case accessDenied
     case notAvailable
     case locationNotFound

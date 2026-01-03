@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 @Observable
 final class RecommendationViewModel: BaseViewModel {
     let sessionId: String
@@ -32,7 +33,6 @@ final class RecommendationViewModel: BaseViewModel {
         super.init()
     }
 
-    @MainActor
     func loadRecommendations() async {
         isLoading = true
 

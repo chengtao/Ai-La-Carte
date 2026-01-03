@@ -6,13 +6,43 @@
 //
 
 import Foundation
-import AVFoundation
+@preconcurrency import AVFoundation
 import UIKit
 
-final class CameraService: NSObject, CameraServiceProtocol {
-    private var _captureSession: AVCaptureSession?
-    private var photoOutput: AVCapturePhotoOutput?
+// MARK: - Thread-safe Continuation Manager
+
+private actor CameraContinuationManager {
     private var photoContinuation: CheckedContinuation<UIImage, Error>?
+
+    func setContinuation(_ continuation: CheckedContinuation<UIImage, Error>) {
+        photoContinuation = continuation
+    }
+
+    func resumeWithSuccess(_ image: UIImage) {
+        photoContinuation?.resume(returning: image)
+        photoContinuation = nil
+    }
+
+    func resumeWithError(_ error: Error) {
+        photoContinuation?.resume(throwing: error)
+        photoContinuation = nil
+    }
+
+    func clear() {
+        photoContinuation = nil
+    }
+}
+
+// MARK: - Camera Service
+
+final class CameraService: NSObject, CameraServiceProtocol, @unchecked Sendable {
+    // Note: @unchecked Sendable because we manage thread safety manually via actor and sessionQueue
+
+    // Use nonisolated(unsafe) for AVFoundation types accessed on sessionQueue
+    nonisolated(unsafe) private var _captureSession: AVCaptureSession?
+    nonisolated(unsafe) private var photoOutput: AVCapturePhotoOutput?
+
+    private let continuationManager = CameraContinuationManager()
 
     /// Dedicated queue for camera session operations
     private let sessionQueue = DispatchQueue(label: "com.ailacarte.camera.session")
@@ -74,9 +104,10 @@ final class CameraService: NSObject, CameraServiceProtocol {
             self._captureSession = session
 
             // Start session on background queue (Apple recommends not blocking main thread)
+            nonisolated(unsafe) let capturedSession = session
             await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
                 sessionQueue.async {
-                    session.startRunning()
+                    capturedSession.startRunning()
                     continuation.resume()
                 }
             }
@@ -105,7 +136,10 @@ final class CameraService: NSObject, CameraServiceProtocol {
         }
 
         return try await withCheckedThrowingContinuation { continuation in
-            self.photoContinuation = continuation
+            // Store continuation in actor for thread-safe access
+            Task {
+                await self.continuationManager.setContinuation(continuation)
+            }
 
             let settings = AVCapturePhotoSettings()
             settings.flashMode = .auto
@@ -126,26 +160,26 @@ final class CameraService: NSObject, CameraServiceProtocol {
 
 extension CameraService: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        if let error = error {
-            AppLogger.shared.error("Photo capture error: \(error)", category: AppLogger.Category.camera)
-            photoContinuation?.resume(throwing: CameraError.captureFailed)
-            photoContinuation = nil
-            return
+        // Use Task to safely access the actor-isolated continuation
+        Task {
+            if let error = error {
+                AppLogger.shared.error("Photo capture error: \(error)", category: AppLogger.Category.camera)
+                await continuationManager.resumeWithError(CameraError.captureFailed)
+                return
+            }
+
+            guard let data = photo.fileDataRepresentation(),
+                  let image = UIImage(data: data) else {
+                await continuationManager.resumeWithError(CameraError.captureFailed)
+                return
+            }
+
+            // Fix orientation
+            let fixedImage = image.fixedOrientation()
+
+            AppLogger.shared.info("Photo captured successfully", category: AppLogger.Category.camera)
+            await continuationManager.resumeWithSuccess(fixedImage)
         }
-
-        guard let data = photo.fileDataRepresentation(),
-              let image = UIImage(data: data) else {
-            photoContinuation?.resume(throwing: CameraError.captureFailed)
-            photoContinuation = nil
-            return
-        }
-
-        // Fix orientation
-        let fixedImage = image.fixedOrientation()
-
-        AppLogger.shared.info("Photo captured successfully", category: AppLogger.Category.camera)
-        photoContinuation?.resume(returning: fixedImage)
-        photoContinuation = nil
     }
 }
 

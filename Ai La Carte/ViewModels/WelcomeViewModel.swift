@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 @Observable
 final class WelcomeViewModel: BaseViewModel {
     var locationPermissionStatus: LocationAuthorizationStatus = .notDetermined
@@ -28,7 +29,6 @@ final class WelcomeViewModel: BaseViewModel {
         self.cameraPermissionStatus = cameraService.authorizationStatus
     }
 
-    @MainActor
     func requestPermissions() async {
         isLoading = true
         currentStep = .requestingLocation

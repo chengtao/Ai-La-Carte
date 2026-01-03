@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 @Observable
 final class SurveyViewModel: BaseViewModel {
     let sessionId: String
@@ -42,7 +43,6 @@ final class SurveyViewModel: BaseViewModel {
         return Double(currentItemIndex) / Double(items.count)
     }
 
-    @MainActor
     func submitRating(_ rating: FeedbackRating) async {
         guard let item = currentItem else { return }
 

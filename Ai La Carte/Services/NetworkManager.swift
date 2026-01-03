@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Network Configuration
 
-struct NetworkConfiguration {
+struct NetworkConfiguration: Sendable {
     let baseURL: String
     let timeout: TimeInterval
     let retryAttempts: Int
@@ -32,7 +32,7 @@ struct NetworkConfiguration {
 
 // MARK: - Network Manager Protocol
 
-protocol NetworkManagerProtocol {
+protocol NetworkManagerProtocol: Sendable {
     func request<T: Codable>(
         endpoint: APIEndpoint,
         method: HTTPMethod,
@@ -74,7 +74,7 @@ extension NetworkManagerProtocol {
 
 // MARK: - Network Manager Implementation
 
-final class NetworkManager: NetworkManagerProtocol {
+final class NetworkManager: NetworkManagerProtocol, Sendable {
     private let configuration: NetworkConfiguration
     private let session: URLSession
 
@@ -266,7 +266,7 @@ final class NetworkManager: NetworkManagerProtocol {
 
 // MARK: - HTTP Method
 
-enum HTTPMethod: String {
+enum HTTPMethod: String, Sendable {
     case GET = "GET"
     case POST = "POST"
     case PUT = "PUT"
@@ -276,7 +276,7 @@ enum HTTPMethod: String {
 
 // MARK: - API Endpoints
 
-enum APIEndpoint {
+enum APIEndpoint: Sendable {
     // Auth
     case appleAuth
     case logout
@@ -331,7 +331,7 @@ enum APIEndpoint {
 
 // MARK: - Network Error
 
-enum NetworkError: Error, LocalizedError {
+enum NetworkError: Error, LocalizedError, Sendable {
     case invalidURL
     case invalidResponse
     case badRequest(String?)
@@ -368,11 +368,11 @@ enum NetworkError: Error, LocalizedError {
 
 // MARK: - API Response Models
 
-struct ValidationErrorResponse: Codable {
+struct ValidationErrorResponse: Codable, Sendable {
     let errors: [String]
 }
 
-struct ErrorResponse: Codable {
+struct ErrorResponse: Codable, Sendable {
     let message: String?
     let error: String?
 
@@ -381,12 +381,12 @@ struct ErrorResponse: Codable {
     }
 }
 
-struct APIResponse<T: Codable>: Codable {
+struct APIResponse<T: Codable & Sendable>: Codable, Sendable {
     let data: T
     let message: String?
 }
 
-struct OkResponse: Codable {
+struct OkResponse: Codable, Sendable {
     let ok: Bool
 }
 

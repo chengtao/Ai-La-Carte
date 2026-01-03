@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import AVFoundation
 
+@MainActor
 @Observable
 final class MainViewModel: BaseViewModel {
     // Camera state
@@ -57,7 +58,6 @@ final class MainViewModel: BaseViewModel {
         cameraService.authorizationStatus
     }
 
-    @MainActor
     func startCamera() async {
         // Request permission if not determined
         if cameraService.authorizationStatus == .notDetermined {
@@ -91,7 +91,6 @@ final class MainViewModel: BaseViewModel {
         cameraState = .stopped
     }
 
-    @MainActor
     func capturePhoto() async {
         guard cameraState == .running else { return }
 
@@ -112,12 +111,10 @@ final class MainViewModel: BaseViewModel {
         locationService.authorizationStatus
     }
 
-    @MainActor
     func requestLocationPermission() async {
         _ = await locationService.requestWhenInUseAuthorization()
     }
 
-    @MainActor
     func fetchNearbyRestaurants() async {
         // Request permission if not determined
         if locationService.authorizationStatus == .notDetermined {
@@ -157,7 +154,6 @@ final class MainViewModel: BaseViewModel {
 
     // MARK: - Session Management
 
-    @MainActor
     func selectRestaurant(_ restaurant: RestaurantResponse) async {
         selectedRestaurant = restaurant
 
@@ -172,7 +168,6 @@ final class MainViewModel: BaseViewModel {
         showPreferences = true
     }
 
-    @MainActor
     func createSession(restaurantId: String?, restaurantName: String? = nil) async {
         do {
             let context: SessionContext?
@@ -194,7 +189,6 @@ final class MainViewModel: BaseViewModel {
         }
     }
 
-    @MainActor
     func acceptPhoto(_ photo: UIImage) async {
         // Create session if not exists
         if currentSession == nil {

@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 @Observable
 final class CalculatingViewModel: BaseViewModel {
     let sessionId: String
@@ -32,7 +33,6 @@ final class CalculatingViewModel: BaseViewModel {
         super.init()
     }
 
-    @MainActor
     func startPolling() {
         pollingTask?.cancel()
 
@@ -66,7 +66,6 @@ final class CalculatingViewModel: BaseViewModel {
         pollingTask = nil
     }
 
-    @MainActor
     private func pollStatus() async {
         do {
             let response = try await recommendationService.getRecommendationStatus(

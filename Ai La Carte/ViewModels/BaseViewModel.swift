@@ -7,12 +7,13 @@
 
 import Foundation
 
+@MainActor
 @Observable
 class BaseViewModel {
     var isLoading = false
     var error: AppError?
 
-    func handleNetworkError(_ error: Error) -> AppError {
+    nonisolated func handleNetworkError(_ error: Error) -> AppError {
         if let appError = error as? AppError {
             return appError
         }
@@ -28,9 +29,8 @@ class BaseViewModel {
         return AppError.unknown(error)
     }
 
-    @MainActor
     func performNetworkOperation<T>(
-        operation: () async throws -> T
+        operation: @Sendable () async throws -> T
     ) async -> T? {
         isLoading = true
         error = nil

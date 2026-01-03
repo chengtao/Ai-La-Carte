@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 
+@MainActor
 @Observable
 final class PhotoReviewViewModel: BaseViewModel {
     let sessionId: String

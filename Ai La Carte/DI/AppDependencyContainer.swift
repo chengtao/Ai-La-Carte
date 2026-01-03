@@ -9,7 +9,9 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-final class AppDependencyContainer: DependencyContainer {
+final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
+    // Note: @unchecked because lazy vars are not Sendable-safe by default
+    // Thread safety is managed by only accessing from main thread during init
     private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {
@@ -62,11 +64,11 @@ final class AppDependencyContainer: DependencyContainer {
 
     // MARK: - ViewModel Factory Methods
 
-    func makeWelcomeViewModel() -> WelcomeViewModel {
+    @MainActor func makeWelcomeViewModel() -> WelcomeViewModel {
         WelcomeViewModel(locationService: locationService, cameraService: cameraService)
     }
 
-    func makeMainViewModel() -> MainViewModel {
+    @MainActor func makeMainViewModel() -> MainViewModel {
         MainViewModel(
             restaurantService: restaurantAPIService,
             sessionService: sessionAPIService,
@@ -76,7 +78,7 @@ final class AppDependencyContainer: DependencyContainer {
         )
     }
 
-    func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel {
+    @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel {
         PhotoReviewViewModel(
             sessionId: sessionId,
             photo: photo,
@@ -84,7 +86,7 @@ final class AppDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeSessionPreferenceViewModel(sessionId: String) -> SessionPreferenceViewModel {
+    @MainActor func makeSessionPreferenceViewModel(sessionId: String) -> SessionPreferenceViewModel {
         SessionPreferenceViewModel(
             sessionId: sessionId,
             sessionService: sessionAPIService,
@@ -93,7 +95,7 @@ final class AppDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeCalculatingViewModel(sessionId: String, jobId: String) -> CalculatingViewModel {
+    @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String) -> CalculatingViewModel {
         CalculatingViewModel(
             sessionId: sessionId,
             jobId: jobId,
@@ -101,7 +103,7 @@ final class AppDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeRecommendationViewModel(sessionId: String) -> RecommendationViewModel {
+    @MainActor func makeRecommendationViewModel(sessionId: String) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
             recommendationService: recommendationAPIService,
@@ -109,7 +111,7 @@ final class AppDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeSurveyViewModel(sessionId: String, items: [RecommendationItemResponse]) -> SurveyViewModel {
+    @MainActor func makeSurveyViewModel(sessionId: String, items: [RecommendationItemResponse]) -> SurveyViewModel {
         SurveyViewModel(
             sessionId: sessionId,
             items: items,
@@ -121,7 +123,7 @@ final class AppDependencyContainer: DependencyContainer {
 
 // MARK: - Production API Services
 
-final class UserAPIService: UserAPIServiceProtocol {
+final class UserAPIService: UserAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
 
     init(networkManager: NetworkManagerProtocol) {
@@ -147,7 +149,7 @@ final class UserAPIService: UserAPIServiceProtocol {
     }
 }
 
-final class RestaurantAPIService: RestaurantAPIServiceProtocol {
+final class RestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
 
     init(networkManager: NetworkManagerProtocol) {
@@ -164,7 +166,7 @@ final class RestaurantAPIService: RestaurantAPIServiceProtocol {
     }
 }
 
-final class SessionAPIService: SessionAPIServiceProtocol {
+final class SessionAPIService: SessionAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
 
     init(networkManager: NetworkManagerProtocol) {
@@ -209,7 +211,7 @@ final class SessionAPIService: SessionAPIServiceProtocol {
     }
 }
 
-final class RecommendationAPIService: RecommendationAPIServiceProtocol {
+final class RecommendationAPIService: RecommendationAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
 
     init(networkManager: NetworkManagerProtocol) {
@@ -252,7 +254,7 @@ final class RecommendationAPIService: RecommendationAPIServiceProtocol {
     }
 }
 
-final class AnalyticsService: AnalyticsServiceProtocol {
+final class AnalyticsService: AnalyticsServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
 
     init(networkManager: NetworkManagerProtocol) {
@@ -279,20 +281,19 @@ final class AnalyticsService: AnalyticsServiceProtocol {
     }
 }
 
-final class ImageCacheService: ImageCacheServiceProtocol {
+actor ImageCacheService: ImageCacheServiceProtocol {
     private let memoryCache = NSCache<NSString, UIImage>()
     private let fileManager = FileManager.default
     private let cacheDirectory: URL
 
     private let maxMemoryCacheCount = 100
-    private let maxDiskCacheSize: Int64 = 100 * 1024 * 1024 // 100 MB
 
     init() {
-        let documentsDirectory = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let documentsDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         cacheDirectory = documentsDirectory.appendingPathComponent("ImageCache", isDirectory: true)
 
-        if !fileManager.fileExists(atPath: cacheDirectory.path) {
-            try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+        if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
+            try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
         }
 
         memoryCache.countLimit = maxMemoryCacheCount
@@ -316,7 +317,7 @@ final class ImageCacheService: ImageCacheServiceProtocol {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let image = UIImage(data: data) {
-                cacheImage(image, for: url)
+                await cacheImage(image, for: url)
                 return image
             }
         } catch {
@@ -326,13 +327,13 @@ final class ImageCacheService: ImageCacheServiceProtocol {
         return nil
     }
 
-    func cacheImage(_ image: UIImage, for url: URL) {
+    func cacheImage(_ image: UIImage, for url: URL) async {
         let cacheKey = cacheKey(for: url)
         memoryCache.setObject(image, forKey: cacheKey as NSString)
         saveToDisk(image, cacheKey: cacheKey)
     }
 
-    func clearCache() {
+    func clearCache() async {
         memoryCache.removeAllObjects()
         try? fileManager.removeItem(at: cacheDirectory)
         try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)

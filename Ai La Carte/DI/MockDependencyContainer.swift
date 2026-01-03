@@ -9,7 +9,8 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-final class MockDependencyContainer: DependencyContainer {
+final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
+    // Note: @unchecked because lazy vars are not Sendable-safe by default
     // MARK: - Core Services
 
     lazy var networkManager: NetworkManagerProtocol = {
@@ -58,11 +59,11 @@ final class MockDependencyContainer: DependencyContainer {
 
     // MARK: - ViewModel Factory Methods
 
-    func makeWelcomeViewModel() -> WelcomeViewModel {
+    @MainActor func makeWelcomeViewModel() -> WelcomeViewModel {
         WelcomeViewModel(locationService: locationService, cameraService: cameraService)
     }
 
-    func makeMainViewModel() -> MainViewModel {
+    @MainActor func makeMainViewModel() -> MainViewModel {
         MainViewModel(
             restaurantService: restaurantAPIService,
             sessionService: sessionAPIService,
@@ -72,7 +73,7 @@ final class MockDependencyContainer: DependencyContainer {
         )
     }
 
-    func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel {
+    @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel {
         PhotoReviewViewModel(
             sessionId: sessionId,
             photo: photo,
@@ -80,7 +81,7 @@ final class MockDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeSessionPreferenceViewModel(sessionId: String) -> SessionPreferenceViewModel {
+    @MainActor func makeSessionPreferenceViewModel(sessionId: String) -> SessionPreferenceViewModel {
         SessionPreferenceViewModel(
             sessionId: sessionId,
             sessionService: sessionAPIService,
@@ -89,7 +90,7 @@ final class MockDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeCalculatingViewModel(sessionId: String, jobId: String) -> CalculatingViewModel {
+    @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String) -> CalculatingViewModel {
         CalculatingViewModel(
             sessionId: sessionId,
             jobId: jobId,
@@ -97,7 +98,7 @@ final class MockDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeRecommendationViewModel(sessionId: String) -> RecommendationViewModel {
+    @MainActor func makeRecommendationViewModel(sessionId: String) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
             recommendationService: recommendationAPIService,
@@ -105,7 +106,7 @@ final class MockDependencyContainer: DependencyContainer {
         )
     }
 
-    func makeSurveyViewModel(sessionId: String, items: [RecommendationItemResponse]) -> SurveyViewModel {
+    @MainActor func makeSurveyViewModel(sessionId: String, items: [RecommendationItemResponse]) -> SurveyViewModel {
         SurveyViewModel(
             sessionId: sessionId,
             items: items,
@@ -117,8 +118,14 @@ final class MockDependencyContainer: DependencyContainer {
 
 // MARK: - Mock User API Service
 
-final class MockUserAPIService: UserAPIServiceProtocol {
-    private var currentUser: UserResponse?
+final class MockUserAPIService: UserAPIServiceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _currentUser: UserResponse?
+
+    private var currentUser: UserResponse? {
+        get { lock.withLock { _currentUser } }
+        set { lock.withLock { _currentUser = newValue } }
+    }
 
     func signInWithApple(identityToken: String) async throws -> UserResponse {
         try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
@@ -156,7 +163,7 @@ final class MockUserAPIService: UserAPIServiceProtocol {
 
 // MARK: - Mock Restaurant API Service
 
-final class MockRestaurantAPIService: RestaurantAPIServiceProtocol {
+final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
     func getNearbyRestaurants(lat: Double, lon: Double, radius: Int) async throws -> [RestaurantResponse] {
         try await Task.sleep(nanoseconds: 800_000_000) // 0.8 second delay
 
@@ -214,14 +221,19 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol {
 
 // MARK: - Mock Session API Service
 
-final class MockSessionAPIService: SessionAPIServiceProtocol {
-    private var sessions: [String: Bool] = [:]
+final class MockSessionAPIService: SessionAPIServiceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _sessions: [String: Bool] = [:]
+
+    private func addSession(_ id: String) {
+        lock.withLock { _sessions[id] = true }
+    }
 
     func createSession(restaurantId: String?, context: SessionContext?) async throws -> SessionResponse {
         try await Task.sleep(nanoseconds: 500_000_000)
 
         let sessionId = UUID().uuidString
-        sessions[sessionId] = true
+        addSession(sessionId)
 
         AppLogger.shared.info("[MOCK] Created session: \(sessionId) for restaurant: \(restaurantId ?? "none")", category: AppLogger.Category.session)
         return SessionResponse(sessionId: sessionId)
@@ -248,14 +260,23 @@ final class MockSessionAPIService: SessionAPIServiceProtocol {
 
 // MARK: - Mock Recommendation API Service
 
-final class MockRecommendationAPIService: RecommendationAPIServiceProtocol {
-    private var jobProgress: [String: Int] = [:]
+final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _jobProgress: [String: Int] = [:]
+
+    private func getProgress(_ jobId: String) -> Int {
+        lock.withLock { _jobProgress[jobId] ?? 0 }
+    }
+
+    private func setProgress(_ jobId: String, _ value: Int) {
+        lock.withLock { _jobProgress[jobId] = value }
+    }
 
     func generateRecommendations(sessionId: String, includeReviews: Bool) async throws -> JobResponse {
         try await Task.sleep(nanoseconds: 300_000_000)
 
         let jobId = UUID().uuidString
-        jobProgress[jobId] = 0
+        setProgress(jobId, 0)
 
         AppLogger.shared.info("[MOCK] Started recommendation job \(jobId) for session \(sessionId)", category: AppLogger.Category.recommendation)
         return JobResponse(jobId: jobId, status: "queued")
@@ -264,7 +285,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol {
     func getRecommendationStatus(sessionId: String, jobId: String) async throws -> JobStatusResponse {
         try await Task.sleep(nanoseconds: 500_000_000)
 
-        let currentStep = jobProgress[jobId] ?? 0
+        let currentStep = getProgress(jobId)
         let statuses: [SessionStatus] = [
             .photosUploading,
             .parsingMenu,
@@ -277,7 +298,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol {
         let status = currentStep < statuses.count ? statuses[currentStep] : .done
 
         if status != .done {
-            jobProgress[jobId] = currentStep + 1
+            setProgress(jobId, currentStep + 1)
         }
 
         AppLogger.shared.debug("[MOCK] Job \(jobId) status: \(status.rawValue)", category: AppLogger.Category.recommendation)
@@ -394,18 +415,23 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol {
 
 // MARK: - Mock Location Service
 
-final class MockLocationService: LocationServiceProtocol {
-    private var _authorizationStatus: LocationAuthorizationStatus = .notDetermined
+final class MockLocationService: LocationServiceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _authStatus: LocationAuthorizationStatus = .notDetermined
 
     var authorizationStatus: LocationAuthorizationStatus {
-        _authorizationStatus
+        lock.withLock { _authStatus }
+    }
+
+    private func setAuthStatus(_ status: LocationAuthorizationStatus) {
+        lock.withLock { _authStatus = status }
     }
 
     func requestWhenInUseAuthorization() async -> LocationAuthorizationStatus {
         try? await Task.sleep(nanoseconds: 500_000_000)
-        _authorizationStatus = .authorizedWhenInUse
+        setAuthStatus(.authorizedWhenInUse)
         AppLogger.shared.info("[MOCK] Location authorization granted", category: AppLogger.Category.location)
-        return _authorizationStatus
+        return authorizationStatus
     }
 
     func getCurrentLocation() async throws -> LocationCoordinate {
@@ -420,7 +446,7 @@ final class MockLocationService: LocationServiceProtocol {
 
 // MARK: - Mock Analytics Service
 
-final class MockAnalyticsService: AnalyticsServiceProtocol {
+final class MockAnalyticsService: AnalyticsServiceProtocol, Sendable {
     func track(event: AnalyticsEventType, sessionId: String?, meta: [String: String]?) {
         var logMessage = "[MOCK] Analytics: \(event.rawValue)"
         if let sessionId = sessionId {
@@ -435,20 +461,29 @@ final class MockAnalyticsService: AnalyticsServiceProtocol {
 
 // MARK: - Mock Image Cache Service
 
-final class MockImageCacheService: ImageCacheServiceProtocol {
-    private var cache: [String: UIImage] = [:]
+final class MockImageCacheService: ImageCacheServiceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _cache: [String: UIImage] = [:]
+
+    private func getCached(_ key: String) -> UIImage? {
+        lock.withLock { _cache[key] }
+    }
+
+    private func setCache(_ key: String, _ image: UIImage) {
+        lock.withLock { _cache[key] = image }
+    }
 
     func loadImage(from url: URL) async -> UIImage? {
         let key = url.absoluteString
 
-        if let cached = cache[key] {
+        if let cached = getCached(key) {
             return cached
         }
 
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             if let image = UIImage(data: data) {
-                cache[key] = image
+                setCache(key, image)
                 return image
             }
         } catch {
@@ -458,11 +493,11 @@ final class MockImageCacheService: ImageCacheServiceProtocol {
         return nil
     }
 
-    func cacheImage(_ image: UIImage, for url: URL) {
-        cache[url.absoluteString] = image
+    func cacheImage(_ image: UIImage, for url: URL) async {
+        setCache(url.absoluteString, image)
     }
 
-    func clearCache() {
-        cache.removeAll()
+    func clearCache() async {
+        lock.withLock { _cache.removeAll() }
     }
 }

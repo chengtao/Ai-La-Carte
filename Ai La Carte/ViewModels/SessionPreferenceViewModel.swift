@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 @Observable
 final class SessionPreferenceViewModel: BaseViewModel {
     let sessionId: String
@@ -43,7 +44,6 @@ final class SessionPreferenceViewModel: BaseViewModel {
         )
     }
 
-    @MainActor
     func submitAndGenerate() async {
         isLoading = true
 
