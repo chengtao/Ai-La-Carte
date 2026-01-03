@@ -12,6 +12,18 @@ struct RecommendationView: View {
     @Bindable var viewModel: RecommendationViewModel
     @State private var animateIn = false
 
+    init(viewModel: RecommendationViewModel) {
+        self.viewModel = viewModel
+        // Customize navigation bar appearance
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color.appBackground)
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.darkGray]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.darkGray]
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()

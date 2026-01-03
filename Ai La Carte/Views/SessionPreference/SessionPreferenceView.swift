@@ -12,6 +12,18 @@ struct SessionPreferenceView: View {
     @Bindable var viewModel: SessionPreferenceViewModel
     @State private var animateIn = false
 
+    init(viewModel: SessionPreferenceViewModel) {
+        self.viewModel = viewModel
+        // Customize navigation bar appearance
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Color.appBackground)
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.darkGray]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.darkGray]
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    }
+
     var body: some View {
         ZStack {
             Color.appBackground.ignoresSafeArea()
@@ -67,11 +79,11 @@ struct SessionPreferenceView: View {
 
             Text("Quick Preferences")
                 .font(.displayMedium)
-                .foregroundStyle(Color.appSecondary)
+                .foregroundColor(.black)
 
             Text("Help us personalize your recommendations")
                 .font(.bodyMedium)
-                .foregroundStyle(.secondary)
+                .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
         }
         .padding(.top, 40)
@@ -152,7 +164,7 @@ struct PreferenceSlider: View {
             HStack {
                 Text(title)
                     .font(.titleMedium)
-                    .foregroundStyle(Color.appSecondary)
+                    .foregroundColor(.black)
 
                 Spacer()
 
@@ -178,7 +190,7 @@ struct PreferenceSlider: View {
                         Text(leftLabel)
                             .font(.labelSmall)
                     }
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.gray)
 
                     Spacer()
 
@@ -188,7 +200,7 @@ struct PreferenceSlider: View {
                         Image(systemName: rightIcon)
                             .font(.caption)
                     }
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.gray)
                 }
             }
         }
