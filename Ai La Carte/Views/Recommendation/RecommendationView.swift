@@ -148,27 +148,25 @@ struct RecommendationView: View {
         }
     }
 
-    // MARK: - Wine List Content
+    // MARK: - Wine Sectioned Content
 
     private var wineListContent: some View {
         ScrollView {
-            LazyVStack(spacing: 16) {
-                ForEach(Array(viewModel.wineRecommendations.enumerated()), id: \.element.id) { index, item in
-                    RecommendationItemCard(
-                        item: item,
-                        isExpanded: viewModel.expandedItemId == item.id,
-                        isInCart: viewModel.isInCart(item),
-                        showCartButton: true,
-                        onTap: {
-                            viewModel.toggleExpanded(item.id)
+            LazyVStack(spacing: 24) {
+                ForEach(viewModel.groupedWineRecommendations, id: \.category) { group in
+                    WineSectionView(
+                        category: group.category,
+                        items: group.items,
+                        expandedItemId: viewModel.expandedItemId,
+                        isInCart: viewModel.isInCart,
+                        onTap: { itemId in
+                            viewModel.toggleExpanded(itemId)
                         },
-                        onCartToggle: {
+                        onCartToggle: { item in
                             viewModel.toggleCart(item)
-                        }
+                        },
+                        animateIn: animateIn
                     )
-                    .opacity(animateIn ? 1 : 0)
-                    .offset(y: animateIn ? 0 : 20)
-                    .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: animateIn)
                 }
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
@@ -434,6 +432,107 @@ struct FoodSectionView: View {
                         .background(
                             Capsule()
                                 .fill(LinearGradient.magicPrimary)
+                        )
+
+                    Spacer()
+
+                    // Collapse indicator
+                    Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.magicPurple)
+                }
+            }
+            .buttonStyle(.plain)
+
+            // Section items
+            if !isCollapsed {
+                VStack(spacing: 12) {
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        RecommendationItemCard(
+                            item: item,
+                            isExpanded: expandedItemId == item.id,
+                            isInCart: isInCart(item),
+                            showCartButton: true,
+                            onTap: {
+                                onTap(item.id)
+                            },
+                            onCartToggle: {
+                                onCartToggle(item)
+                            }
+                        )
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 20)
+                        .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.05), value: animateIn)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Wine Section View
+
+struct WineSectionView: View {
+    let category: WineCategory
+    let items: [RecommendationItemResponse]
+    let expandedItemId: String?
+    let isInCart: (RecommendationItemResponse) -> Bool
+    let onTap: (String) -> Void
+    let onCartToggle: (RecommendationItemResponse) -> Void
+    let animateIn: Bool
+
+    @State private var isCollapsed = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Section header
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isCollapsed.toggle()
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    // Category icon
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.magicPurple.opacity(0.2), Color.magicBlue.opacity(0.15)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 36, height: 36)
+
+                        Image(systemName: category.icon)
+                            .font(.body)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.magicPurple, Color.magicBlue],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
+
+                    // Category name
+                    Text(category.displayName)
+                        .font(.titleMedium)
+                        .foregroundStyle(.primary)
+
+                    // Item count
+                    Text("\(items.count)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(LinearGradient(
+                                    colors: [Color.magicPurple, Color.magicBlue],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ))
                         )
 
                     Spacer()

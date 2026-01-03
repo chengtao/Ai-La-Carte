@@ -175,6 +175,57 @@ enum FoodCategory: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Wine Category
+
+enum WineCategory: String, Codable, CaseIterable, Identifiable {
+    case sparkling = "sparkling"
+    case white = "white"
+    case rose = "rose"
+    case red = "red"
+    case dessertWine = "dessert"
+    case fortified = "fortified"
+    case other = "other"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .sparkling: return "Sparkling"
+        case .white: return "White Wines"
+        case .rose: return "Rosé"
+        case .red: return "Red Wines"
+        case .dessertWine: return "Dessert Wines"
+        case .fortified: return "Fortified"
+        case .other: return "Other Wines"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .sparkling: return "bubbles.and.sparkles"
+        case .white: return "wineglass"
+        case .rose: return "wineglass.fill"
+        case .red: return "wineglass.fill"
+        case .dessertWine: return "drop.fill"
+        case .fortified: return "flame.fill"
+        case .other: return "wineglass"
+        }
+    }
+
+    /// Sort order for displaying sections
+    var sortOrder: Int {
+        switch self {
+        case .sparkling: return 0
+        case .white: return 1
+        case .rose: return 2
+        case .red: return 3
+        case .dessertWine: return 4
+        case .fortified: return 5
+        case .other: return 6
+        }
+    }
+}
+
 // MARK: - Reason Tag
 
 struct ReasonTag: Codable, Identifiable, Hashable {
@@ -257,6 +308,12 @@ struct RecommendationItemResponse: Codable, Identifiable {
     var foodCategory: FoodCategory {
         guard let category = category else { return .other }
         return FoodCategory(rawValue: category) ?? .other
+    }
+
+    /// Wine category enum value
+    var wineCategory: WineCategory {
+        guard let category = category else { return .other }
+        return WineCategory(rawValue: category) ?? .other
     }
 
     /// Formatted wine origin (e.g., "Napa Valley, California, USA")

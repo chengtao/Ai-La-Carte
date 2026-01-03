@@ -453,46 +453,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
         ]
 
         let wineItems = [
-            RecommendationItemResponse(
-                id: "w1",
-                type: "wine",
-                title: "2021 Trimbach Riesling",
-                description: "A crisp, aromatic white with notes of green apple and lime. The slight sweetness pairs beautifully with spicy dishes.",
-                reasons: [
-                    ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
-                    ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
-                ],
-                confidence: 0.90,
-                pairingIds: ["f1", "f3"],
-                photoUrl: nil,
-                price: nil,
-                category: nil,
-                grapeVarietal: "Riesling",
-                region: "Alsace",
-                country: "France",
-                priceGlass: "$14",
-                priceBottle: "$52"
-            ),
-            RecommendationItemResponse(
-                id: "w2",
-                type: "wine",
-                title: "2019 Willamette Valley Pinot Noir",
-                description: "Elegant and fruit-forward with cherry and earthy notes. Its medium body complements rich, savory dishes.",
-                reasons: [
-                    ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
-                    ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
-                ],
-                confidence: 0.88,
-                pairingIds: ["f2"],
-                photoUrl: nil,
-                price: nil,
-                category: nil,
-                grapeVarietal: "Pinot Noir",
-                region: "Willamette Valley",
-                country: "USA",
-                priceGlass: "$16",
-                priceBottle: "$64"
-            ),
+            // Sparkling
             RecommendationItemResponse(
                 id: "w3",
                 type: "wine",
@@ -506,12 +467,115 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 pairingIds: nil,
                 photoUrl: nil,
                 price: nil,
-                category: nil,
+                category: "sparkling",
                 grapeVarietal: "Chardonnay, Pinot Noir, Pinot Meunier",
                 region: "Champagne",
                 country: "France",
                 priceGlass: nil,
                 priceBottle: "$85"
+            ),
+            // White Wines
+            RecommendationItemResponse(
+                id: "w1",
+                type: "wine",
+                title: "2021 Trimbach Riesling",
+                description: "A crisp, aromatic white with notes of green apple and lime. The slight sweetness pairs beautifully with spicy dishes.",
+                reasons: [
+                    ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
+                    ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
+                ],
+                confidence: 0.90,
+                pairingIds: ["f1", "f3"],
+                photoUrl: nil,
+                price: nil,
+                category: "white",
+                grapeVarietal: "Riesling",
+                region: "Alsace",
+                country: "France",
+                priceGlass: "$14",
+                priceBottle: "$52"
+            ),
+            RecommendationItemResponse(
+                id: "w4",
+                type: "wine",
+                title: "2022 Cloudy Bay Sauvignon Blanc",
+                description: "Vibrant and zesty with passion fruit and citrus notes. Perfect with seafood and light dishes.",
+                reasons: [
+                    ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh"),
+                    ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
+                ],
+                confidence: 0.85,
+                pairingIds: nil,
+                photoUrl: nil,
+                price: nil,
+                category: "white",
+                grapeVarietal: "Sauvignon Blanc",
+                region: "Marlborough",
+                country: "New Zealand",
+                priceGlass: "$15",
+                priceBottle: "$58"
+            ),
+            // Rosé
+            RecommendationItemResponse(
+                id: "w5",
+                type: "wine",
+                title: "2023 Whispering Angel Rosé",
+                description: "Elegant Provence rosé with delicate strawberry and peach flavors. Refreshingly dry and versatile.",
+                reasons: [
+                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
+                    ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
+                ],
+                confidence: 0.82,
+                pairingIds: nil,
+                photoUrl: nil,
+                price: nil,
+                category: "rose",
+                grapeVarietal: "Grenache, Cinsault, Rolle",
+                region: "Provence",
+                country: "France",
+                priceGlass: "$14",
+                priceBottle: "$48"
+            ),
+            // Red Wines
+            RecommendationItemResponse(
+                id: "w2",
+                type: "wine",
+                title: "2019 Willamette Valley Pinot Noir",
+                description: "Elegant and fruit-forward with cherry and earthy notes. Its medium body complements rich, savory dishes.",
+                reasons: [
+                    ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
+                    ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
+                ],
+                confidence: 0.88,
+                pairingIds: ["f2"],
+                photoUrl: nil,
+                price: nil,
+                category: "red",
+                grapeVarietal: "Pinot Noir",
+                region: "Willamette Valley",
+                country: "USA",
+                priceGlass: "$16",
+                priceBottle: "$64"
+            ),
+            RecommendationItemResponse(
+                id: "w6",
+                type: "wine",
+                title: "2018 Caymus Cabernet Sauvignon",
+                description: "Rich and full-bodied with blackberry, cassis, and vanilla oak notes. A bold choice for hearty dishes.",
+                reasons: [
+                    ReasonTagResponse(code: "CHEF_SIGNATURE", label: "Chef's Signature"),
+                    ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
+                ],
+                confidence: 0.86,
+                pairingIds: ["f2"],
+                photoUrl: nil,
+                price: nil,
+                category: "red",
+                grapeVarietal: "Cabernet Sauvignon",
+                region: "Napa Valley",
+                country: "USA",
+                priceGlass: "$22",
+                priceBottle: "$95"
             )
         ]
 

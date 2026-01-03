@@ -104,6 +104,26 @@ final class RecommendationViewModel: BaseViewModel {
         foodRecommendations.filter { $0.foodCategory == category }
     }
 
+    // MARK: - Grouped Wine Recommendations
+
+    /// Wine recommendations grouped by category, sorted by category order
+    var groupedWineRecommendations: [(category: WineCategory, items: [RecommendationItemResponse])] {
+        let grouped = Dictionary(grouping: wineRecommendations) { $0.wineCategory }
+        return grouped
+            .map { (category: $0.key, items: $0.value) }
+            .sorted { $0.category.sortOrder < $1.category.sortOrder }
+    }
+
+    /// Categories that have wine recommendations
+    var availableWineCategories: [WineCategory] {
+        groupedWineRecommendations.map { $0.category }
+    }
+
+    /// Get wine items for a specific category
+    func wineItems(for category: WineCategory) -> [RecommendationItemResponse] {
+        wineRecommendations.filter { $0.wineCategory == category }
+    }
+
     // MARK: - Cart Management
 
     var cartItemCount: Int {
