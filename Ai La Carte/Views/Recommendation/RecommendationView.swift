@@ -222,14 +222,65 @@ struct RecommendationItemCard: View {
     let isExpanded: Bool
     let onTap: () -> Void
 
+    private var isFood: Bool { item.type == "food" }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // Food photo (if available)
+            if isFood, let photoUrl = item.photoUrl, let url = URL(string: photoUrl) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.magicPurple.opacity(0.1))
+                            .frame(height: 140)
+                            .overlay(
+                                ProgressView()
+                                    .tint(Color.magicPurple)
+                            )
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 140)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    case .failure:
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.magicPurple.opacity(0.1))
+                            .frame(height: 140)
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .font(.largeTitle)
+                                    .foregroundStyle(Color.magicPurple.opacity(0.4))
+                            )
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+            }
+
             // Header
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(item.title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                    // Title with price for food
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(item.title)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        if isFood, let price = item.price {
+                            Spacer()
+                            Text(price)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Color.magicCoral)
+                        }
+                    }
+
+                    // Wine details
+                    if !isFood {
+                        wineDetailsView
+                    }
 
                     // Reason tags
                     FlowLayout(spacing: 6) {
@@ -239,10 +290,10 @@ struct RecommendationItemCard: View {
                     }
                 }
 
-                Spacer()
-
-                // Confidence indicator with gradient
-                confidenceIndicator
+                if isFood {
+                    // Confidence indicator for food (wine shows it differently)
+                    confidenceIndicator
+                }
             }
 
             // Description (expandable)
@@ -251,8 +302,16 @@ struct RecommendationItemCard: View {
                 .foregroundColor(.secondary)
                 .lineLimit(isExpanded ? nil : 2)
 
+            // Wine pricing row
+            if !isFood && item.hasWinePricing {
+                winePricingView
+            }
+
             // Expand indicator
             HStack {
+                if !isFood {
+                    confidenceIndicator
+                }
                 Spacer()
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption)
@@ -260,9 +319,83 @@ struct RecommendationItemCard: View {
             }
         }
         .padding(AppConstants.UI.cardPadding)
-        .magicCard(glowColor: .magicPurple)
+        .magicCard(glowColor: isFood ? .magicCoral : .magicPurple)
         .onTapGesture(perform: onTap)
     }
+
+    // MARK: - Wine Details
+
+    @ViewBuilder
+    private var wineDetailsView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            // Grape varietal
+            if let varietal = item.grapeVarietal {
+                HStack(spacing: 4) {
+                    Image(systemName: "leaf.fill")
+                        .font(.caption2)
+                        .foregroundStyle(Color.magicPurple)
+                    Text(varietal)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                }
+            }
+
+            // Origin (region, country)
+            if let origin = item.wineOrigin {
+                HStack(spacing: 4) {
+                    Image(systemName: "mappin.circle.fill")
+                        .font(.caption2)
+                        .foregroundStyle(Color.magicPink)
+                    Text(origin)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(.bottom, 4)
+    }
+
+    // MARK: - Wine Pricing
+
+    @ViewBuilder
+    private var winePricingView: some View {
+        HStack(spacing: 16) {
+            if let glassPrice = item.priceGlass {
+                HStack(spacing: 4) {
+                    Image(systemName: "wineglass")
+                        .font(.caption)
+                        .foregroundStyle(Color.magicPurple)
+                    Text("Glass")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(glassPrice)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.magicPurple)
+                }
+            }
+
+            if let bottlePrice = item.priceBottle {
+                HStack(spacing: 4) {
+                    Image(systemName: "bottle.wine.fill")
+                        .font(.caption)
+                        .foregroundStyle(Color.magicPink)
+                    Text("Bottle")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(bottlePrice)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.magicPink)
+                }
+            }
+
+            Spacer()
+        }
+        .padding(.top, 4)
+    }
+
+    // MARK: - Confidence Indicator
 
     private var confidenceIndicator: some View {
         let percentage = Int(item.confidence * 100)

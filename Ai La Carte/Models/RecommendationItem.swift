@@ -19,6 +19,17 @@ final class RecommendationItem {
     var pairingIds: [String]
     var sessionId: String
 
+    // Food-specific fields
+    var photoUrl: String?
+    var price: String?
+
+    // Wine-specific fields
+    var grapeVarietal: String?
+    var region: String?
+    var country: String?
+    var priceGlass: String?
+    var priceBottle: String?
+
     var session: Session?
 
     var type: RecommendationType {
@@ -44,7 +55,14 @@ final class RecommendationItem {
         reasons: [ReasonTag] = [],
         confidence: Double = 0.0,
         pairingIds: [String] = [],
-        sessionId: String
+        sessionId: String,
+        photoUrl: String? = nil,
+        price: String? = nil,
+        grapeVarietal: String? = nil,
+        region: String? = nil,
+        country: String? = nil,
+        priceGlass: String? = nil,
+        priceBottle: String? = nil
     ) {
         self.id = id
         self.typeRaw = type.rawValue
@@ -54,6 +72,13 @@ final class RecommendationItem {
         self.confidence = confidence
         self.pairingIds = pairingIds
         self.sessionId = sessionId
+        self.photoUrl = photoUrl
+        self.price = price
+        self.grapeVarietal = grapeVarietal
+        self.region = region
+        self.country = country
+        self.priceGlass = priceGlass
+        self.priceBottle = priceBottle
     }
 }
 
@@ -104,6 +129,17 @@ struct RecommendationItemResponse: Codable, Identifiable {
     let confidence: Double
     let pairingIds: [String]?
 
+    // Food-specific fields
+    let photoUrl: String?
+    let price: String?
+
+    // Wine-specific fields
+    let grapeVarietal: String?
+    let region: String?
+    let country: String?
+    let priceGlass: String?
+    let priceBottle: String?
+
     enum CodingKeys: String, CodingKey {
         case id
         case type
@@ -112,6 +148,13 @@ struct RecommendationItemResponse: Codable, Identifiable {
         case reasons
         case confidence
         case pairingIds = "pairing_ids"
+        case photoUrl = "photo_url"
+        case price
+        case grapeVarietal = "grape_varietal"
+        case region
+        case country
+        case priceGlass = "price_glass"
+        case priceBottle = "price_bottle"
     }
 
     var reasonTags: [ReasonTag] {
@@ -120,6 +163,17 @@ struct RecommendationItemResponse: Codable, Identifiable {
 
     var recommendationType: RecommendationType {
         RecommendationType(rawValue: type) ?? .food
+    }
+
+    /// Formatted wine origin (e.g., "Napa Valley, California, USA")
+    var wineOrigin: String? {
+        let parts = [region, country].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+    }
+
+    /// Check if wine has pricing
+    var hasWinePricing: Bool {
+        priceGlass != nil || priceBottle != nil
     }
 }
 

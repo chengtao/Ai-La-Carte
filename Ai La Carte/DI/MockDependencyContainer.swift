@@ -319,7 +319,14 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                     ReasonTagResponse(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
                 ],
                 confidence: 0.92,
-                pairingIds: ["w1"]
+                pairingIds: ["w1"],
+                photoUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400",
+                price: "$18.95",
+                grapeVarietal: nil,
+                region: nil,
+                country: nil,
+                priceGlass: nil,
+                priceBottle: nil
             ),
             RecommendationItemResponse(
                 id: "f2",
@@ -331,7 +338,14 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                     ReasonTagResponse(code: "HOUSE_SPECIALTY", label: "House Specialty")
                 ],
                 confidence: 0.88,
-                pairingIds: ["w2"]
+                pairingIds: ["w2"],
+                photoUrl: "https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400",
+                price: "$42.00",
+                grapeVarietal: nil,
+                region: nil,
+                country: nil,
+                priceGlass: nil,
+                priceBottle: nil
             ),
             RecommendationItemResponse(
                 id: "f3",
@@ -343,7 +357,14 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                     ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
                 confidence: 0.85,
-                pairingIds: nil
+                pairingIds: nil,
+                photoUrl: "https://images.unsplash.com/photo-1582452919408-39bddf60a4a2?w=400",
+                price: "$14.50",
+                grapeVarietal: nil,
+                region: nil,
+                country: nil,
+                priceGlass: nil,
+                priceBottle: nil
             ),
             RecommendationItemResponse(
                 id: "f4",
@@ -355,7 +376,14 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                     ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
                 confidence: 0.82,
-                pairingIds: nil
+                pairingIds: nil,
+                photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
+                price: "$24.00",
+                grapeVarietal: nil,
+                region: nil,
+                country: nil,
+                priceGlass: nil,
+                priceBottle: nil
             )
         ]
 
@@ -363,38 +391,59 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
             RecommendationItemResponse(
                 id: "w1",
                 type: "wine",
-                title: "2021 Riesling, Alsace",
+                title: "2021 Trimbach Riesling",
                 description: "A crisp, aromatic white with notes of green apple and lime. The slight sweetness pairs beautifully with spicy dishes.",
                 reasons: [
                     ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
                     ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
                 ],
                 confidence: 0.90,
-                pairingIds: ["f1", "f3"]
+                pairingIds: ["f1", "f3"],
+                photoUrl: nil,
+                price: nil,
+                grapeVarietal: "Riesling",
+                region: "Alsace",
+                country: "France",
+                priceGlass: "$14",
+                priceBottle: "$52"
             ),
             RecommendationItemResponse(
                 id: "w2",
                 type: "wine",
-                title: "2019 Pinot Noir, Oregon",
+                title: "2019 Willamette Valley Pinot Noir",
                 description: "Elegant and fruit-forward with cherry and earthy notes. Its medium body complements rich, savory dishes.",
                 reasons: [
                     ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
                     ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
                 ],
                 confidence: 0.88,
-                pairingIds: ["f2"]
+                pairingIds: ["f2"],
+                photoUrl: nil,
+                price: nil,
+                grapeVarietal: "Pinot Noir",
+                region: "Willamette Valley",
+                country: "USA",
+                priceGlass: "$16",
+                priceBottle: "$64"
             ),
             RecommendationItemResponse(
                 id: "w3",
                 type: "wine",
-                title: "NV Champagne Brut",
+                title: "NV Moët & Chandon Brut Imperial",
                 description: "Celebratory bubbles with toasty brioche notes. A versatile pairing that elevates any meal.",
                 reasons: [
                     ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
                     ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
                 confidence: 0.75,
-                pairingIds: nil
+                pairingIds: nil,
+                photoUrl: nil,
+                price: nil,
+                grapeVarietal: "Chardonnay, Pinot Noir, Pinot Meunier",
+                region: "Champagne",
+                country: "France",
+                priceGlass: nil,
+                priceBottle: "$85"
             )
         ]
 

@@ -223,7 +223,14 @@ struct SurveyView: View {
                     description: "Tender chicken with peanuts and chili peppers",
                     reasons: [],
                     confidence: 0.9,
-                    pairingIds: nil
+                    pairingIds: nil,
+                    photoUrl: nil,
+                    price: "$18.95",
+                    grapeVarietal: nil,
+                    region: nil,
+                    country: nil,
+                    priceGlass: nil,
+                    priceBottle: nil
                 )
             ],
             recommendationService: MockRecommendationAPIService(),
