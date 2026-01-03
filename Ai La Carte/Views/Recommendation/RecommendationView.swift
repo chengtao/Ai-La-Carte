@@ -112,32 +112,67 @@ struct RecommendationView: View {
             // Content based on selected tab
             if viewModel.selectedTab == .cart {
                 cartTabContent
+            } else if viewModel.selectedTab == .food {
+                // Sectioned food recommendations
+                foodSectionedContent
             } else {
-                // Recommendations list
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(Array(viewModel.currentItems.enumerated()), id: \.element.id) { index, item in
-                            RecommendationItemCard(
-                                item: item,
-                                isExpanded: viewModel.expandedItemId == item.id,
-                                isInCart: viewModel.isInCart(item),
-                                showCartButton: true,
-                                onTap: {
-                                    viewModel.toggleExpanded(item.id)
-                                },
-                                onCartToggle: {
-                                    viewModel.toggleCart(item)
-                                }
-                            )
-                            .opacity(animateIn ? 1 : 0)
-                            .offset(y: animateIn ? 0 : 20)
-                            .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: animateIn)
-                        }
-                    }
-                    .padding(.horizontal, AppConstants.UI.defaultPadding)
-                    .padding(.vertical, 16)
+                // Wine recommendations (flat list)
+                wineListContent
+            }
+        }
+    }
+
+    // MARK: - Food Sectioned Content
+
+    private var foodSectionedContent: some View {
+        ScrollView {
+            LazyVStack(spacing: 24) {
+                ForEach(viewModel.groupedFoodRecommendations, id: \.category) { group in
+                    FoodSectionView(
+                        category: group.category,
+                        items: group.items,
+                        expandedItemId: viewModel.expandedItemId,
+                        isInCart: viewModel.isInCart,
+                        onTap: { itemId in
+                            viewModel.toggleExpanded(itemId)
+                        },
+                        onCartToggle: { item in
+                            viewModel.toggleCart(item)
+                        },
+                        animateIn: animateIn
+                    )
                 }
             }
+            .padding(.horizontal, AppConstants.UI.defaultPadding)
+            .padding(.vertical, 16)
+        }
+    }
+
+    // MARK: - Wine List Content
+
+    private var wineListContent: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                ForEach(Array(viewModel.wineRecommendations.enumerated()), id: \.element.id) { index, item in
+                    RecommendationItemCard(
+                        item: item,
+                        isExpanded: viewModel.expandedItemId == item.id,
+                        isInCart: viewModel.isInCart(item),
+                        showCartButton: true,
+                        onTap: {
+                            viewModel.toggleExpanded(item.id)
+                        },
+                        onCartToggle: {
+                            viewModel.toggleCart(item)
+                        }
+                    )
+                    .opacity(animateIn ? 1 : 0)
+                    .offset(y: animateIn ? 0 : 20)
+                    .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: animateIn)
+                }
+            }
+            .padding(.horizontal, AppConstants.UI.defaultPadding)
+            .padding(.vertical, 16)
         }
     }
 
@@ -337,6 +372,103 @@ struct RecommendationView: View {
         .shadow(color: Color.magicPurple.opacity(0.1), radius: 8, y: 2)
         .padding(.horizontal, AppConstants.UI.defaultPadding)
         .padding(.top, 16)
+    }
+}
+
+// MARK: - Food Section View
+
+struct FoodSectionView: View {
+    let category: FoodCategory
+    let items: [RecommendationItemResponse]
+    let expandedItemId: String?
+    let isInCart: (RecommendationItemResponse) -> Bool
+    let onTap: (String) -> Void
+    let onCartToggle: (RecommendationItemResponse) -> Void
+    let animateIn: Bool
+
+    @State private var isCollapsed = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Section header
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isCollapsed.toggle()
+                }
+            } label: {
+                HStack(spacing: 10) {
+                    // Category icon
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.magicCoral.opacity(0.2), Color.magicPink.opacity(0.15)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 36, height: 36)
+
+                        Image(systemName: category.icon)
+                            .font(.body)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.magicCoral, Color.magicPink],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
+
+                    // Category name
+                    Text(category.displayName)
+                        .font(.titleMedium)
+                        .foregroundStyle(.primary)
+
+                    // Item count
+                    Text("\(items.count)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(LinearGradient.magicPrimary)
+                        )
+
+                    Spacer()
+
+                    // Collapse indicator
+                    Image(systemName: isCollapsed ? "chevron.right" : "chevron.down")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.magicPurple)
+                }
+            }
+            .buttonStyle(.plain)
+
+            // Section items
+            if !isCollapsed {
+                VStack(spacing: 12) {
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        RecommendationItemCard(
+                            item: item,
+                            isExpanded: expandedItemId == item.id,
+                            isInCart: isInCart(item),
+                            showCartButton: true,
+                            onTap: {
+                                onTap(item.id)
+                            },
+                            onCartToggle: {
+                                onCartToggle(item)
+                            }
+                        )
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 20)
+                        .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.05), value: animateIn)
+                    }
+                }
+            }
+        }
     }
 }
 

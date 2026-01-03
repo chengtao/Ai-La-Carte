@@ -309,6 +309,48 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
         try await Task.sleep(nanoseconds: 500_000_000)
 
         let foodItems = [
+            // Appetizers
+            RecommendationItemResponse(
+                id: "f4",
+                type: "food",
+                title: "Dim Sum Platter",
+                description: "An assortment of hand-crafted dumplings including har gow, siu mai, and char siu bao. Perfect for sharing.",
+                reasons: [
+                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
+                    ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
+                ],
+                confidence: 0.82,
+                pairingIds: nil,
+                photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
+                price: "$24.00",
+                category: "appetizer",
+                grapeVarietal: nil,
+                region: nil,
+                country: nil,
+                priceGlass: nil,
+                priceBottle: nil
+            ),
+            RecommendationItemResponse(
+                id: "f5",
+                type: "food",
+                title: "Spring Rolls",
+                description: "Crispy golden rolls filled with vegetables and glass noodles. Served with sweet chili dipping sauce.",
+                reasons: [
+                    ReasonTagResponse(code: "VEGETARIAN", label: "Vegetarian Friendly"),
+                    ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
+                ],
+                confidence: 0.78,
+                pairingIds: nil,
+                photoUrl: "https://images.unsplash.com/photo-1548507243-d1f7c03cb2ac?w=400",
+                price: "$8.95",
+                category: "appetizer",
+                grapeVarietal: nil,
+                region: nil,
+                country: nil,
+                priceGlass: nil,
+                priceBottle: nil
+            ),
+            // Entrees
             RecommendationItemResponse(
                 id: "f1",
                 type: "food",
@@ -322,6 +364,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 pairingIds: ["w1"],
                 photoUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400",
                 price: "$18.95",
+                category: "entree",
                 grapeVarietal: nil,
                 region: nil,
                 country: nil,
@@ -341,6 +384,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 pairingIds: ["w2"],
                 photoUrl: "https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400",
                 price: "$42.00",
+                category: "entree",
                 grapeVarietal: nil,
                 region: nil,
                 country: nil,
@@ -360,6 +404,27 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1582452919408-39bddf60a4a2?w=400",
                 price: "$14.50",
+                category: "entree",
+                grapeVarietal: nil,
+                region: nil,
+                country: nil,
+                priceGlass: nil,
+                priceBottle: nil
+            ),
+            // Dessert
+            RecommendationItemResponse(
+                id: "f6",
+                type: "food",
+                title: "Mango Sticky Rice",
+                description: "Sweet coconut sticky rice topped with fresh mango slices and drizzled with coconut cream. A refreshing finish.",
+                reasons: [
+                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser")
+                ],
+                confidence: 0.80,
+                pairingIds: nil,
+                photoUrl: "https://images.unsplash.com/photo-1621293954908-907159247fc8?w=400",
+                price: "$9.50",
+                category: "dessert",
                 grapeVarietal: nil,
                 region: nil,
                 country: nil,
@@ -367,18 +432,18 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 priceBottle: nil
             ),
             RecommendationItemResponse(
-                id: "f4",
+                id: "f7",
                 type: "food",
-                title: "Dim Sum Platter",
-                description: "An assortment of hand-crafted dumplings including har gow, siu mai, and char siu bao. Perfect for sharing.",
+                title: "Sesame Balls",
+                description: "Crispy fried glutinous rice balls filled with sweet red bean paste and coated in sesame seeds.",
                 reasons: [
-                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
                     ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
-                confidence: 0.82,
+                confidence: 0.75,
                 pairingIds: nil,
-                photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
-                price: "$24.00",
+                photoUrl: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400",
+                price: "$6.00",
+                category: "dessert",
                 grapeVarietal: nil,
                 region: nil,
                 country: nil,
@@ -401,6 +466,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 pairingIds: ["f1", "f3"],
                 photoUrl: nil,
                 price: nil,
+                category: nil,
                 grapeVarietal: "Riesling",
                 region: "Alsace",
                 country: "France",
@@ -420,6 +486,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 pairingIds: ["f2"],
                 photoUrl: nil,
                 price: nil,
+                category: nil,
                 grapeVarietal: "Pinot Noir",
                 region: "Willamette Valley",
                 country: "USA",
@@ -439,6 +506,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
                 pairingIds: nil,
                 photoUrl: nil,
                 price: nil,
+                category: nil,
                 grapeVarietal: "Chardonnay, Pinot Noir, Pinot Meunier",
                 region: "Champagne",
                 country: "France",

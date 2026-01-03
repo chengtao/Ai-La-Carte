@@ -22,6 +22,7 @@ final class RecommendationItem {
     // Food-specific fields
     var photoUrl: String?
     var price: String?
+    var categoryRaw: String?  // Food category
 
     // Wine-specific fields
     var grapeVarietal: String?
@@ -35,6 +36,14 @@ final class RecommendationItem {
     var type: RecommendationType {
         get { RecommendationType(rawValue: typeRaw) ?? .food }
         set { typeRaw = newValue.rawValue }
+    }
+
+    var category: FoodCategory? {
+        get {
+            guard let raw = categoryRaw else { return nil }
+            return FoodCategory(rawValue: raw)
+        }
+        set { categoryRaw = newValue?.rawValue }
     }
 
     var reasons: [ReasonTag] {
@@ -58,6 +67,7 @@ final class RecommendationItem {
         sessionId: String,
         photoUrl: String? = nil,
         price: String? = nil,
+        category: FoodCategory? = nil,
         grapeVarietal: String? = nil,
         region: String? = nil,
         country: String? = nil,
@@ -74,6 +84,7 @@ final class RecommendationItem {
         self.sessionId = sessionId
         self.photoUrl = photoUrl
         self.price = price
+        self.categoryRaw = category?.rawValue
         self.grapeVarietal = grapeVarietal
         self.region = region
         self.country = country
@@ -87,6 +98,81 @@ final class RecommendationItem {
 enum RecommendationType: String, Codable {
     case food
     case wine
+}
+
+// MARK: - Food Category
+
+enum FoodCategory: String, Codable, CaseIterable, Identifiable {
+    case appetizer = "appetizer"
+    case coldDish = "cold_dish"
+    case soup = "soup"
+    case salad = "salad"
+    case pasta = "pasta"
+    case pizza = "pizza"
+    case entree = "entree"
+    case seafood = "seafood"
+    case grill = "grill"
+    case vegetarian = "vegetarian"
+    case sides = "sides"
+    case dessert = "dessert"
+    case other = "other"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .appetizer: return "Appetizers"
+        case .coldDish: return "Cold Dishes"
+        case .soup: return "Soups"
+        case .salad: return "Salads"
+        case .pasta: return "Pasta"
+        case .pizza: return "Pizza"
+        case .entree: return "Entrees"
+        case .seafood: return "Seafood"
+        case .grill: return "From the Grill"
+        case .vegetarian: return "Vegetarian"
+        case .sides: return "Sides"
+        case .dessert: return "Desserts"
+        case .other: return "Chef's Specials"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .appetizer: return "sparkles"
+        case .coldDish: return "snowflake"
+        case .soup: return "cup.and.saucer.fill"
+        case .salad: return "leaf.fill"
+        case .pasta: return "fork.knife"
+        case .pizza: return "circle.grid.2x2.fill"
+        case .entree: return "flame.fill"
+        case .seafood: return "fish.fill"
+        case .grill: return "flame"
+        case .vegetarian: return "leaf.circle.fill"
+        case .sides: return "square.grid.2x2"
+        case .dessert: return "birthday.cake.fill"
+        case .other: return "star.fill"
+        }
+    }
+
+    /// Sort order for displaying sections
+    var sortOrder: Int {
+        switch self {
+        case .appetizer: return 0
+        case .coldDish: return 1
+        case .soup: return 2
+        case .salad: return 3
+        case .pasta: return 4
+        case .pizza: return 5
+        case .entree: return 6
+        case .seafood: return 7
+        case .grill: return 8
+        case .vegetarian: return 9
+        case .sides: return 10
+        case .dessert: return 11
+        case .other: return 12
+        }
+    }
 }
 
 // MARK: - Reason Tag
@@ -132,6 +218,7 @@ struct RecommendationItemResponse: Codable, Identifiable {
     // Food-specific fields
     let photoUrl: String?
     let price: String?
+    let category: String?  // Food category (appetizer, entree, dessert, etc.)
 
     // Wine-specific fields
     let grapeVarietal: String?
@@ -150,6 +237,7 @@ struct RecommendationItemResponse: Codable, Identifiable {
         case pairingIds = "pairing_ids"
         case photoUrl = "photo_url"
         case price
+        case category
         case grapeVarietal = "grape_varietal"
         case region
         case country
@@ -163,6 +251,12 @@ struct RecommendationItemResponse: Codable, Identifiable {
 
     var recommendationType: RecommendationType {
         RecommendationType(rawValue: type) ?? .food
+    }
+
+    /// Food category enum value
+    var foodCategory: FoodCategory {
+        guard let category = category else { return .other }
+        return FoodCategory(rawValue: category) ?? .other
     }
 
     /// Formatted wine origin (e.g., "Napa Valley, California, USA")

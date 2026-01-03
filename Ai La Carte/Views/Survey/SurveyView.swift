@@ -226,6 +226,7 @@ struct SurveyView: View {
                     pairingIds: nil,
                     photoUrl: nil,
                     price: "$18.95",
+                    category: "entree",
                     grapeVarietal: nil,
                     region: nil,
                     country: nil,
