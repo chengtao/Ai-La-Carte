@@ -191,7 +191,7 @@ struct WelcomeView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .foregroundStyle(Color.appSecondary)
+        .foregroundStyle(.primary)
     }
 
     private var completionInfo: some View {
@@ -250,7 +250,7 @@ struct FeatureRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.titleMedium)
-                    .foregroundStyle(Color.appSecondary)
+                    .foregroundStyle(.primary)
 
                 Text(description)
                     .font(.bodyMedium)

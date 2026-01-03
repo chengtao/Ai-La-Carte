@@ -17,7 +17,7 @@ struct AccountView: View {
                     HStack(spacing: 16) {
                         Image(systemName: "person.circle.fill")
                             .font(.system(size: 60))
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(.secondary)
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Guest User")

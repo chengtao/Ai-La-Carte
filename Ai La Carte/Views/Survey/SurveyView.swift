@@ -16,7 +16,8 @@ struct SurveyView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.appBackground.ignoresSafeArea()
+                LinearGradient.magicBackground
+                    .ignoresSafeArea()
 
                 if viewModel.isComplete {
                     completionView
@@ -59,7 +60,7 @@ struct SurveyView: View {
             // Question
             Text("Did you try this?")
                 .font(.titleLarge)
-                .foregroundStyle(Color.appSecondary)
+                .foregroundStyle(.primary)
 
             // Rating buttons
             ratingButtons
@@ -86,16 +87,16 @@ struct SurveyView: View {
         VStack(spacing: 8) {
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.appPrimary.opacity(0.2))
-                        .frame(height: 4)
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.magicPurple.opacity(0.15))
+                        .frame(height: 6)
 
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.appPrimary)
-                        .frame(width: geometry.size.width * viewModel.progress, height: 4)
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(LinearGradient.magicPrimary)
+                        .frame(width: geometry.size.width * viewModel.progress, height: 6)
                 }
             }
-            .frame(height: 4)
+            .frame(height: 6)
 
             Text("\(viewModel.currentItemIndex + 1) of \(viewModel.items.count)")
                 .font(.caption)
@@ -108,15 +109,21 @@ struct SurveyView: View {
 
     private func itemCard(for item: RecommendationItemResponse) -> some View {
         VStack(spacing: 12) {
-            // Icon
+            // Icon with gradient
             Image(systemName: item.type == "food" ? "fork.knife" : "wineglass")
                 .font(.system(size: 40))
-                .foregroundStyle(Color.appPrimary)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.magicPurple, Color.magicPink],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
 
             // Title
             Text(item.title)
                 .font(.displayMedium)
-                .foregroundStyle(Color.appSecondary)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
 
             // Description
@@ -128,9 +135,7 @@ struct SurveyView: View {
         }
         .padding(AppConstants.UI.cardPadding)
         .frame(maxWidth: .infinity)
-        .background(Color.appCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
-        .shadow(color: .black.opacity(0.05), radius: 8, y: 4)
+        .magicCard(glowColor: .magicPurple)
     }
 
     // MARK: - Rating Buttons
@@ -167,7 +172,7 @@ struct SurveyView: View {
         switch rating {
         case .loved: return Color.appSuccess
         case .disliked: return Color.appError
-        case .notOrdered: return .gray
+        case .notOrdered: return .secondary
         }
     }
 
@@ -183,7 +188,7 @@ struct SurveyView: View {
 
             Text("Thanks for your feedback!")
                 .font(.displayMedium)
-                .foregroundStyle(Color.appSecondary)
+                .foregroundStyle(.primary)
 
             Text("Your ratings help us improve future recommendations.")
                 .font(.bodyMedium)
@@ -196,13 +201,8 @@ struct SurveyView: View {
                 dismiss()
             } label: {
                 Text("Done")
-                    .font(.titleMedium)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: AppConstants.UI.buttonHeight)
-                    .background(Color.appPrimary)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
             }
+            .buttonStyle(MagicButtonStyle())
             .padding(.bottom, 40)
         }
         .padding(.horizontal, AppConstants.UI.defaultPadding)

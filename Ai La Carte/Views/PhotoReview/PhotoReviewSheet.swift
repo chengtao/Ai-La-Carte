@@ -117,10 +117,10 @@ struct PhotoReviewSheet: View {
                         Text("Recommend")
                             .font(.labelSmall)
                     }
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(Color.appPrimary)
+                    .background(LinearGradient.magicPrimary)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }

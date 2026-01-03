@@ -88,11 +88,34 @@ extension Color {
     static let magicBlue = Color(red: 0.40, green: 0.53, blue: 0.98)       // #6687FA - Electric blue
     static let magicTeal = Color(red: 0.29, green: 0.82, blue: 0.80)       // #4AD1CC - Aqua teal
 
-    // App colors using the magical palette
+    // App colors using the magical palette - THEME ADAPTIVE
     static let appPrimary = magicPurple
-    static let appSecondary = Color(red: 0.15, green: 0.12, blue: 0.22)    // Dark purple-charcoal
-    static let appBackground = Color(red: 0.99, green: 0.98, blue: 1.0)    // Soft lavender white
-    static let appCardBackground = Color.white
+    static let appSecondary = Color(
+        UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.90, green: 0.88, blue: 0.95, alpha: 1.0)  // Light purple-gray for dark mode
+                : UIColor(red: 0.15, green: 0.12, blue: 0.22, alpha: 1.0)  // Dark purple-charcoal for light mode
+        }
+    )
+
+    // Background colors - adaptive for light/dark mode
+    static let appBackground = Color(
+        UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.08, green: 0.06, blue: 0.12, alpha: 1.0)  // Dark purple-black
+                : UIColor(red: 0.99, green: 0.98, blue: 1.0, alpha: 1.0)   // Soft lavender white
+        }
+    )
+
+    static let appCardBackground = Color(
+        UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.14, green: 0.12, blue: 0.18, alpha: 1.0)  // Dark card
+                : UIColor.white
+        }
+    )
+
+    // Status colors
     static let appSuccess = Color(red: 0.20, green: 0.78, blue: 0.60)      // Teal green
     static let appWarning = Color(red: 1.0, green: 0.72, blue: 0.30)       // Golden amber
     static let appError = Color(red: 0.95, green: 0.35, blue: 0.45)        // Soft red-pink

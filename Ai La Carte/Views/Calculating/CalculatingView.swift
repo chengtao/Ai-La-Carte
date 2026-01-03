@@ -200,7 +200,7 @@ struct CalculatingView: View {
         VStack(spacing: 8) {
             Text(viewModel.currentStepText)
                 .font(.titleMedium)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
                 .multilineTextAlignment(.center)
                 .id(viewModel.status) // Animate on change
                 .transition(.asymmetric(
@@ -239,11 +239,11 @@ struct CalculatingView: View {
             Text("Did you know?")
                 .font(.caption)
                 .fontWeight(.semibold)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
 
             Text(currentTip)
                 .font(.caption)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 32)

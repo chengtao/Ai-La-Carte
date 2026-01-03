@@ -70,7 +70,7 @@ struct RecommendationView: View {
 
             Text("Loading recommendations...")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
         }
     }
 
@@ -84,11 +84,11 @@ struct RecommendationView: View {
 
             Text("No recommendations available")
                 .font(.headline)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
 
             Text("Please try again later")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
         }
     }
 
@@ -191,7 +191,7 @@ struct RecommendationView: View {
                                 startPoint: .leading,
                                 endPoint: .trailing
                             ))
-                            : AnyShapeStyle(Color.gray)
+                            : AnyShapeStyle(Color.secondary)
                     )
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
