@@ -173,18 +173,20 @@ struct CalculatingView: View {
     // MARK: - Tip Section
 
     private var tipSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             Text("Did you know?")
-                .font(.headline)
+                .font(.caption)
+                .fontWeight(.semibold)
                 .foregroundColor(.gray)
 
             Text(randomTip)
-                .font(.subheadline)
+                .font(.caption)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(.horizontal, 40)
-        .padding(.bottom, 40)
+        .padding(.horizontal, 32)
+        .padding(.bottom, 50)
     }
 
     private var randomTip: String {

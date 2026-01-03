@@ -27,6 +27,8 @@ struct RecommendationView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle("Your Recommendations")
         .navigationBarTitleDisplayMode(.large)
+        .toolbarBackground(Color.appBackground, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -53,8 +55,8 @@ struct RecommendationView: View {
                 .scaleEffect(1.5)
 
             Text("Loading recommendations...")
-                .font(.bodyMedium)
-                .foregroundStyle(.secondary)
+                .font(.subheadline)
+                .foregroundColor(.gray)
         }
     }
 
@@ -67,12 +69,12 @@ struct RecommendationView: View {
                 .foregroundStyle(Color.appWarning)
 
             Text("No recommendations available")
-                .font(.titleMedium)
-                .foregroundStyle(Color.appSecondary)
+                .font(.headline)
+                .foregroundColor(.black)
 
             Text("Please try again later")
-                .font(.bodyMedium)
-                .foregroundStyle(.secondary)
+                .font(.subheadline)
+                .foregroundColor(.gray)
         }
     }
 
@@ -124,8 +126,8 @@ struct RecommendationView: View {
                 .foregroundStyle(Color.appPrimary)
 
             Text(summary)
-                .font(.bodyMedium)
-                .foregroundStyle(.secondary)
+                .font(.subheadline)
+                .foregroundColor(.gray)
                 .lineLimit(2)
         }
         .padding(AppConstants.UI.cardPadding)
@@ -150,8 +152,8 @@ struct RecommendationView: View {
                         Image(systemName: tab.icon)
                         Text(tab.rawValue)
                     }
-                    .font(.labelLarge)
-                    .foregroundStyle(viewModel.selectedTab == tab ? Color.appPrimary : .secondary)
+                    .font(.headline)
+                    .foregroundColor(viewModel.selectedTab == tab ? Color.appPrimary : .gray)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(
@@ -182,8 +184,8 @@ struct RecommendationItemCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.title)
-                        .font(.titleMedium)
-                        .foregroundStyle(Color.appSecondary)
+                        .font(.headline)
+                        .foregroundColor(.black)
 
                     // Reason tags
                     FlowLayout(spacing: 6) {
@@ -201,8 +203,8 @@ struct RecommendationItemCard: View {
 
             // Description (expandable)
             Text(item.description)
-                .font(.bodyMedium)
-                .foregroundStyle(.secondary)
+                .font(.subheadline)
+                .foregroundColor(.gray)
                 .lineLimit(isExpanded ? nil : 2)
 
             // Expand indicator
@@ -210,7 +212,7 @@ struct RecommendationItemCard: View {
                 Spacer()
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.gray)
             }
         }
         .padding(AppConstants.UI.cardPadding)
