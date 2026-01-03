@@ -13,6 +13,15 @@ struct CalculatingView: View {
 
     @State private var animatePulse = false
     @State private var animateStep = false
+    @State private var currentTip: String = ""
+
+    private let tips = [
+        "We analyze public reviews to find the most loved dishes.",
+        "Your taste preferences help us personalize recommendations.",
+        "We consider spice levels, portion sizes, and more.",
+        "Community favorites often have the best reviews.",
+        "Chef's signatures are dishes the restaurant is known for."
+    ]
 
     var body: some View {
         ZStack {
@@ -40,6 +49,9 @@ struct CalculatingView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
+            if currentTip.isEmpty {
+                currentTip = tips.randomElement() ?? tips[0]
+            }
             viewModel.startPolling()
             startAnimations()
         }
@@ -138,7 +150,7 @@ struct CalculatingView: View {
         VStack(spacing: 8) {
             Text(viewModel.currentStepText)
                 .font(.titleMedium)
-                .foregroundStyle(Color.appSecondary)
+                .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .id(viewModel.status) // Animate on change
                 .transition(.asymmetric(
@@ -173,31 +185,19 @@ struct CalculatingView: View {
     // MARK: - Tip Section
 
     private var tipSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Text("Did you know?")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundColor(.gray)
 
-            Text(randomTip)
+            Text(currentTip)
                 .font(.caption)
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 32)
         .padding(.bottom, 50)
-    }
-
-    private var randomTip: String {
-        let tips = [
-            "We analyze public reviews to find the most loved dishes.",
-            "Your taste preferences help us personalize recommendations.",
-            "We consider spice levels, portion sizes, and more.",
-            "Community favorites often have the best reviews.",
-            "Chef's signatures are dishes the restaurant is known for."
-        ]
-        return tips.randomElement() ?? tips[0]
     }
 
     // MARK: - Animations
