@@ -12,9 +12,16 @@ import SwiftData
 struct Ai_La_CarteApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            User.self,
+            Restaurant.self,
+            Session.self,
+            PhotoAsset.self,
+            RecommendationItem.self,
+            TasteProfile.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        let isInMemory = ProcessInfo.processInfo.environment["ENV"] == "mock"
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: isInMemory)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -24,9 +31,39 @@ struct Ai_La_CarteApp: App {
     }()
 
     var body: some Scene {
+        // Default to mock for local development
+        let env = ProcessInfo.processInfo.environment["ENV"] ?? "mock"
+
+        let dependencyContainer: DependencyContainer = {
+            switch env {
+            case "production":
+                return AppDependencyContainer(modelContext: sharedModelContainer.mainContext)
+            case "mock":
+                return MockDependencyContainer()
+            default:
+                return MockDependencyContainer()
+            }
+        }()
+
         WindowGroup {
-            ContentView()
+            RootView()
+                .environment(\.dependencyContainer, dependencyContainer)
         }
         .modelContainer(sharedModelContainer)
+    }
+}
+
+// MARK: - Root View
+
+struct RootView: View {
+    @Environment(\.dependencyContainer) private var dependencyContainer
+    @AppStorage(AppConstants.Storage.onboardingCompletedKey) private var onboardingCompleted = false
+
+    var body: some View {
+        if onboardingCompleted {
+            MainView(viewModel: dependencyContainer.makeMainViewModel())
+        } else {
+            WelcomeView(viewModel: dependencyContainer.makeWelcomeViewModel())
+        }
     }
 }
