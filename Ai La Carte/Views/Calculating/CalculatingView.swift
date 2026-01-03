@@ -175,12 +175,12 @@ struct CalculatingView: View {
     private var tipSection: some View {
         VStack(spacing: 8) {
             Text("Did you know?")
-                .font(.labelLarge)
-                .foregroundStyle(Color.appSecondary)
+                .font(.headline)
+                .foregroundColor(.gray)
 
             Text(randomTip)
-                .font(.bodyMedium)
-                .foregroundStyle(.secondary)
+                .font(.subheadline)
+                .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 40)
