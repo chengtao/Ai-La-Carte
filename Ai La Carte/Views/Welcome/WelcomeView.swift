@@ -13,13 +13,14 @@ struct WelcomeView: View {
 
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [Color.appPrimary.opacity(0.1), Color.appBackground],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Magical background gradient
+            LinearGradient.magicBackground
+                .ignoresSafeArea()
+
+            // Floating particles
+            MagicParticlesView(particleCount: 15)
+                .ignoresSafeArea()
+                .opacity(0.6)
 
             VStack(spacing: 0) {
                 Spacer()
@@ -61,21 +62,25 @@ struct WelcomeView: View {
 
     private var heroSection: some View {
         VStack(spacing: 16) {
-            // App Icon / Illustration
+            // Magical App Icon
             ZStack {
-                Circle()
-                    .fill(Color.appPrimary.opacity(0.15))
-                    .frame(width: 120, height: 120)
+                MagicOrbView(size: 100)
 
-                Image(systemName: "fork.knife.circle.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(Color.appPrimary)
+                Image(systemName: "sparkles")
+                    .font(.system(size: 40, weight: .medium))
+                    .foregroundStyle(.white)
             }
 
             VStack(spacing: 8) {
                 Text("AI La Carte")
                     .font(.displayLarge)
-                    .foregroundStyle(Color.appSecondary)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.magicPurple, Color.magicPink],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
 
                 Text("Your personal dining companion")
                     .font(.bodyLarge)
@@ -120,7 +125,7 @@ struct WelcomeView: View {
                 completionInfo
             }
 
-            // Primary Button
+            // Primary Button with magical style
             Button {
                 Task {
                     if viewModel.currentStep == .welcome {
@@ -130,21 +135,14 @@ struct WelcomeView: View {
                     }
                 }
             } label: {
-                HStack {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text(primaryButtonText)
-                            .font(.titleMedium)
-                    }
+                if viewModel.isLoading {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Text(primaryButtonText)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: AppConstants.UI.buttonHeight)
-                .background(Color.appPrimary)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
             }
+            .buttonStyle(MagicButtonStyle())
             .disabled(viewModel.isLoading)
 
             // Secondary Button (skip)
@@ -227,12 +225,27 @@ struct FeatureRow: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(Color.appPrimary)
-                .frame(width: 44, height: 44)
-                .background(Color.appPrimary.opacity(0.1))
-                .clipShape(Circle())
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.magicPurple.opacity(0.15), Color.magicPink.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.magicPurple, Color.magicPink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

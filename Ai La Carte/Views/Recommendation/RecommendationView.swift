@@ -15,7 +15,9 @@ struct RecommendationView: View {
 
     var body: some View {
         ZStack {
-            Color.appBackground.ignoresSafeArea()
+            // Magical background
+            LinearGradient.magicBackground
+                .ignoresSafeArea()
 
             if viewModel.isLoading {
                 loadingView
@@ -27,13 +29,19 @@ struct RecommendationView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(Color.appBackground, for: .navigationBar)
+        .toolbarBackground(Color.appBackground.opacity(0.95), for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("Your Recommendations")
                     .font(.titleMedium)
-                    .foregroundColor(.black)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.magicPurple, Color.magicPink],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -41,7 +49,7 @@ struct RecommendationView: View {
                 } label: {
                     Text("Done")
                         .font(.bodyMedium)
-                        .foregroundColor(Color.appPrimary)
+                        .foregroundStyle(Color.magicPurple)
                 }
             }
         }
@@ -127,19 +135,36 @@ struct RecommendationView: View {
 
     private func profileSummaryCard(_ summary: String) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: "person.crop.circle.badge.checkmark")
-                .font(.title2)
-                .foregroundStyle(Color.appPrimary)
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.magicPurple.opacity(0.2), Color.magicPink.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 40, height: 40)
+
+                Image(systemName: "sparkles")
+                    .font(.body)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.magicPurple, Color.magicPink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
 
             Text(summary)
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
                 .lineLimit(2)
         }
         .padding(AppConstants.UI.cardPadding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.appPrimary.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
+        .magicCard(glowColor: .magicPurple)
         .padding(.horizontal, AppConstants.UI.defaultPadding)
         .padding(.top, 8)
     }
@@ -159,19 +184,32 @@ struct RecommendationView: View {
                         Text(tab.rawValue)
                     }
                     .font(.headline)
-                    .foregroundColor(viewModel.selectedTab == tab ? Color.appPrimary : .gray)
+                    .foregroundStyle(
+                        viewModel.selectedTab == tab
+                            ? AnyShapeStyle(LinearGradient(
+                                colors: [Color.magicPurple, Color.magicPink],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ))
+                            : AnyShapeStyle(Color.gray)
+                    )
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(
                         viewModel.selectedTab == tab
-                            ? Color.appPrimary.opacity(0.1)
-                            : Color.clear
+                            ? LinearGradient(
+                                colors: [Color.magicPurple.opacity(0.1), Color.magicPink.opacity(0.08)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            : LinearGradient(colors: [Color.clear], startPoint: .leading, endPoint: .trailing)
                     )
                 }
             }
         }
         .background(Color.appCardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: Color.magicPurple.opacity(0.1), radius: 8, y: 2)
         .padding(.horizontal, AppConstants.UI.defaultPadding)
         .padding(.top, 16)
     }
@@ -191,7 +229,7 @@ struct RecommendationItemCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.title)
                         .font(.headline)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
 
                     // Reason tags
                     FlowLayout(spacing: 6) {
@@ -203,14 +241,14 @@ struct RecommendationItemCard: View {
 
                 Spacer()
 
-                // Confidence indicator
+                // Confidence indicator with gradient
                 confidenceIndicator
             }
 
             // Description (expandable)
             Text(item.description)
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
                 .lineLimit(isExpanded ? nil : 2)
 
             // Expand indicator
@@ -218,13 +256,11 @@ struct RecommendationItemCard: View {
                 Spacer()
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundStyle(Color.magicPurple.opacity(0.6))
             }
         }
         .padding(AppConstants.UI.cardPadding)
-        .background(Color.appCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
-        .shadow(color: .black.opacity(0.05), radius: 8, y: 4)
+        .magicCard(glowColor: .magicPurple)
         .onTapGesture(perform: onTap)
     }
 
@@ -232,11 +268,20 @@ struct RecommendationItemCard: View {
         let percentage = Int(item.confidence * 100)
         return Text("\(percentage)%")
             .font(.labelSmall)
-            .foregroundStyle(Color.appSuccess)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Color.appSuccess.opacity(0.1))
-            .clipShape(Capsule())
+            .fontWeight(.semibold)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color.magicTeal, Color.appSuccess],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(Color.appSuccess.opacity(0.12))
+            )
     }
 }
 
@@ -278,12 +323,12 @@ struct ReasonTagView: View {
 
     private func colorForTag(_ code: String) -> Color {
         switch code {
-        case "COMMUNITY_FAVORITE": return .orange
-        case "CHEF_SIGNATURE": return .red
-        case "MATCHES_SPICE": return .green
-        case "ADVENTUROUS_PICK": return .purple
-        case "PAIRS_WITH_DISH": return .blue
-        default: return Color.appPrimary
+        case "COMMUNITY_FAVORITE": return .magicCoral
+        case "CHEF_SIGNATURE": return .magicPink
+        case "MATCHES_SPICE": return .magicTeal
+        case "ADVENTUROUS_PICK": return .magicPurple
+        case "PAIRS_WITH_DISH": return .magicBlue
+        default: return Color.magicPurple
         }
     }
 }

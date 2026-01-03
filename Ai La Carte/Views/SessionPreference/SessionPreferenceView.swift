@@ -26,7 +26,9 @@ struct SessionPreferenceView: View {
 
     var body: some View {
         ZStack {
-            Color.appBackground.ignoresSafeArea()
+            // Magical background
+            LinearGradient.magicBackground
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header
@@ -73,17 +75,42 @@ struct SessionPreferenceView: View {
 
     private var headerSection: some View {
         VStack(spacing: 12) {
-            Image(systemName: "slider.horizontal.3")
-                .font(.system(size: 48))
-                .foregroundStyle(Color.appPrimary)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.magicPurple.opacity(0.2), Color.clear],
+                            center: .center,
+                            startRadius: 20,
+                            endRadius: 50
+                        )
+                    )
+                    .frame(width: 90, height: 90)
+
+                Image(systemName: "sparkles")
+                    .font(.system(size: 40))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.magicPurple, Color.magicPink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
 
             Text("Quick Preferences")
                 .font(.displayMedium)
-                .foregroundColor(.black)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.magicPurple, Color.magicPink],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
 
             Text("Help us personalize your recommendations")
                 .font(.bodyMedium)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(.top, 40)
@@ -126,23 +153,17 @@ struct SessionPreferenceView: View {
                 await viewModel.submitAndGenerate()
             }
         } label: {
-            HStack {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .tint(.white)
-                } else {
+            if viewModel.isLoading {
+                ProgressView()
+                    .tint(.white)
+            } else {
+                HStack(spacing: 8) {
                     Text("Find My Dishes")
-                        .font(.titleMedium)
-
                     Image(systemName: "sparkles")
                 }
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: AppConstants.UI.buttonHeight)
-            .background(Color.appPrimary)
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
         }
+        .buttonStyle(MagicButtonStyle())
         .disabled(viewModel.isLoading)
     }
 }
@@ -164,23 +185,38 @@ struct PreferenceSlider: View {
             HStack {
                 Text(title)
                     .font(.titleMedium)
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
 
                 Spacer()
 
                 Text(currentLabel)
                     .font(.labelLarge)
-                    .foregroundStyle(Color.appPrimary)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.magicPurple, Color.magicPink],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.appPrimary.opacity(0.1))
-                    .clipShape(Capsule())
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.magicPurple.opacity(0.1), Color.magicPink.opacity(0.08)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    )
             }
 
             // Slider
             VStack(spacing: 8) {
                 Slider(value: $value, in: 1...5, step: 1)
-                    .tint(Color.appPrimary)
+                    .tint(Color.magicPurple)
 
                 // Labels
                 HStack {
@@ -190,7 +226,7 @@ struct PreferenceSlider: View {
                         Text(leftLabel)
                             .font(.labelSmall)
                     }
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
 
                     Spacer()
 
@@ -200,14 +236,12 @@ struct PreferenceSlider: View {
                         Image(systemName: rightIcon)
                             .font(.caption)
                     }
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                 }
             }
         }
         .padding(AppConstants.UI.cardPadding)
-        .background(Color.appCardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
-        .shadow(color: .black.opacity(0.05), radius: 8, y: 4)
+        .magicCard(glowColor: .magicPurple)
     }
 }
 

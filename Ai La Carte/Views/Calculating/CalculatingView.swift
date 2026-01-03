@@ -25,8 +25,14 @@ struct CalculatingView: View {
 
     var body: some View {
         ZStack {
-            // Background
-            Color.appBackground.ignoresSafeArea()
+            // Magical background
+            LinearGradient.magicBackground
+                .ignoresSafeArea()
+
+            // Floating particles
+            MagicParticlesView(particleCount: 20)
+                .ignoresSafeArea()
+                .opacity(0.5)
 
             VStack(spacing: 40) {
                 Spacer()
@@ -69,28 +75,65 @@ struct CalculatingView: View {
 
     private var animatedIllustration: some View {
         ZStack {
+            // Outer glow
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [Color.magicPurple.opacity(0.3), Color.clear],
+                        center: .center,
+                        startRadius: 60,
+                        endRadius: 100
+                    )
+                )
+                .frame(width: 200, height: 200)
+                .scaleEffect(animatePulse ? 1.15 : 1.0)
+
             // Outer ring
             Circle()
-                .stroke(Color.appPrimary.opacity(0.2), lineWidth: 4)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.magicPurple.opacity(0.2), Color.magicPink.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 4
+                )
                 .frame(width: 160, height: 160)
 
-            // Animated ring
+            // Animated progress ring
             Circle()
                 .trim(from: 0, to: viewModel.progress)
-                .stroke(Color.appPrimary, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .stroke(
+                    LinearGradient.magicPrimary,
+                    style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                )
                 .frame(width: 160, height: 160)
                 .rotationEffect(.degrees(-90))
+                .shadow(color: Color.magicPurple.opacity(0.5), radius: 8)
 
             // Pulsing inner circle
             Circle()
-                .fill(Color.appPrimary.opacity(0.1))
+                .fill(
+                    RadialGradient(
+                        colors: [Color.magicPink.opacity(0.2), Color.magicPurple.opacity(0.1)],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 60
+                    )
+                )
                 .frame(width: 120, height: 120)
                 .scaleEffect(animatePulse ? 1.1 : 1.0)
 
-            // Icon
+            // Icon with gradient
             currentStepIcon
                 .font(.system(size: 48))
-                .foregroundStyle(Color.appPrimary)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.magicPurple, Color.magicPink],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .symbolEffect(.pulse, options: .repeating)
         }
     }
@@ -125,21 +168,28 @@ struct CalculatingView: View {
             // Progress bar
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.appPrimary.opacity(0.2))
-                        .frame(height: 8)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.magicPurple.opacity(0.15))
+                        .frame(height: 12)
 
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.appPrimary)
-                        .frame(width: geometry.size.width * viewModel.progress, height: 8)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(LinearGradient.magicPrimary)
+                        .frame(width: geometry.size.width * viewModel.progress, height: 12)
+                        .shadow(color: Color.magicPurple.opacity(0.4), radius: 4)
                 }
             }
-            .frame(height: 8)
+            .frame(height: 12)
 
-            // Percentage
+            // Percentage with gradient
             Text("\(viewModel.progressPercentage)%")
-                .font(.labelLarge)
-                .foregroundStyle(Color.appPrimary)
+                .font(.titleMedium)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.magicPurple, Color.magicPink],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
         }
         .padding(.horizontal, 40)
     }
@@ -176,9 +226,9 @@ struct CalculatingView: View {
 
     private func dotColor(for stepStatus: SessionStatus) -> Color {
         if stepStatus.progress <= viewModel.status.progress {
-            return Color.appPrimary
+            return Color.magicPurple
         } else {
-            return Color.appPrimary.opacity(0.2)
+            return Color.magicPurple.opacity(0.2)
         }
     }
 

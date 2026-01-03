@@ -17,21 +17,21 @@ struct NearbyRestaurantCard: View {
                 // Restaurant name
                 Text(restaurant.name)
                     .font(.headline)
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .lineLimit(1)
 
                 // Distance and update time
                 HStack {
                     Text(restaurant.formattedDistance)
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
 
                     Spacer()
 
                     if let age = restaurant.menuAgeDescription {
                         Text("Updated \(age)")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                     }
                 }
 
@@ -46,16 +46,22 @@ struct NearbyRestaurantCard: View {
                     }
                 }
 
-                // Confidence indicator
+                // Confidence indicator with magical styling
                 if restaurant.confidence >= 80 {
                     HStack(spacing: 4) {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(systemName: "sparkle")
                             .font(.caption)
-                            .foregroundStyle(Color.appSuccess)
+                            .foregroundStyle(Color.magicPurple)
 
                         Text("Most likely")
                             .font(.caption)
-                            .foregroundStyle(Color.appSuccess)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.magicPurple, Color.magicPink],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                     }
                 }
             }
@@ -63,7 +69,20 @@ struct NearbyRestaurantCard: View {
             .frame(width: 200)
             .background(Color.appCardBackground)
             .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
-            .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius)
+                    .stroke(
+                        restaurant.confidence >= 80
+                            ? LinearGradient(
+                                colors: [Color.magicPurple.opacity(0.4), Color.magicPink.opacity(0.2)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            : LinearGradient(colors: [Color.clear], startPoint: .leading, endPoint: .trailing),
+                        lineWidth: restaurant.confidence >= 80 ? 1.5 : 0
+                    )
+            )
+            .shadow(color: Color.magicPurple.opacity(0.15), radius: 10, y: 4)
         }
         .buttonStyle(.plain)
     }
@@ -89,6 +108,13 @@ struct MenuBadge: View {
             case .wine: return "Wine"
             }
         }
+
+        var accentColor: Color {
+            switch self {
+            case .food: return .magicCoral
+            case .wine: return .magicPurple
+            }
+        }
     }
 
     let type: MenuType
@@ -107,8 +133,8 @@ struct MenuBadge: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(available ? Color.appSuccess.opacity(0.15) : Color.gray.opacity(0.15))
-        .foregroundStyle(available ? Color.appSuccess : .gray)
+        .background(available ? type.accentColor.opacity(0.12) : Color.gray.opacity(0.15))
+        .foregroundStyle(available ? type.accentColor : .gray)
         .clipShape(Capsule())
     }
 }

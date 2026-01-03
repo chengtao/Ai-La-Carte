@@ -270,13 +270,28 @@ struct MainView: View {
         Button {
             viewModel.proceedToRecommendations()
         } label: {
-            Text("Recommend")
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                    .font(.caption)
+                Text("Recommend")
+            }
                 .font(.labelLarge)
+                .fontWeight(.semibold)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 18)
                 .padding(.vertical, 12)
-                .background(Color.appPrimary)
-                .clipShape(Capsule())
+                .background(
+                    ZStack {
+                        Capsule()
+                            .fill(LinearGradient.magicPrimary)
+                            .blur(radius: 4)
+                            .opacity(0.6)
+                            .offset(y: 2)
+
+                        Capsule()
+                            .fill(LinearGradient.magicPrimary)
+                    }
+                )
         }
     }
 }
