@@ -9,20 +9,9 @@ import SwiftUI
 
 struct RecommendationView: View {
     @Environment(\.dependencyContainer) private var dependencyContainer
+    @Environment(\.dismiss) private var dismiss
     @Bindable var viewModel: RecommendationViewModel
     @State private var animateIn = false
-
-    init(viewModel: RecommendationViewModel) {
-        self.viewModel = viewModel
-        // Customize navigation bar appearance
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.appBackground)
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.darkGray]
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.darkGray]
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-    }
 
     var body: some View {
         ZStack {
@@ -37,17 +26,22 @@ struct RecommendationView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Your Recommendations")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Color.appBackground, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Your Recommendations")
+                    .font(.titleMedium)
+                    .foregroundColor(.black)
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
-                    // TODO: Show survey or dismiss
+                    NotificationCenter.default.post(name: AppConstants.Notifications.dismissToMain, object: nil)
                 } label: {
                     Text("Done")
                         .font(.bodyMedium)
+                        .foregroundColor(Color.appPrimary)
                 }
             }
         }

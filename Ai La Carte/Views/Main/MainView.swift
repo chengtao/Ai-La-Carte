@@ -80,6 +80,9 @@ struct MainView: View {
             .sheet(isPresented: $viewModel.showAccount) {
                 AccountView()
             }
+            .onReceive(NotificationCenter.default.publisher(for: AppConstants.Notifications.dismissToMain)) { _ in
+                viewModel.resetSession()
+            }
         }
     }
 

@@ -241,6 +241,18 @@ final class MainViewModel: BaseViewModel {
         pendingPhoto = nil
     }
 
+    func resetSession() {
+        // Reset navigation state
+        showPreferences = false
+        showPhotoReview = false
+
+        // Reset session data
+        capturedPhotos.removeAll()
+        currentSession = nil
+        selectedRestaurant = nil
+        pendingPhoto = nil
+    }
+
     var hasPhotosOrRestaurant: Bool {
         !capturedPhotos.isEmpty || selectedRestaurant != nil
     }

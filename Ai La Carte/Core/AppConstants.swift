@@ -63,6 +63,10 @@ enum AppConstants {
     enum Survey {
         static let feedbackDelayHours: Int = 2
     }
+
+    enum Notifications {
+        static let dismissToMain = Notification.Name("dismissToMain")
+    }
 }
 
 // MARK: - Design System Colors
