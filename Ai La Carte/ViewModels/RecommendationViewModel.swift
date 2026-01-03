@@ -19,6 +19,9 @@ final class RecommendationViewModel: BaseViewModel {
     var expandedItemId: String?
     var selectedTab: RecommendationTab = .food
 
+    // Cart state
+    var cartItems: [RecommendationItemResponse] = []
+
     private let recommendationService: RecommendationAPIServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
 
@@ -72,22 +75,66 @@ final class RecommendationViewModel: BaseViewModel {
             return foodRecommendations
         case .wine:
             return wineRecommendations
+        case .cart:
+            return cartItems
         }
     }
 
     var hasWineRecommendations: Bool {
         !wineRecommendations.isEmpty
     }
+
+    // MARK: - Cart Management
+
+    var cartItemCount: Int {
+        cartItems.count
+    }
+
+    func isInCart(_ item: RecommendationItemResponse) -> Bool {
+        cartItems.contains { $0.id == item.id }
+    }
+
+    func addToCart(_ item: RecommendationItemResponse) {
+        guard !isInCart(item) else { return }
+        cartItems.append(item)
+        analyticsService.track(event: .itemAddedToCart, sessionId: sessionId, meta: [
+            "item_id": item.id,
+            "item_type": item.type,
+            "item_title": item.title
+        ])
+    }
+
+    func removeFromCart(_ item: RecommendationItemResponse) {
+        cartItems.removeAll { $0.id == item.id }
+        analyticsService.track(event: .itemRemovedFromCart, sessionId: sessionId, meta: [
+            "item_id": item.id,
+            "item_type": item.type
+        ])
+    }
+
+    func toggleCart(_ item: RecommendationItemResponse) {
+        if isInCart(item) {
+            removeFromCart(item)
+        } else {
+            addToCart(item)
+        }
+    }
+
+    func clearCart() {
+        cartItems.removeAll()
+    }
 }
 
 enum RecommendationTab: String, CaseIterable {
     case food = "Food"
     case wine = "Wine"
+    case cart = "Cart"
 
     var icon: String {
         switch self {
         case .food: return "fork.knife"
         case .wine: return "wineglass"
+        case .cart: return "cart"
         }
     }
 }

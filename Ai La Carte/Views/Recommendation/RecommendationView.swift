@@ -97,38 +97,150 @@ struct RecommendationView: View {
     private var contentView: some View {
         VStack(spacing: 0) {
             // Profile summary
-            if let summary = viewModel.profileSummary {
+            if let summary = viewModel.profileSummary, viewModel.selectedTab != .cart {
                 profileSummaryCard(summary)
                     .opacity(animateIn ? 1 : 0)
                     .offset(y: animateIn ? 0 : 10)
             }
 
-            // Tab selector (if wine available)
-            if viewModel.hasWineRecommendations {
+            // Tab selector (always show if wine available or cart has items)
+            if viewModel.hasWineRecommendations || viewModel.cartItemCount > 0 {
                 tabSelector
                     .opacity(animateIn ? 1 : 0)
             }
 
-            // Recommendations list
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    ForEach(Array(viewModel.currentItems.enumerated()), id: \.element.id) { index, item in
-                        RecommendationItemCard(
-                            item: item,
-                            isExpanded: viewModel.expandedItemId == item.id,
-                            onTap: {
-                                viewModel.toggleExpanded(item.id)
-                            }
-                        )
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 20)
-                        .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: animateIn)
+            // Content based on selected tab
+            if viewModel.selectedTab == .cart {
+                cartTabContent
+            } else {
+                // Recommendations list
+                ScrollView {
+                    LazyVStack(spacing: 16) {
+                        ForEach(Array(viewModel.currentItems.enumerated()), id: \.element.id) { index, item in
+                            RecommendationItemCard(
+                                item: item,
+                                isExpanded: viewModel.expandedItemId == item.id,
+                                isInCart: viewModel.isInCart(item),
+                                showCartButton: true,
+                                onTap: {
+                                    viewModel.toggleExpanded(item.id)
+                                },
+                                onCartToggle: {
+                                    viewModel.toggleCart(item)
+                                }
+                            )
+                            .opacity(animateIn ? 1 : 0)
+                            .offset(y: animateIn ? 0 : 20)
+                            .animation(.easeOut(duration: 0.4).delay(Double(index) * 0.1), value: animateIn)
+                        }
                     }
+                    .padding(.horizontal, AppConstants.UI.defaultPadding)
+                    .padding(.vertical, 16)
                 }
-                .padding(.horizontal, AppConstants.UI.defaultPadding)
-                .padding(.vertical, 16)
             }
         }
+    }
+
+    // MARK: - Cart Tab Content
+
+    private var cartTabContent: some View {
+        Group {
+            if viewModel.cartItems.isEmpty {
+                emptyCartView
+            } else {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // Cart summary header
+                        cartSummaryHeader
+
+                        // Cart items
+                        ForEach(Array(viewModel.cartItems.enumerated()), id: \.element.id) { index, item in
+                            CartItemRow(
+                                item: item,
+                                onRemove: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        viewModel.removeFromCart(item)
+                                    }
+                                }
+                            )
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .move(edge: .trailing)),
+                                removal: .opacity.combined(with: .move(edge: .leading))
+                            ))
+                        }
+                    }
+                    .padding(.horizontal, AppConstants.UI.defaultPadding)
+                    .padding(.vertical, 16)
+                }
+            }
+        }
+    }
+
+    private var emptyCartView: some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.magicPurple.opacity(0.1), Color.magicPink.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+
+                Image(systemName: "cart")
+                    .font(.system(size: 40))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.magicPurple, Color.magicPink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+
+            Text("Your cart is empty")
+                .font(.titleMedium)
+                .foregroundStyle(.primary)
+
+            Text("Add items from the Food or Wine tabs\nto build your order")
+                .font(.bodyMedium)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            Spacer()
+        }
+    }
+
+    private var cartSummaryHeader: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Your Order")
+                    .font(.titleMedium)
+                    .foregroundStyle(.primary)
+
+                Text("\(viewModel.cartItemCount) item\(viewModel.cartItemCount == 1 ? "" : "s") selected")
+                    .font(.bodyMedium)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.clearCart()
+                }
+            } label: {
+                Text("Clear All")
+                    .font(.labelSmall)
+                    .foregroundStyle(Color.appError)
+            }
+        }
+        .padding(AppConstants.UI.cardPadding)
+        .magicCard(glowColor: .magicPurple)
     }
 
     // MARK: - Profile Summary
@@ -182,6 +294,19 @@ struct RecommendationView: View {
                     HStack(spacing: 6) {
                         Image(systemName: tab.icon)
                         Text(tab.rawValue)
+
+                        // Cart badge
+                        if tab == .cart && viewModel.cartItemCount > 0 {
+                            Text("\(viewModel.cartItemCount)")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule()
+                                        .fill(LinearGradient.magicPrimary)
+                                )
+                        }
                     }
                     .font(.headline)
                     .foregroundStyle(
@@ -215,12 +340,98 @@ struct RecommendationView: View {
     }
 }
 
+// MARK: - Cart Item Row
+
+struct CartItemRow: View {
+    let item: RecommendationItemResponse
+    let onRemove: () -> Void
+
+    private var isFood: Bool { item.type == "food" }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Item icon
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: isFood
+                                ? [Color.magicCoral.opacity(0.2), Color.magicPink.opacity(0.15)]
+                                : [Color.magicPurple.opacity(0.2), Color.magicBlue.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: isFood ? "fork.knife" : "wineglass")
+                    .font(.body)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: isFood
+                                ? [Color.magicCoral, Color.magicPink]
+                                : [Color.magicPurple, Color.magicBlue],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+
+            // Item details
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title)
+                    .font(.bodyMedium)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                // Price or wine info
+                if isFood, let price = item.price {
+                    Text(price)
+                        .font(.caption)
+                        .foregroundStyle(Color.magicCoral)
+                } else if !isFood {
+                    HStack(spacing: 8) {
+                        if let glassPrice = item.priceGlass {
+                            Text("Glass: \(glassPrice)")
+                                .font(.caption)
+                                .foregroundStyle(Color.magicPurple)
+                        }
+                        if let bottlePrice = item.priceBottle {
+                            Text("Bottle: \(bottlePrice)")
+                                .font(.caption)
+                                .foregroundStyle(Color.magicPink)
+                        }
+                    }
+                }
+            }
+
+            Spacer()
+
+            // Remove button
+            Button {
+                onRemove()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Color.secondary.opacity(0.5))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(AppConstants.UI.cardPadding)
+        .magicCard(glowColor: isFood ? .magicCoral : .magicPurple)
+    }
+}
+
 // MARK: - Recommendation Item Card
 
 struct RecommendationItemCard: View {
     let item: RecommendationItemResponse
     let isExpanded: Bool
+    let isInCart: Bool
+    let showCartButton: Bool
     let onTap: () -> Void
+    let onCartToggle: () -> Void
 
     private var isFood: Bool { item.type == "food" }
 
@@ -307,12 +518,38 @@ struct RecommendationItemCard: View {
                 winePricingView
             }
 
-            // Expand indicator
+            // Bottom row with confidence, expand indicator, and cart button
             HStack {
                 if !isFood {
                     confidenceIndicator
                 }
                 Spacer()
+
+                // Cart button
+                if showCartButton {
+                    Button {
+                        onCartToggle()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: isInCart ? "checkmark" : "plus")
+                                .font(.caption.weight(.semibold))
+                            Text(isInCart ? "Added" : "Add")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .foregroundStyle(isInCart ? Color.white : Color.magicPurple)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(isInCart
+                                    ? LinearGradient.magicPrimary
+                                    : LinearGradient(colors: [Color.magicPurple.opacity(0.15)], startPoint: .leading, endPoint: .trailing)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption)
                     .foregroundStyle(Color.magicPurple.opacity(0.6))

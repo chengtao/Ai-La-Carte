@@ -144,4 +144,6 @@ enum AnalyticsEventType: String {
     case itemExpanded = "item_expanded"
     case itemTapped = "item_tapped"
     case surveyCompleted = "survey_completed"
+    case itemAddedToCart = "item_added_to_cart"
+    case itemRemovedFromCart = "item_removed_from_cart"
 }
