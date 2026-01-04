@@ -88,17 +88,19 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         )
     }
 
-    @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String) -> CalculatingViewModel {
+    @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String, preferences: UserPreferences) -> CalculatingViewModel {
         CalculatingViewModel(
             sessionId: sessionId,
             jobId: jobId,
+            preferences: preferences,
             recommendationService: recommendationAPIService
         )
     }
 
-    @MainActor func makeRecommendationViewModel(sessionId: String) -> RecommendationViewModel {
+    @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
+            preferences: preferences,
             recommendationService: recommendationAPIService,
             recommendationEngine: recommendationEngine,
             analyticsService: analyticsService

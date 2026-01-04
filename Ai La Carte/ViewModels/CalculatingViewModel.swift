@@ -13,6 +13,7 @@ import SwiftUI
 final class CalculatingViewModel: BaseViewModel {
     let sessionId: String
     let jobId: String
+    let preferences: UserPreferences
 
     var status: SessionStatus = .created
     var progress: Double = 0
@@ -25,10 +26,12 @@ final class CalculatingViewModel: BaseViewModel {
     init(
         sessionId: String,
         jobId: String,
+        preferences: UserPreferences,
         recommendationService: RecommendationAPIServiceProtocol
     ) {
         self.sessionId = sessionId
         self.jobId = jobId
+        self.preferences = preferences
         self.recommendationService = recommendationService
         super.init()
     }

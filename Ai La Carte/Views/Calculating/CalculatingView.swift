@@ -66,7 +66,10 @@ struct CalculatingView: View {
         }
         .navigationDestination(isPresented: $viewModel.showRecommendations) {
             RecommendationView(
-                viewModel: dependencyContainer.makeRecommendationViewModel(sessionId: viewModel.sessionId)
+                viewModel: dependencyContainer.makeRecommendationViewModel(
+                    sessionId: viewModel.sessionId,
+                    preferences: viewModel.preferences
+                )
             )
         }
     }
@@ -267,6 +270,7 @@ struct CalculatingView: View {
             viewModel: CalculatingViewModel(
                 sessionId: "test",
                 jobId: "job1",
+                preferences: .default,
                 recommendationService: MockRecommendationAPIService()
             )
         )

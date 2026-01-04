@@ -46,11 +46,13 @@ final class RecommendationViewModel: BaseViewModel {
 
     init(
         sessionId: String,
+        preferences: UserPreferences = .default,
         recommendationService: RecommendationAPIServiceProtocol,
         recommendationEngine: RecommendationEngineProtocol,
         analyticsService: AnalyticsServiceProtocol
     ) {
         self.sessionId = sessionId
+        self.currentPreferences = preferences
         self.recommendationService = recommendationService
         self.recommendationEngine = recommendationEngine
         self.analyticsService = analyticsService

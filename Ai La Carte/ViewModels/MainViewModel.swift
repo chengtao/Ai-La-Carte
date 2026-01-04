@@ -298,10 +298,11 @@ final class MainViewModel: BaseViewModel {
                 includeReviews: true
             )
             jobId = jobResponse.jobId
-            // Create the viewModel once and store it
+            // Create the viewModel once and store it, passing user preferences
             calculatingViewModel = CalculatingViewModel(
                 sessionId: session.id,
                 jobId: jobResponse.jobId,
+                preferences: userPreferences,
                 recommendationService: recommendationService
             )
             showCalculating = true
