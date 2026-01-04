@@ -68,8 +68,15 @@ protocol RestaurantAPIServiceProtocol: Sendable {
 }
 
 protocol SessionAPIServiceProtocol: Sendable {
-    func createSession(restaurantId: String?, context: SessionContext?) async throws -> SessionResponse
+    /// Registers a locally-created session with the server
+    func registerSession(sessionId: String) async throws
+    /// Updates the session's location (call when location is acquired or improved)
+    func updateSessionLocation(sessionId: String, lat: Double, lon: Double) async throws
+    /// Sets the restaurant for this session
+    func pickRestaurant(sessionId: String, restaurantId: String) async throws
+    /// Uploads a photo to the session
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse
+    /// Submits user preferences for the session
     func submitPreferences(sessionId: String, preferences: FoodPreference) async throws
 }
 

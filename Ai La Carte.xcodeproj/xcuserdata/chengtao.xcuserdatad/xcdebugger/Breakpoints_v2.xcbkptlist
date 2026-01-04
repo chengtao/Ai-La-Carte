@@ -18,36 +18,6 @@
             endingLineNumber = "18"
             landmarkName = "scoreFood(items:preferences:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "95CDAFA9-CC25-4436-A93E-4DC1671E65B5 - d236a5e1a9b292e8"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Ai_La_Carte.MockRecommendationEngine.scoreFood(items: Swift.Array&lt;Ai_La_Carte.FoodItemResponse&gt;, preferences: Ai_La_Carte.FoodPreference) -&gt; Swift.Array&lt;Ai_La_Carte.ScoredFoodItem&gt;"
-                  moduleName = "Ai La Carte.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/RecommendationEngine/MockRecommendationEngine.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "18"
-                  endingLineNumber = "18">
-               </Location>
-               <Location
-                  uuid = "95CDAFA9-CC25-4436-A93E-4DC1671E65B5 - 41da0b38c2cf8b5c"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (Swift.Int, Ai_La_Carte.FoodItemResponse) -&gt; Ai_La_Carte.ScoredFoodItem in Ai_La_Carte.MockRecommendationEngine.scoreFood(items: Swift.Array&lt;Ai_La_Carte.FoodItemResponse&gt;, preferences: Ai_La_Carte.FoodPreference) -&gt; Swift.Array&lt;Ai_La_Carte.ScoredFoodItem&gt;"
-                  moduleName = "Ai La Carte.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/RecommendationEngine/MockRecommendationEngine.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "18"
-                  endingLineNumber = "18">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -64,36 +34,6 @@
             endingLineNumber = "29"
             landmarkName = "scoreWine(items:preferences:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "2E4E12F9-D419-4836-B682-ACF8313554DD - c0853ddc3f2dea6d"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Ai_La_Carte.MockRecommendationEngine.scoreWine(items: Swift.Array&lt;Ai_La_Carte.WineItemResponse&gt;, preferences: Ai_La_Carte.FoodPreference) -&gt; Swift.Array&lt;Ai_La_Carte.ScoredWineItem&gt;"
-                  moduleName = "Ai La Carte.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/RecommendationEngine/MockRecommendationEngine.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "29"
-                  endingLineNumber = "29">
-               </Location>
-               <Location
-                  uuid = "2E4E12F9-D419-4836-B682-ACF8313554DD - ec9feb776b009ee1"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (Swift.Int, Ai_La_Carte.WineItemResponse) -&gt; Ai_La_Carte.ScoredWineItem in Ai_La_Carte.MockRecommendationEngine.scoreWine(items: Swift.Array&lt;Ai_La_Carte.WineItemResponse&gt;, preferences: Ai_La_Carte.FoodPreference) -&gt; Swift.Array&lt;Ai_La_Carte.ScoredWineItem&gt;"
-                  moduleName = "Ai La Carte.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/RecommendationEngine/MockRecommendationEngine.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "29"
-                  endingLineNumber = "29">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

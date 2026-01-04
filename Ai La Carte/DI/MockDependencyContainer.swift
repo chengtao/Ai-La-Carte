@@ -228,14 +228,20 @@ final class MockSessionAPIService: SessionAPIServiceProtocol, @unchecked Sendabl
         lock.withLock { _sessions[id] = true }
     }
 
-    func createSession(restaurantId: String?, context: SessionContext?) async throws -> SessionResponse {
-        try await Task.sleep(nanoseconds: 500_000_000)
-
-        let sessionId = UUID().uuidString
+    func registerSession(sessionId: String) async throws {
+        try await Task.sleep(nanoseconds: 100_000_000) // 100ms
         addSession(sessionId)
+        AppLogger.shared.info("[MOCK] Registered session: \(sessionId)", category: AppLogger.Category.session)
+    }
 
-        AppLogger.shared.info("[MOCK] Created session: \(sessionId) for restaurant: \(restaurantId ?? "none")", category: AppLogger.Category.session)
-        return SessionResponse(sessionId: sessionId)
+    func updateSessionLocation(sessionId: String, lat: Double, lon: Double) async throws {
+        try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        AppLogger.shared.info("[MOCK] Updated session \(sessionId) location: (\(lat), \(lon))", category: AppLogger.Category.session)
+    }
+
+    func pickRestaurant(sessionId: String, restaurantId: String) async throws {
+        try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        AppLogger.shared.info("[MOCK] Session \(sessionId) picked restaurant: \(restaurantId)", category: AppLogger.Category.session)
     }
 
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse {

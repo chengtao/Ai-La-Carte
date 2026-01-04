@@ -286,7 +286,9 @@ enum APIEndpoint: Sendable {
     case nearbyRestaurants(lat: Double, lon: Double, radius: Int)
 
     // Sessions
-    case createSession
+    case registerSession
+    case updateSessionLocation(sessionId: String)
+    case pickRestaurant(sessionId: String)
     case uploadPhoto(sessionId: String)
     case submitPreferences(sessionId: String)
 
@@ -309,8 +311,12 @@ enum APIEndpoint: Sendable {
             return "/users/me"
         case .nearbyRestaurants(let lat, let lon, let radius):
             return "/restaurants/nearby?lat=\(lat)&lon=\(lon)&radius_m=\(radius)"
-        case .createSession:
+        case .registerSession:
             return "/sessions"
+        case .updateSessionLocation(let sessionId):
+            return "/sessions/\(sessionId)/location"
+        case .pickRestaurant(let sessionId):
+            return "/sessions/\(sessionId)/restaurant"
         case .uploadPhoto(let sessionId):
             return "/sessions/\(sessionId)/photos"
         case .submitPreferences(let sessionId):

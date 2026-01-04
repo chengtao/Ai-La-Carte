@@ -172,21 +172,38 @@ final class SessionAPIService: SessionAPIServiceProtocol, Sendable {
         self.networkManager = networkManager
     }
 
-    func createSession(restaurantId: String?, context: SessionContext?) async throws -> SessionResponse {
-        var params: [String: Any] = [
+    func registerSession(sessionId: String) async throws {
+        let params: [String: Any] = [
+            "session_id": sessionId,
             "device_id": KeychainHelper.getOrCreateDeviceId()
         ]
-
-        if let restaurantId = restaurantId {
-            params["restaurant_id"] = restaurantId
-        }
-
-        if let context = context {
-            params["context"] = ["lat": context.lat, "lon": context.lon]
-        }
-
         let body = try JSONSerialization.data(withJSONObject: params)
-        return try await networkManager.request(endpoint: .createSession, method: .POST, body: body)
+        try await networkManager.requestWithoutResponse(endpoint: .registerSession, method: .POST, body: body)
+    }
+
+    func updateSessionLocation(sessionId: String, lat: Double, lon: Double) async throws {
+        let params: [String: Any] = [
+            "lat": lat,
+            "lon": lon
+        ]
+        let body = try JSONSerialization.data(withJSONObject: params)
+        try await networkManager.requestWithoutResponse(
+            endpoint: .updateSessionLocation(sessionId: sessionId),
+            method: .PUT,
+            body: body
+        )
+    }
+
+    func pickRestaurant(sessionId: String, restaurantId: String) async throws {
+        let params: [String: Any] = [
+            "restaurant_id": restaurantId
+        ]
+        let body = try JSONSerialization.data(withJSONObject: params)
+        try await networkManager.requestWithoutResponse(
+            endpoint: .pickRestaurant(sessionId: sessionId),
+            method: .PUT,
+            body: body
+        )
     }
 
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse {

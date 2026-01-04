@@ -21,9 +21,11 @@ final class MainViewModel: BaseViewModel {
     var selectedRestaurant: RestaurantResponse?
     var isLoadingRestaurants = false
 
-    // Session state
+    // Session state - created locally with UUID
     var currentSession: SessionInfo?
     var capturedPhotos: [CapturedPhoto] = []
+    private var lastReportedLocation: LocationCoordinate?
+    private var sessionRegistered = false
 
     // Navigation
     var showPhotoReview = false
@@ -139,6 +141,17 @@ final class MainViewModel: BaseViewModel {
 
         do {
             let location = try await locationService.getCurrentLocation()
+
+            // Create session if not exists and update location
+            if currentSession == nil {
+                createLocalSession()
+            }
+
+            // Update session location in background
+            Task {
+                await updateSessionLocation(location)
+            }
+
             let restaurants = try await restaurantService.getNearbyRestaurants(
                 lat: location.latitude,
                 lon: location.longitude,
@@ -149,7 +162,7 @@ final class MainViewModel: BaseViewModel {
 
             analyticsService.track(
                 event: .restaurantSuggestedShown,
-                sessionId: nil,
+                sessionId: currentSession?.id,
                 meta: ["count": "\(restaurants.count)"]
             )
         } catch {
@@ -161,17 +174,94 @@ final class MainViewModel: BaseViewModel {
 
     // MARK: - Session Management
 
+    /// Creates a new local session with UUID - call this when starting a recommendation flow
+    func createLocalSession() {
+        let sessionId = UUID().uuidString
+        currentSession = SessionInfo(
+            id: sessionId,
+            restaurantId: nil,
+            restaurantName: nil
+        )
+        sessionRegistered = false
+        lastReportedLocation = nil
+
+        AppLogger.shared.info("Created local session: \(sessionId)", category: AppLogger.Category.session)
+
+        // Register with server in background
+        Task {
+            await registerSessionWithServer()
+        }
+    }
+
+    /// Registers the local session with the server
+    private func registerSessionWithServer() async {
+        guard let session = currentSession, !sessionRegistered else { return }
+
+        do {
+            try await sessionService.registerSession(sessionId: session.id)
+            sessionRegistered = true
+            AppLogger.shared.info("Session registered with server: \(session.id)", category: AppLogger.Category.session)
+        } catch {
+            AppLogger.shared.error("Failed to register session: \(error)", category: AppLogger.Category.network)
+        }
+    }
+
+    /// Updates the server with the current location (call when location improves)
+    func updateSessionLocation(_ location: LocationCoordinate) async {
+        guard let session = currentSession else { return }
+
+        // Skip if location hasn't changed significantly (within ~10 meters)
+        if let lastLocation = lastReportedLocation {
+            let latDiff = abs(lastLocation.latitude - location.latitude)
+            let lonDiff = abs(lastLocation.longitude - location.longitude)
+            if latDiff < 0.0001 && lonDiff < 0.0001 {
+                return
+            }
+        }
+
+        lastReportedLocation = location
+
+        do {
+            try await sessionService.updateSessionLocation(
+                sessionId: session.id,
+                lat: location.latitude,
+                lon: location.longitude
+            )
+            AppLogger.shared.debug("Updated session location: (\(location.latitude), \(location.longitude))", category: AppLogger.Category.session)
+        } catch {
+            AppLogger.shared.error("Failed to update session location: \(error)", category: AppLogger.Category.network)
+        }
+    }
+
     func selectRestaurant(_ restaurant: RestaurantResponse) async {
         selectedRestaurant = restaurant
 
+        // Ensure we have a session
+        if currentSession == nil {
+            createLocalSession()
+        }
+
+        guard let session = currentSession else { return }
+
         analyticsService.track(
             event: .restaurantSelected,
-            sessionId: nil,
+            sessionId: session.id,
             meta: ["restaurant_id": restaurant.id]
         )
 
-        // Create session and start recommendation generation
-        await createSession(restaurantId: restaurant.id, restaurantName: restaurant.name)
+        // Update session with restaurant selection
+        currentSession = SessionInfo(
+            id: session.id,
+            restaurantId: restaurant.id,
+            restaurantName: restaurant.name
+        )
+
+        // Tell server about restaurant selection
+        do {
+            try await sessionService.pickRestaurant(sessionId: session.id, restaurantId: restaurant.id)
+        } catch {
+            AppLogger.shared.error("Failed to pick restaurant: \(error)", category: AppLogger.Category.network)
+        }
 
         // Start recommendation generation and navigate to calculating view
         await startRecommendationGeneration()
@@ -199,31 +289,10 @@ final class MainViewModel: BaseViewModel {
         }
     }
 
-    func createSession(restaurantId: String?, restaurantName: String? = nil) async {
-        do {
-            let context: SessionContext?
-            if let location = try? await locationService.getCurrentLocation() {
-                context = SessionContext(lat: location.latitude, lon: location.longitude)
-            } else {
-                context = nil
-            }
-
-            let response = try await sessionService.createSession(restaurantId: restaurantId, context: context)
-
-            currentSession = SessionInfo(
-                id: response.sessionId,
-                restaurantId: restaurantId,
-                restaurantName: restaurantName
-            )
-        } catch {
-            self.error = handleNetworkError(error)
-        }
-    }
-
     func acceptPhoto(_ photo: UIImage) async {
         // Create session if not exists
         if currentSession == nil {
-            await createSession(restaurantId: nil)
+            createLocalSession()
         }
 
         guard let session = currentSession else { return }
@@ -273,6 +342,8 @@ final class MainViewModel: BaseViewModel {
         currentSession = nil
         selectedRestaurant = nil
         pendingPhoto = nil
+        lastReportedLocation = nil
+        sessionRegistered = false
     }
 
     var mostLikelyRestaurant: RestaurantResponse? {
