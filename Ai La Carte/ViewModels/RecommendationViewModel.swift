@@ -68,7 +68,7 @@ final class RecommendationViewModel: BaseViewModel {
             let response = try await recommendationService.getRecommendations(sessionId: sessionId)
             rawFoodItems = response.food
             rawWineItems = response.wine
-            profileSummary = response.explanations?.profileSummary
+            profileSummary = "Dish photos are for illustrative purposes only and not from the restaurant."
 
             // Calculate initial scores with default preferences
             recalculateScores()
