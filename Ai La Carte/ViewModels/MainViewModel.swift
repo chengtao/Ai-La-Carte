@@ -160,8 +160,9 @@ final class MainViewModel: BaseViewModel {
         sessionViewModel.showPreferenceSheet = true
     }
 
-    /// Returns to camera from review (preserves pending photos)
-    func returnToCamera() {
+    /// Returns to camera from review, syncing any deleted photos
+    func returnToCamera(withPhotos photos: [CapturedPhoto]) {
+        sessionViewModel.updatePendingPhotos(photos)
         showPhotoCarouselReview = false
     }
 

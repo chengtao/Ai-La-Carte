@@ -59,8 +59,8 @@ struct MainView: View {
                             await viewModel.completeReview(withPhotos: reviewedPhotos)
                         }
                     },
-                    onTakeMore: {
-                        viewModel.returnToCamera()
+                    onTakeMore: { reviewedPhotos in
+                        viewModel.returnToCamera(withPhotos: reviewedPhotos)
                     },
                     onDiscardAll: {
                         viewModel.discardAllPendingPhotos()

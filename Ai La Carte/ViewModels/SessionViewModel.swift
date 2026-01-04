@@ -192,6 +192,11 @@ final class SessionViewModel: BaseViewModel {
         pendingPhotos.removeAll()
     }
 
+    /// Updates pending photos (e.g., after review where some were deleted)
+    func updatePendingPhotos(_ photos: [CapturedPhoto]) {
+        pendingPhotos = photos
+    }
+
     func acceptPhoto(_ photo: UIImage) async {
         ensureSession()
         guard let session = currentSession else { return }

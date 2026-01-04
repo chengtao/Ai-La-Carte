@@ -12,7 +12,7 @@ struct PhotoCarouselReviewView: View {
     @Bindable var viewModel: PhotoCarouselReviewViewModel
 
     let onContinue: ([CapturedPhoto]) -> Void
-    let onTakeMore: () -> Void
+    let onTakeMore: ([CapturedPhoto]) -> Void
     let onDiscardAll: () -> Void
     let launchedFromThumbnails: Bool
 
@@ -46,7 +46,7 @@ struct PhotoCarouselReviewView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
-                        onTakeMore()
+                        onTakeMore(viewModel.photos)
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.left")
@@ -195,7 +195,7 @@ struct PhotoCarouselReviewView: View {
             if launchedFromThumbnails {
                 // Only show Take More button when launched from thumbnails
                 Button {
-                    onTakeMore()
+                    onTakeMore(viewModel.photos)
                     dismiss()
                 } label: {
                     HStack(spacing: 8) {
@@ -216,7 +216,7 @@ struct PhotoCarouselReviewView: View {
                 HStack(spacing: 16) {
                     // Take More Photos
                     Button {
-                        onTakeMore()
+                        onTakeMore(viewModel.photos)
                         dismiss()
                     } label: {
                         HStack(spacing: 8) {
@@ -291,7 +291,7 @@ struct PhotoCarouselReviewView: View {
 
             // Take Photos button
             Button {
-                onTakeMore()
+                onTakeMore(viewModel.photos)
                 dismiss()
             } label: {
                 HStack(spacing: 8) {
@@ -326,7 +326,7 @@ struct PhotoCarouselReviewView: View {
             analyticsService: MockAnalyticsService()
         ),
         onContinue: { _ in },
-        onTakeMore: {},
+        onTakeMore: { _ in },
         onDiscardAll: {},
         launchedFromThumbnails: false
     )
