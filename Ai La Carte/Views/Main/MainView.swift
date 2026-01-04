@@ -161,26 +161,32 @@ struct MainView: View {
             }
 
             // Capture Button + Photo Thumbnails + Recommend Button
-            HStack(alignment: .bottom) {
-                // Photo thumbnails or placeholder for centering
-                if !viewModel.pendingPhotos.isEmpty {
-                    photoThumbnails
-                } else {
-                    Color.clear.frame(width: 80, height: 48)
-                }
-
-                Spacer()
-
-                // Capture button
+            // Use ZStack to ensure capture button stays centered
+            ZStack {
+                // Capture button - always centered
                 captureButton
 
-                Spacer()
+                // Side elements
+                HStack {
+                    // Photo thumbnails - left aligned with fixed width
+                    if !viewModel.pendingPhotos.isEmpty {
+                        photoThumbnails
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Spacer()
+                    }
 
-                // Recommend button or placeholder to balance layout
-                if !viewModel.pendingPhotos.isEmpty {
-                    recommendButton
-                } else {
-                    Color.clear.frame(width: 80, height: 48)
+                    // Spacing for capture button area
+                    Spacer()
+                        .frame(width: 100)
+
+                    // Recommend button - right aligned with fixed width
+                    if !viewModel.pendingPhotos.isEmpty {
+                        recommendButton
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    } else {
+                        Spacer()
+                    }
                 }
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
@@ -266,11 +272,13 @@ struct MainView: View {
             HStack(spacing: 4) {
                 Image(systemName: "sparkles")
                     .font(.subheadline.weight(.semibold))
-                Text("Recommend")
+                Text("Next")
                     .font(.subheadline.weight(.semibold))
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 12)
+            .padding(.leading, 4)
+            .padding(.trailing, 4)
             .padding(.vertical, 10)
             .background(
                 LinearGradient.magicPrimary
@@ -286,15 +294,15 @@ struct MainView: View {
         Button {
             viewModel.showReviewFromThumbnails()
         } label: {
-            HStack(spacing: -8) {
+            HStack(spacing: -20) {
                 ForEach(viewModel.pendingPhotos.prefix(3)) { photo in
                     Image(uiImage: photo.image)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 48, height: 48)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .frame(width: 40, height: 40)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 8)
+                            RoundedRectangle(cornerRadius: 6)
                                 .stroke(.white, lineWidth: 2)
                         )
                 }
@@ -303,9 +311,9 @@ struct MainView: View {
                     Text("+\(viewModel.pendingPhotos.count - 3)")
                         .font(.labelSmall)
                         .foregroundStyle(.white)
-                        .frame(width: 48, height: 48)
+                        .frame(width: 40, height: 40)
                         .background(.ultraThinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
             }
         }
