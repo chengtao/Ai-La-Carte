@@ -90,7 +90,6 @@ struct MainView: View {
                 )
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
-                .interactiveDismissDisabled()
             }
             .sheet(isPresented: $viewModel.showAccount) {
                 AccountView()
@@ -201,11 +200,8 @@ struct MainView: View {
     private var loadingRestaurantsView: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                ProgressView()
-                    .tint(.white)
-
-                Text("Finding nearby restaurants...")
-                    .font(.bodyMedium)
+                Text("Take menu photos to start your personalized recommendations")
+                    .font(.titleMedium)
                     .foregroundStyle(.white.opacity(0.9))
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
@@ -218,15 +214,9 @@ struct MainView: View {
     private var nearbyRestaurantsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
-            if let mostLikely = viewModel.mostLikelyRestaurant {
-                Text("Are you at?")
-                    .font(.titleMedium)
-                    .foregroundStyle(.white)
-            } else {
-                Text("Nearby restaurants")
-                    .font(.titleMedium)
-                    .foregroundStyle(.white)
-            }
+            Text("Or pick where you are at")
+                .font(.titleMedium)
+                .foregroundStyle(.white)
 
             // Restaurant cards
             ScrollView(.horizontal, showsIndicators: false) {
