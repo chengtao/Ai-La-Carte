@@ -17,6 +17,10 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         NetworkManager(configuration: .mock)
     }()
 
+    lazy var deviceIdentifierService: DeviceIdentifierServiceProtocol = {
+        MockDeviceIdentifierService()
+    }()
+
     // MARK: - API Services
 
     lazy var restaurantAPIService: RestaurantAPIServiceProtocol = {
@@ -50,7 +54,8 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
     // MARK: - Local Engines
 
     lazy var recommendationEngine: RecommendationEngineProtocol = {
-        MockRecommendationEngine()
+        // Use real RecommendationEngine even in mock mode for consistent behavior
+        RecommendationEngine()
     }()
 
     // MARK: - Utilities
@@ -63,21 +68,51 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         MockUserPreferencesStorage()
     }()
 
+    lazy var preferenceManager: PreferenceManagerProtocol = {
+        let manager = PreferenceManager(storage: userPreferencesStorage)
+        return manager
+    }()
+
     // MARK: - ViewModel Factory Methods
 
     @MainActor func makeWelcomeViewModel() -> WelcomeViewModel {
         WelcomeViewModel(locationService: locationService, cameraService: cameraService)
     }
 
-    @MainActor func makeMainViewModel() -> MainViewModel {
-        MainViewModel(
+    @MainActor func makeCameraViewModel() -> CameraViewModel {
+        CameraViewModel(
+            cameraService: cameraService,
+            analyticsService: analyticsService
+        )
+    }
+
+    @MainActor func makeLocationViewModel() -> LocationViewModel {
+        LocationViewModel(
+            locationService: locationService,
             restaurantService: restaurantAPIService,
+            analyticsService: analyticsService
+        )
+    }
+
+    @MainActor func makeSessionViewModel() -> SessionViewModel {
+        SessionViewModel(
             sessionService: sessionAPIService,
             recommendationService: recommendationAPIService,
-            locationService: locationService,
-            cameraService: cameraService,
-            analyticsService: analyticsService,
-            userPreferencesStorage: userPreferencesStorage
+            analyticsService: analyticsService
+        )
+    }
+
+    @MainActor func makeMainViewModel() -> MainViewModel {
+        // Load preferences before creating the MainViewModel
+        if let manager = preferenceManager as? PreferenceManager {
+            manager.loadPreferences()
+        }
+
+        return MainViewModel(
+            cameraViewModel: makeCameraViewModel(),
+            locationViewModel: makeLocationViewModel(),
+            sessionViewModel: makeSessionViewModel(),
+            preferenceManager: preferenceManager
         )
     }
 
@@ -101,11 +136,10 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
     @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
-            preferences: preferences,
             recommendationService: recommendationAPIService,
             recommendationEngine: recommendationEngine,
             analyticsService: analyticsService,
-            userPreferencesStorage: userPreferencesStorage
+            preferenceManager: preferenceManager
         )
     }
 

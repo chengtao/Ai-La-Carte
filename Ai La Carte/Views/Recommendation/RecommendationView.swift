@@ -1096,15 +1096,10 @@ struct FlowLayout: Layout {
 // MARK: - Preview
 
 #Preview {
-    NavigationStack {
+    let container = MockDependencyContainer()
+    return NavigationStack {
         RecommendationView(
-            viewModel: RecommendationViewModel(
-                sessionId: "test",
-                recommendationService: MockRecommendationAPIService(),
-                recommendationEngine: MockRecommendationEngine(),
-                analyticsService: MockAnalyticsService(),
-                userPreferencesStorage: MockUserPreferencesStorage()
-            )
+            viewModel: container.makeRecommendationViewModel(sessionId: "test", preferences: .default)
         )
     }
 }

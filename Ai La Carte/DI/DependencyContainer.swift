@@ -14,6 +14,7 @@ import SwiftData
 protocol DependencyContainer: Sendable {
     // Core Services
     var networkManager: NetworkManagerProtocol { get }
+    var deviceIdentifierService: DeviceIdentifierServiceProtocol { get }
 
     // API Services
     var restaurantAPIService: RestaurantAPIServiceProtocol { get }
@@ -32,9 +33,15 @@ protocol DependencyContainer: Sendable {
     var imageCacheService: ImageCacheServiceProtocol { get }
     var userPreferencesStorage: UserPreferencesStorageProtocol { get }
 
+    // Preference Manager (centralized preference state)
+    var preferenceManager: PreferenceManagerProtocol { get }
+
     // ViewModel Factory Methods (MainActor since ViewModels are @MainActor)
     @MainActor func makeWelcomeViewModel() -> WelcomeViewModel
     @MainActor func makeMainViewModel() -> MainViewModel
+    @MainActor func makeCameraViewModel() -> CameraViewModel
+    @MainActor func makeLocationViewModel() -> LocationViewModel
+    @MainActor func makeSessionViewModel() -> SessionViewModel
     @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel
     @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String, preferences: UserPreferences) -> CalculatingViewModel
     @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel
@@ -100,6 +107,32 @@ protocol ImageCacheServiceProtocol: Sendable {
     func loadImage(from url: URL) async -> UIImage?
     func cacheImage(_ image: UIImage, for url: URL) async
     func clearCache() async
+}
+
+// MARK: - Recommendation Engine Protocol
+
+/// Protocol for local recommendation scoring engine.
+/// Calculates confidence scores for food and wine items based on user preferences.
+protocol RecommendationEngineProtocol: Sendable {
+    /// Score food items based on user preferences
+    /// - Parameters:
+    ///   - items: Raw food items from the server
+    ///   - preferences: User's current food preferences
+    /// - Returns: Scored food items sorted by confidence (highest first)
+    func scoreFood(
+        items: [FoodItemResponse],
+        preferences: FoodPreference
+    ) -> [ScoredFoodItem]
+
+    /// Score wine items based on user preferences
+    /// - Parameters:
+    ///   - items: Raw wine items from the server
+    ///   - preferences: User's current food preferences
+    /// - Returns: Scored wine items sorted by confidence (highest first)
+    func scoreWine(
+        items: [WineItemResponse],
+        preferences: FoodPreference
+    ) -> [ScoredWineItem]
 }
 
 // MARK: - Supporting Types

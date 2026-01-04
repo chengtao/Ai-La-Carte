@@ -134,19 +134,4 @@ struct AnalyticsEvent: Codable {
     }
 }
 
-enum AnalyticsEventType: String {
-    case appOpen = "app_open"
-    case restaurantSuggestedShown = "restaurant_suggested_shown"
-    case restaurantSelected = "restaurant_selected"
-    case photoCaptured = "photo_captured"
-    case photoAccepted = "photo_accepted"
-    case recommendClicked = "recommend_clicked"
-    case sliderSet = "slider_set"
-    case preferenceAdjusted = "preference_adjusted"
-    case recommendationViewed = "recommendation_viewed"
-    case itemExpanded = "item_expanded"
-    case itemTapped = "item_tapped"
-    case surveyCompleted = "survey_completed"
-    case itemAddedToCart = "item_added_to_cart"
-    case itemRemovedFromCart = "item_removed_from_cart"
-}
+// Note: AnalyticsEventType is defined in AppDependencyContainer.swift

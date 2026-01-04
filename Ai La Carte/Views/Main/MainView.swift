@@ -329,13 +329,6 @@ struct CameraPreviewRepresentable: UIViewRepresentable {
 // MARK: - Preview
 
 #Preview {
-    MainView(viewModel: MainViewModel(
-        restaurantService: MockRestaurantAPIService(),
-        sessionService: MockSessionAPIService(),
-        recommendationService: MockRecommendationAPIService(),
-        locationService: MockLocationService(),
-        cameraService: CameraService(),
-        analyticsService: MockAnalyticsService(),
-        userPreferencesStorage: MockUserPreferencesStorage()
-    ))
+    let container = MockDependencyContainer()
+    return MainView(viewModel: container.makeMainViewModel())
 }

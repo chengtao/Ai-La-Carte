@@ -24,6 +24,10 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         NetworkManager(configuration: .default)
     }()
 
+    lazy var deviceIdentifierService: DeviceIdentifierServiceProtocol = {
+        DeviceIdentifierService()
+    }()
+
     // MARK: - API Services
 
     lazy var restaurantAPIService: RestaurantAPIServiceProtocol = {
@@ -31,7 +35,7 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
     }()
 
     lazy var sessionAPIService: SessionAPIServiceProtocol = {
-        SessionAPIService(networkManager: networkManager)
+        SessionAPIService(networkManager: networkManager, deviceIdentifierService: deviceIdentifierService)
     }()
 
     lazy var recommendationAPIService: RecommendationAPIServiceProtocol = {
@@ -49,7 +53,7 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
     }()
 
     lazy var analyticsService: AnalyticsServiceProtocol = {
-        AnalyticsService(networkManager: networkManager)
+        AnalyticsService(networkManager: networkManager, deviceIdentifierService: deviceIdentifierService)
     }()
 
     // MARK: - Local Engines
@@ -68,21 +72,53 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         UserPreferencesStorage()
     }()
 
+    lazy var preferenceManager: PreferenceManagerProtocol = {
+        let manager = PreferenceManager(storage: userPreferencesStorage)
+        // Note: loadPreferences must be called on MainActor
+        // This will be called when first accessed in a MainActor context
+        return manager
+    }()
+
     // MARK: - ViewModel Factory Methods
 
     @MainActor func makeWelcomeViewModel() -> WelcomeViewModel {
         WelcomeViewModel(locationService: locationService, cameraService: cameraService)
     }
 
-    @MainActor func makeMainViewModel() -> MainViewModel {
-        MainViewModel(
+    @MainActor func makeCameraViewModel() -> CameraViewModel {
+        CameraViewModel(
+            cameraService: cameraService,
+            analyticsService: analyticsService
+        )
+    }
+
+    @MainActor func makeLocationViewModel() -> LocationViewModel {
+        LocationViewModel(
+            locationService: locationService,
             restaurantService: restaurantAPIService,
+            analyticsService: analyticsService
+        )
+    }
+
+    @MainActor func makeSessionViewModel() -> SessionViewModel {
+        SessionViewModel(
             sessionService: sessionAPIService,
             recommendationService: recommendationAPIService,
-            locationService: locationService,
-            cameraService: cameraService,
-            analyticsService: analyticsService,
-            userPreferencesStorage: userPreferencesStorage
+            analyticsService: analyticsService
+        )
+    }
+
+    @MainActor func makeMainViewModel() -> MainViewModel {
+        // Load preferences before creating the MainViewModel
+        if let manager = preferenceManager as? PreferenceManager {
+            manager.loadPreferences()
+        }
+
+        return MainViewModel(
+            cameraViewModel: makeCameraViewModel(),
+            locationViewModel: makeLocationViewModel(),
+            sessionViewModel: makeSessionViewModel(),
+            preferenceManager: preferenceManager
         )
     }
 
@@ -106,11 +142,10 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
     @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
-            preferences: preferences,
             recommendationService: recommendationAPIService,
             recommendationEngine: recommendationEngine,
             analyticsService: analyticsService,
-            userPreferencesStorage: userPreferencesStorage
+            preferenceManager: preferenceManager
         )
     }
 
@@ -145,15 +180,17 @@ final class RestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
 
 final class SessionAPIService: SessionAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
+    private let deviceIdentifierService: DeviceIdentifierServiceProtocol
 
-    init(networkManager: NetworkManagerProtocol) {
+    init(networkManager: NetworkManagerProtocol, deviceIdentifierService: DeviceIdentifierServiceProtocol) {
         self.networkManager = networkManager
+        self.deviceIdentifierService = deviceIdentifierService
     }
 
     func registerSession(sessionId: String) async throws {
         let params: [String: Any] = [
             "session_id": sessionId,
-            "device_id": KeychainHelper.getOrCreateDeviceId()
+            "device_id": deviceIdentifierService.getDeviceId()
         ]
         let body = try JSONSerialization.data(withJSONObject: params)
         try await networkManager.requestWithoutResponse(endpoint: .registerSession, method: .POST, body: body)
@@ -238,16 +275,18 @@ final class RecommendationAPIService: RecommendationAPIServiceProtocol, Sendable
 
 final class AnalyticsService: AnalyticsServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
+    private let deviceIdentifierService: DeviceIdentifierServiceProtocol
 
-    init(networkManager: NetworkManagerProtocol) {
+    init(networkManager: NetworkManagerProtocol, deviceIdentifierService: DeviceIdentifierServiceProtocol) {
         self.networkManager = networkManager
+        self.deviceIdentifierService = deviceIdentifierService
     }
 
     func track(event: AnalyticsEventType, sessionId: String?, meta: [String: String]?) {
         let analyticsEvent = AnalyticsEvent(
             sessionId: sessionId,
             userId: nil,
-            deviceId: KeychainHelper.getOrCreateDeviceId(),
+            deviceId: deviceIdentifierService.getDeviceId(),
             event: event.rawValue,
             meta: meta
         )
@@ -261,6 +300,25 @@ final class AnalyticsService: AnalyticsServiceProtocol, Sendable {
             }
         }
     }
+}
+
+// MARK: - Analytics Event Types
+
+enum AnalyticsEventType: String {
+    case appOpen = "app_open"
+    case restaurantSuggestedShown = "restaurant_suggested_shown"
+    case restaurantSelected = "restaurant_selected"
+    case photoCaptured = "photo_captured"
+    case photoAccepted = "photo_accepted"
+    case recommendClicked = "recommend_clicked"
+    case sliderSet = "slider_set"
+    case preferenceAdjusted = "preference_adjusted"
+    case recommendationViewed = "recommendation_viewed"
+    case itemExpanded = "item_expanded"
+    case itemTapped = "item_tapped"
+    case surveyCompleted = "survey_completed"
+    case itemAddedToCart = "item_added_to_cart"
+    case itemRemovedFromCart = "item_removed_from_cart"
 }
 
 actor ImageCacheService: ImageCacheServiceProtocol {

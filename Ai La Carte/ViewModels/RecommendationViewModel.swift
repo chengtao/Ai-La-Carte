@@ -24,12 +24,13 @@ final class RecommendationViewModel: BaseViewModel {
     var expandedItemId: String?
     var selectedTab: RecommendationTab = .food
 
-    // Preference state - triggers re-scoring and saves to storage on change
-    var currentPreferences: UserPreferences = .default {
-        didSet {
-            if oldValue != currentPreferences {
+    // Preference state - triggers re-scoring on change
+    var currentPreferences: UserPreferences {
+        get { preferenceManager.currentPreferences }
+        set {
+            if preferenceManager.currentPreferences != newValue {
+                preferenceManager.updatePreferences(newValue)
                 recalculateScores()
-                userPreferencesStorage.savePreferences(currentPreferences)
             }
         }
     }
@@ -44,22 +45,20 @@ final class RecommendationViewModel: BaseViewModel {
     private let recommendationService: RecommendationAPIServiceProtocol
     private let recommendationEngine: RecommendationEngineProtocol
     private let analyticsService: AnalyticsServiceProtocol
-    private let userPreferencesStorage: UserPreferencesStorageProtocol
+    private let preferenceManager: PreferenceManagerProtocol
 
     init(
         sessionId: String,
-        preferences: UserPreferences = .default,
         recommendationService: RecommendationAPIServiceProtocol,
         recommendationEngine: RecommendationEngineProtocol,
         analyticsService: AnalyticsServiceProtocol,
-        userPreferencesStorage: UserPreferencesStorageProtocol
+        preferenceManager: PreferenceManagerProtocol
     ) {
         self.sessionId = sessionId
-        self.currentPreferences = preferences
         self.recommendationService = recommendationService
         self.recommendationEngine = recommendationEngine
         self.analyticsService = analyticsService
-        self.userPreferencesStorage = userPreferencesStorage
+        self.preferenceManager = preferenceManager
         super.init()
     }
 
@@ -277,8 +276,8 @@ final class RecommendationViewModel: BaseViewModel {
 
     /// Resets user preferences to defaults
     func resetPreferences() {
-        userPreferencesStorage.resetPreferences()
-        currentPreferences = .default
+        preferenceManager.resetPreferences()
+        recalculateScores()
     }
 }
 
