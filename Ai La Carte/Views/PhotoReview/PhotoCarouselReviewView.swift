@@ -18,6 +18,8 @@ struct PhotoCarouselReviewView: View {
 
     // Track swipe offset for each photo
     @State private var dragOffsets: [String: CGSize] = [:]
+    // Track whether a vertical swipe has been committed (vs horizontal for carousel)
+    @State private var isVerticalSwipe: [String: Bool] = [:]
 
     var body: some View {
         NavigationStack {
@@ -86,6 +88,7 @@ struct PhotoCarouselReviewView: View {
     private func photoCard(photo: CapturedPhoto) -> some View {
         let offset = dragOffsets[photo.id] ?? .zero
         let photoId = photo.id // Capture the ID for use in closures
+        let isVertical = isVerticalSwipe[photo.id] ?? false
 
         return ZStack {
             // Photo
@@ -94,39 +97,61 @@ struct PhotoCarouselReviewView: View {
                 .scaledToFit()
                 .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
                 .padding(.horizontal, AppConstants.UI.defaultPadding)
-                .offset(y: offset.height)
-                .opacity(1 - Double(abs(offset.height)) / 300)
-                .rotationEffect(.degrees(Double(offset.height) / 20))
-                .gesture(
-                    DragGesture()
+                .offset(y: isVertical ? offset.height : 0)
+                .opacity(isVertical ? 1 - Double(abs(offset.height)) / 300 : 1)
+                .rotationEffect(isVertical ? .degrees(Double(offset.height) / 20) : .zero)
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 10)
                         .onChanged { gesture in
-                            // Only track upward swipes
-                            if gesture.translation.height < 0 {
+                            let horizontal = abs(gesture.translation.width)
+                            let vertical = abs(gesture.translation.height)
+
+                            // Determine swipe direction on first significant movement
+                            if isVerticalSwipe[photoId] == nil {
+                                // Only commit to vertical if clearly upward and more vertical than horizontal
+                                if gesture.translation.height < -10 && vertical > horizontal * 1.5 {
+                                    isVerticalSwipe[photoId] = true
+                                } else if horizontal > 10 {
+                                    // It's a horizontal swipe, don't capture it
+                                    isVerticalSwipe[photoId] = false
+                                }
+                            }
+
+                            // Only track if committed to vertical swipe
+                            if isVerticalSwipe[photoId] == true && gesture.translation.height < 0 {
                                 dragOffsets[photoId] = gesture.translation
                             }
                         }
                         .onEnded { gesture in
-                            // If swiped up enough, delete the photo
-                            if gesture.translation.height < -100 {
-                                withAnimation(.easeOut(duration: 0.3)) {
-                                    dragOffsets[photoId] = CGSize(width: 0, height: -500)
-                                }
-                                // Delay deletion to allow animation to complete
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    dragOffsets.removeValue(forKey: photoId)
-                                    viewModel.deletePhoto(withId: photoId)
+                            // Only handle if we committed to a vertical swipe
+                            if isVerticalSwipe[photoId] == true {
+                                // If swiped up enough, delete the photo
+                                if gesture.translation.height < -100 {
+                                    withAnimation(.easeOut(duration: 0.3)) {
+                                        dragOffsets[photoId] = CGSize(width: 0, height: -500)
+                                    }
+                                    // Delay deletion to allow animation to complete
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        dragOffsets.removeValue(forKey: photoId)
+                                        isVerticalSwipe.removeValue(forKey: photoId)
+                                        viewModel.deletePhoto(withId: photoId)
+                                    }
+                                } else {
+                                    // Snap back
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                        dragOffsets[photoId] = .zero
+                                    }
+                                    isVerticalSwipe.removeValue(forKey: photoId)
                                 }
                             } else {
-                                // Snap back
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                    dragOffsets[photoId] = .zero
-                                }
+                                // Reset state for horizontal swipes
+                                isVerticalSwipe.removeValue(forKey: photoId)
                             }
                         }
                 )
 
-            // Swipe hint indicator (shows when dragging)
-            if offset.height < -20 {
+            // Swipe hint indicator (shows when dragging vertically)
+            if isVertical && offset.height < -20 {
                 VStack {
                     Image(systemName: "trash")
                         .font(.title)
