@@ -154,6 +154,46 @@ final class CameraService: NSObject, CameraServiceProtocol, @unchecked Sendable 
         layer.videoGravity = .resizeAspectFill
         return layer
     }
+
+    // MARK: - Torch Control
+
+    var isTorchAvailable: Bool {
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+            return false
+        }
+        return device.hasTorch && device.isTorchAvailable
+    }
+
+    var isTorchOn: Bool {
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+            return false
+        }
+        return device.torchMode == .on
+    }
+
+    func setTorch(on: Bool) throws {
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+            throw CameraError.notAvailable
+        }
+
+        guard device.hasTorch && device.isTorchAvailable else {
+            throw CameraError.notAvailable
+        }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = on ? .on : .off
+            device.unlockForConfiguration()
+            AppLogger.shared.info("Torch set to: \(on ? "on" : "off")", category: AppLogger.Category.camera)
+        } catch {
+            AppLogger.shared.error("Failed to set torch: \(error)", category: AppLogger.Category.camera)
+            throw CameraError.captureFailed
+        }
+    }
+
+    func toggleTorch() throws {
+        try setTorch(on: !isTorchOn)
+    }
 }
 
 // MARK: - AVCapturePhotoCaptureDelegate

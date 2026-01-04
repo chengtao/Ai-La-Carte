@@ -75,15 +75,17 @@ struct PhotoCarouselReviewView: View {
     private var photoCarousel: some View {
         TabView(selection: $viewModel.currentIndex) {
             ForEach(Array(viewModel.photos.enumerated()), id: \.element.id) { index, photo in
-                photoCard(photo: photo, index: index)
+                photoCard(photo: photo)
                     .tag(index)
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
+        .id(viewModel.photos.count) // Force TabView to rebuild when count changes
     }
 
-    private func photoCard(photo: CapturedPhoto, index: Int) -> some View {
+    private func photoCard(photo: CapturedPhoto) -> some View {
         let offset = dragOffsets[photo.id] ?? .zero
+        let photoId = photo.id // Capture the ID for use in closures
 
         return ZStack {
             // Photo
@@ -100,26 +102,24 @@ struct PhotoCarouselReviewView: View {
                         .onChanged { gesture in
                             // Only track upward swipes
                             if gesture.translation.height < 0 {
-                                dragOffsets[photo.id] = gesture.translation
+                                dragOffsets[photoId] = gesture.translation
                             }
                         }
                         .onEnded { gesture in
                             // If swiped up enough, delete the photo
                             if gesture.translation.height < -100 {
                                 withAnimation(.easeOut(duration: 0.3)) {
-                                    dragOffsets[photo.id] = CGSize(width: 0, height: -500)
+                                    dragOffsets[photoId] = CGSize(width: 0, height: -500)
                                 }
                                 // Delay deletion to allow animation to complete
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        viewModel.deletePhoto(at: index)
-                                        dragOffsets.removeValue(forKey: photo.id)
-                                    }
+                                    dragOffsets.removeValue(forKey: photoId)
+                                    viewModel.deletePhoto(withId: photoId)
                                 }
                             } else {
                                 // Snap back
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                                    dragOffsets[photo.id] = .zero
+                                    dragOffsets[photoId] = .zero
                                 }
                             }
                         }

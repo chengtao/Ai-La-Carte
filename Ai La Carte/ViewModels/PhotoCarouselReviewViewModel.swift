@@ -50,6 +50,12 @@ final class PhotoCarouselReviewViewModel: BaseViewModel {
         analyticsService.track(event: .photoDiscarded, sessionId: sessionId, meta: nil)
     }
 
+    /// Deletes a photo by its ID
+    func deletePhoto(withId id: String) {
+        guard let index = photos.firstIndex(where: { $0.id == id }) else { return }
+        deletePhoto(at: index)
+    }
+
     /// Deletes the photo at the current index
     func deleteCurrentPhoto() {
         deletePhoto(at: currentIndex)

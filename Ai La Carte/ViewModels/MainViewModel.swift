@@ -50,6 +50,14 @@ final class MainViewModel: BaseViewModel {
     var cameraService: CameraServiceProtocol { cameraViewModel.cameraService }
     var cameraPermissionStatus: CameraAuthorizationStatus { cameraViewModel.cameraPermissionStatus }
 
+    // Torch
+    var isTorchOn: Bool { cameraViewModel.isTorchOn }
+    var isTorchAvailable: Bool { cameraViewModel.isTorchAvailable }
+
+    func toggleTorch() {
+        cameraViewModel.toggleTorch()
+    }
+
     // Pending photos (pre-review)
     var pendingPhotos: [CapturedPhoto] { sessionViewModel.pendingPhotos }
     var canCaptureMore: Bool { sessionViewModel.canCaptureMore }

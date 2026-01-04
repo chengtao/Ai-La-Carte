@@ -94,10 +94,14 @@ protocol LocationServiceProtocol: Sendable {
 
 protocol CameraServiceProtocol: Sendable {
     var authorizationStatus: CameraAuthorizationStatus { get }
+    var isTorchAvailable: Bool { get }
+    var isTorchOn: Bool { get }
     func requestAuthorization() async -> CameraAuthorizationStatus
     func startSession() async throws
     func stopSession()
     func capturePhoto() async throws -> UIImage
+    func setTorch(on: Bool) throws
+    func toggleTorch() throws
 }
 
 protocol AnalyticsServiceProtocol: Sendable {

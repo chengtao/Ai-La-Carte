@@ -16,6 +16,9 @@ final class CameraViewModel: BaseViewModel {
     // Camera state
     var cameraState: CameraState = .stopped
 
+    // Torch state
+    var isTorchOn: Bool = false
+
     let cameraService: CameraServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
 
@@ -65,6 +68,10 @@ final class CameraViewModel: BaseViewModel {
     }
 
     func stopCamera() {
+        // Turn off torch before stopping
+        if isTorchOn {
+            setTorch(on: false)
+        }
         cameraService.stopSession()
         cameraState = .stopped
     }
@@ -80,6 +87,30 @@ final class CameraViewModel: BaseViewModel {
         } catch {
             self.error = handleNetworkError(error)
             return nil
+        }
+    }
+
+    // MARK: - Torch Control
+
+    var isTorchAvailable: Bool {
+        cameraService.isTorchAvailable
+    }
+
+    func toggleTorch() {
+        do {
+            try cameraService.toggleTorch()
+            isTorchOn = cameraService.isTorchOn
+        } catch {
+            AppLogger.shared.error("Failed to toggle torch: \(error)", category: AppLogger.Category.camera)
+        }
+    }
+
+    func setTorch(on: Bool) {
+        do {
+            try cameraService.setTorch(on: on)
+            isTorchOn = cameraService.isTorchOn
+        } catch {
+            AppLogger.shared.error("Failed to set torch: \(error)", category: AppLogger.Category.camera)
         }
     }
 }

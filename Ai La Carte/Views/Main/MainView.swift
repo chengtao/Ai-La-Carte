@@ -128,7 +128,25 @@ struct MainView: View {
     // MARK: - Top Bar
 
     private var topBar: some View {
-        EmptyView()
+        HStack {
+            Spacer()
+
+            // Torch toggle button
+            if viewModel.isTorchAvailable && viewModel.cameraState == .running {
+                Button {
+                    viewModel.toggleTorch()
+                } label: {
+                    Image(systemName: viewModel.isTorchOn ? "flashlight.on.fill" : "flashlight.off.fill")
+                        .font(.title2)
+                        .foregroundStyle(viewModel.isTorchOn ? .yellow : .white)
+                        .padding(12)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Circle())
+                }
+                .padding(.trailing, AppConstants.UI.defaultPadding)
+                .padding(.top, 8)
+            }
+        }
     }
 
     // MARK: - Bottom Section
