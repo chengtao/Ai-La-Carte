@@ -26,6 +26,9 @@ protocol DependencyContainer: Sendable {
     var cameraService: CameraServiceProtocol { get }
     var analyticsService: AnalyticsServiceProtocol { get }
 
+    // Local Engines
+    var recommendationEngine: RecommendationEngineProtocol { get }
+
     // Utilities
     var imageCacheService: ImageCacheServiceProtocol { get }
 
@@ -33,10 +36,9 @@ protocol DependencyContainer: Sendable {
     @MainActor func makeWelcomeViewModel() -> WelcomeViewModel
     @MainActor func makeMainViewModel() -> MainViewModel
     @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel
-    @MainActor func makeSessionPreferenceViewModel(sessionId: String) -> SessionPreferenceViewModel
     @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String) -> CalculatingViewModel
     @MainActor func makeRecommendationViewModel(sessionId: String) -> RecommendationViewModel
-    @MainActor func makeSurveyViewModel(sessionId: String, items: [RecommendationItemResponse]) -> SurveyViewModel
+    @MainActor func makeSurveyViewModel(sessionId: String, items: [ScoredFoodItem]) -> SurveyViewModel
 }
 
 // MARK: - Environment Key
@@ -68,7 +70,7 @@ protocol RestaurantAPIServiceProtocol: Sendable {
 protocol SessionAPIServiceProtocol: Sendable {
     func createSession(restaurantId: String?, context: SessionContext?) async throws -> SessionResponse
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse
-    func submitPreferences(sessionId: String, preferences: SessionPreference) async throws
+    func submitPreferences(sessionId: String, preferences: FoodPreference) async throws
 }
 
 protocol RecommendationAPIServiceProtocol: Sendable {

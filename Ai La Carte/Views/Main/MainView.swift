@@ -65,16 +65,16 @@ struct MainView: View {
                         },
                         onRecommend: {
                             viewModel.showPhotoReview = false
-                            viewModel.showPreferences = true
+                            Task {
+                                await viewModel.startRecommendationGeneration()
+                            }
                         }
                     )
                 }
             }
-            .navigationDestination(isPresented: $viewModel.showPreferences) {
-                if let session = viewModel.currentSession {
-                    SessionPreferenceView(
-                        viewModel: dependencyContainer.makeSessionPreferenceViewModel(sessionId: session.id)
-                    )
+            .navigationDestination(isPresented: $viewModel.showCalculating) {
+                if let calculatingViewModel = viewModel.calculatingViewModel {
+                    CalculatingView(viewModel: calculatingViewModel)
                 }
             }
             .sheet(isPresented: $viewModel.showAccount) {
@@ -300,6 +300,7 @@ struct CameraPreviewRepresentable: UIViewRepresentable {
     MainView(viewModel: MainViewModel(
         restaurantService: MockRestaurantAPIService(),
         sessionService: MockSessionAPIService(),
+        recommendationService: MockRecommendationAPIService(),
         locationService: MockLocationService(),
         cameraService: CameraService(),
         analyticsService: MockAnalyticsService()

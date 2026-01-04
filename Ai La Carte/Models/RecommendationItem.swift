@@ -252,83 +252,111 @@ struct ReasonTag: Codable, Identifiable, Hashable {
 // MARK: - Recommendation Response DTOs
 
 struct RecommendationResponse: Codable {
-    let food: [RecommendationItemResponse]
-    let wine: [RecommendationItemResponse]
+    let food: [FoodItemResponse]
+    let wine: [WineItemResponse]
     let explanations: ExplanationsResponse?
 }
 
-struct RecommendationItemResponse: Codable, Identifiable {
+// MARK: - Food Item Response
+
+struct FoodItemResponse: Codable, Identifiable, Hashable {
     let id: String
-    let type: String
     let title: String
     let description: String
     let reasons: [ReasonTagResponse]
-    let confidence: Double
     let pairingIds: [String]?
-
-    // Food-specific fields
     let photoUrl: String?
     let price: String?
-    let category: String?  // Food category (appetizer, entree, dessert, etc.)
-
-    // Wine-specific fields
-    let grapeVarietal: String?
-    let region: String?
-    let country: String?
-    let priceGlass: String?
-    let priceBottle: String?
+    let category: String?
 
     enum CodingKeys: String, CodingKey {
         case id
-        case type
         case title
         case description
         case reasons
-        case confidence
         case pairingIds = "pairing_ids"
         case photoUrl = "photo_url"
         case price
         case category
-        case grapeVarietal = "grape_varietal"
-        case region
-        case country
-        case priceGlass = "price_glass"
-        case priceBottle = "price_bottle"
     }
 
     var reasonTags: [ReasonTag] {
         reasons.map { ReasonTag(code: $0.code, label: $0.label) }
     }
 
-    var recommendationType: RecommendationType {
-        RecommendationType(rawValue: type) ?? .food
-    }
-
-    /// Food category enum value
     var foodCategory: FoodCategory {
         guard let category = category else { return .other }
         return FoodCategory(rawValue: category) ?? .other
     }
 
-    /// Wine category enum value
+    // Hashable conformance
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: FoodItemResponse, rhs: FoodItemResponse) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+// MARK: - Wine Item Response
+
+struct WineItemResponse: Codable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let description: String
+    let reasons: [ReasonTagResponse]
+    let pairingIds: [String]?
+    let grapeVarietal: String?
+    let region: String?
+    let country: String?
+    let priceGlass: String?
+    let priceBottle: String?
+    let category: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case reasons
+        case pairingIds = "pairing_ids"
+        case grapeVarietal = "grape_varietal"
+        case region
+        case country
+        case priceGlass = "price_glass"
+        case priceBottle = "price_bottle"
+        case category
+    }
+
+    var reasonTags: [ReasonTag] {
+        reasons.map { ReasonTag(code: $0.code, label: $0.label) }
+    }
+
     var wineCategory: WineCategory {
         guard let category = category else { return .other }
         return WineCategory(rawValue: category) ?? .other
     }
 
-    /// Formatted wine origin (e.g., "Napa Valley, California, USA")
     var wineOrigin: String? {
         let parts = [region, country].compactMap { $0 }
         return parts.isEmpty ? nil : parts.joined(separator: ", ")
     }
 
-    /// Check if wine has pricing
     var hasWinePricing: Bool {
         priceGlass != nil || priceBottle != nil
     }
+
+    // Hashable conformance
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: WineItemResponse, rhs: WineItemResponse) -> Bool {
+        lhs.id == rhs.id
+    }
 }
 
-struct ReasonTagResponse: Codable {
+struct ReasonTagResponse: Codable, Hashable {
     let code: String
     let label: String
 }

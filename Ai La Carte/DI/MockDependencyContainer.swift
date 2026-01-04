@@ -51,6 +51,12 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         MockAnalyticsService()
     }()
 
+    // MARK: - Local Engines
+
+    lazy var recommendationEngine: RecommendationEngineProtocol = {
+        MockRecommendationEngine()
+    }()
+
     // MARK: - Utilities
 
     lazy var imageCacheService: ImageCacheServiceProtocol = {
@@ -67,6 +73,7 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         MainViewModel(
             restaurantService: restaurantAPIService,
             sessionService: sessionAPIService,
+            recommendationService: recommendationAPIService,
             locationService: locationService,
             cameraService: cameraService,
             analyticsService: analyticsService
@@ -78,15 +85,6 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
             sessionId: sessionId,
             photo: photo,
             sessionService: sessionAPIService
-        )
-    }
-
-    @MainActor func makeSessionPreferenceViewModel(sessionId: String) -> SessionPreferenceViewModel {
-        SessionPreferenceViewModel(
-            sessionId: sessionId,
-            sessionService: sessionAPIService,
-            recommendationService: recommendationAPIService,
-            analyticsService: analyticsService
         )
     }
 
@@ -102,11 +100,12 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         RecommendationViewModel(
             sessionId: sessionId,
             recommendationService: recommendationAPIService,
+            recommendationEngine: recommendationEngine,
             analyticsService: analyticsService
         )
     }
 
-    @MainActor func makeSurveyViewModel(sessionId: String, items: [RecommendationItemResponse]) -> SurveyViewModel {
+    @MainActor func makeSurveyViewModel(sessionId: String, items: [ScoredFoodItem]) -> SurveyViewModel {
         SurveyViewModel(
             sessionId: sessionId,
             items: items,
@@ -251,10 +250,10 @@ final class MockSessionAPIService: SessionAPIServiceProtocol, @unchecked Sendabl
         )
     }
 
-    func submitPreferences(sessionId: String, preferences: SessionPreference) async throws {
+    func submitPreferences(sessionId: String, preferences: FoodPreference) async throws {
         try await Task.sleep(nanoseconds: 300_000_000)
 
-        AppLogger.shared.info("[MOCK] Submitted preferences for session \(sessionId): adventurous=\(preferences.adventurousClassic), spice=\(preferences.spiceTolerance)", category: AppLogger.Category.session)
+        AppLogger.shared.info("[MOCK] Submitted preferences for session \(sessionId): adventurous=\(preferences.adventurousness), spice=\(preferences.spiceTolerance)", category: AppLogger.Category.session)
     }
 }
 
@@ -308,274 +307,201 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
     func getRecommendations(sessionId: String) async throws -> RecommendationResponse {
         try await Task.sleep(nanoseconds: 500_000_000)
 
-        let foodItems = [
+        let foodItems: [FoodItemResponse] = [
             // Appetizers
-            RecommendationItemResponse(
+            FoodItemResponse(
                 id: "f4",
-                type: "food",
                 title: "Dim Sum Platter",
                 description: "An assortment of hand-crafted dumplings including har gow, siu mai, and char siu bao. Perfect for sharing.",
                 reasons: [
                     ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
                     ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
-                confidence: 0.82,
                 pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
                 price: "$24.00",
-                category: "appetizer",
-                grapeVarietal: nil,
-                region: nil,
-                country: nil,
-                priceGlass: nil,
-                priceBottle: nil
+                category: "appetizer"
             ),
-            RecommendationItemResponse(
+            FoodItemResponse(
                 id: "f5",
-                type: "food",
                 title: "Spring Rolls",
                 description: "Crispy golden rolls filled with vegetables and glass noodles. Served with sweet chili dipping sauce.",
                 reasons: [
                     ReasonTagResponse(code: "VEGETARIAN", label: "Vegetarian Friendly"),
                     ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
-                confidence: 0.78,
                 pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1548507243-d1f7c03cb2ac?w=400",
                 price: "$8.95",
-                category: "appetizer",
-                grapeVarietal: nil,
-                region: nil,
-                country: nil,
-                priceGlass: nil,
-                priceBottle: nil
+                category: "appetizer"
             ),
             // Entrees
-            RecommendationItemResponse(
+            FoodItemResponse(
                 id: "f1",
-                type: "food",
                 title: "Kung Pao Chicken",
                 description: "Tender chicken with peanuts, vegetables, and chili peppers in a savory-sweet sauce. A perfect balance of spice and flavor.",
                 reasons: [
                     ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite"),
                     ReasonTagResponse(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
                 ],
-                confidence: 0.92,
                 pairingIds: ["w1"],
                 photoUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400",
                 price: "$18.95",
-                category: "entree",
-                grapeVarietal: nil,
-                region: nil,
-                country: nil,
-                priceGlass: nil,
-                priceBottle: nil
+                category: "entree"
             ),
-            RecommendationItemResponse(
+            FoodItemResponse(
                 id: "f2",
-                type: "food",
                 title: "Peking Duck",
                 description: "Crispy roasted duck served with thin pancakes, scallions, and hoisin sauce. A house specialty that's been perfected over generations.",
                 reasons: [
                     ReasonTagResponse(code: "CHEF_SIGNATURE", label: "Chef's Signature"),
                     ReasonTagResponse(code: "HOUSE_SPECIALTY", label: "House Specialty")
                 ],
-                confidence: 0.88,
                 pairingIds: ["w2"],
                 photoUrl: "https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400",
                 price: "$42.00",
-                category: "entree",
-                grapeVarietal: nil,
-                region: nil,
-                country: nil,
-                priceGlass: nil,
-                priceBottle: nil
+                category: "entree"
             ),
-            RecommendationItemResponse(
+            FoodItemResponse(
                 id: "f3",
-                type: "food",
                 title: "Mapo Tofu",
                 description: "Silky tofu in a fiery, aromatic sauce with minced pork and Sichuan peppercorns. Bold and satisfying.",
                 reasons: [
                     ReasonTagResponse(code: "ADVENTUROUS_PICK", label: "Adventurous Pick"),
                     ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
-                confidence: 0.85,
                 pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1582452919408-39bddf60a4a2?w=400",
                 price: "$14.50",
-                category: "entree",
-                grapeVarietal: nil,
-                region: nil,
-                country: nil,
-                priceGlass: nil,
-                priceBottle: nil
+                category: "entree"
             ),
             // Dessert
-            RecommendationItemResponse(
+            FoodItemResponse(
                 id: "f6",
-                type: "food",
                 title: "Mango Sticky Rice",
                 description: "Sweet coconut sticky rice topped with fresh mango slices and drizzled with coconut cream. A refreshing finish.",
                 reasons: [
                     ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser")
                 ],
-                confidence: 0.80,
                 pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1621293954908-907159247fc8?w=400",
                 price: "$9.50",
-                category: "dessert",
-                grapeVarietal: nil,
-                region: nil,
-                country: nil,
-                priceGlass: nil,
-                priceBottle: nil
+                category: "dessert"
             ),
-            RecommendationItemResponse(
+            FoodItemResponse(
                 id: "f7",
-                type: "food",
                 title: "Sesame Balls",
                 description: "Crispy fried glutinous rice balls filled with sweet red bean paste and coated in sesame seeds.",
                 reasons: [
                     ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
-                confidence: 0.75,
                 pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400",
                 price: "$6.00",
-                category: "dessert",
-                grapeVarietal: nil,
-                region: nil,
-                country: nil,
-                priceGlass: nil,
-                priceBottle: nil
+                category: "dessert"
             )
         ]
 
-        let wineItems = [
+        let wineItems: [WineItemResponse] = [
             // Sparkling
-            RecommendationItemResponse(
+            WineItemResponse(
                 id: "w3",
-                type: "wine",
                 title: "NV Moët & Chandon Brut Imperial",
                 description: "Celebratory bubbles with toasty brioche notes. A versatile pairing that elevates any meal.",
                 reasons: [
                     ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
                     ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
-                confidence: 0.75,
                 pairingIds: nil,
-                photoUrl: nil,
-                price: nil,
-                category: "sparkling",
                 grapeVarietal: "Chardonnay, Pinot Noir, Pinot Meunier",
                 region: "Champagne",
                 country: "France",
                 priceGlass: nil,
-                priceBottle: "$85"
+                priceBottle: "$85",
+                category: "sparkling"
             ),
             // White Wines
-            RecommendationItemResponse(
+            WineItemResponse(
                 id: "w1",
-                type: "wine",
                 title: "2021 Trimbach Riesling",
                 description: "A crisp, aromatic white with notes of green apple and lime. The slight sweetness pairs beautifully with spicy dishes.",
                 reasons: [
                     ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
                     ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
                 ],
-                confidence: 0.90,
                 pairingIds: ["f1", "f3"],
-                photoUrl: nil,
-                price: nil,
-                category: "white",
                 grapeVarietal: "Riesling",
                 region: "Alsace",
                 country: "France",
                 priceGlass: "$14",
-                priceBottle: "$52"
+                priceBottle: "$52",
+                category: "white"
             ),
-            RecommendationItemResponse(
+            WineItemResponse(
                 id: "w4",
-                type: "wine",
                 title: "2022 Cloudy Bay Sauvignon Blanc",
                 description: "Vibrant and zesty with passion fruit and citrus notes. Perfect with seafood and light dishes.",
                 reasons: [
                     ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh"),
                     ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
-                confidence: 0.85,
                 pairingIds: nil,
-                photoUrl: nil,
-                price: nil,
-                category: "white",
                 grapeVarietal: "Sauvignon Blanc",
                 region: "Marlborough",
                 country: "New Zealand",
                 priceGlass: "$15",
-                priceBottle: "$58"
+                priceBottle: "$58",
+                category: "white"
             ),
             // Rosé
-            RecommendationItemResponse(
+            WineItemResponse(
                 id: "w5",
-                type: "wine",
                 title: "2023 Whispering Angel Rosé",
                 description: "Elegant Provence rosé with delicate strawberry and peach flavors. Refreshingly dry and versatile.",
                 reasons: [
                     ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
                     ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
                 ],
-                confidence: 0.82,
                 pairingIds: nil,
-                photoUrl: nil,
-                price: nil,
-                category: "rose",
                 grapeVarietal: "Grenache, Cinsault, Rolle",
                 region: "Provence",
                 country: "France",
                 priceGlass: "$14",
-                priceBottle: "$48"
+                priceBottle: "$48",
+                category: "rose"
             ),
             // Red Wines
-            RecommendationItemResponse(
+            WineItemResponse(
                 id: "w2",
-                type: "wine",
                 title: "2019 Willamette Valley Pinot Noir",
                 description: "Elegant and fruit-forward with cherry and earthy notes. Its medium body complements rich, savory dishes.",
                 reasons: [
                     ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
                     ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
                 ],
-                confidence: 0.88,
                 pairingIds: ["f2"],
-                photoUrl: nil,
-                price: nil,
-                category: "red",
                 grapeVarietal: "Pinot Noir",
                 region: "Willamette Valley",
                 country: "USA",
                 priceGlass: "$16",
-                priceBottle: "$64"
+                priceBottle: "$64",
+                category: "red"
             ),
-            RecommendationItemResponse(
+            WineItemResponse(
                 id: "w6",
-                type: "wine",
                 title: "2018 Caymus Cabernet Sauvignon",
                 description: "Rich and full-bodied with blackberry, cassis, and vanilla oak notes. A bold choice for hearty dishes.",
                 reasons: [
                     ReasonTagResponse(code: "CHEF_SIGNATURE", label: "Chef's Signature"),
                     ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
                 ],
-                confidence: 0.86,
                 pairingIds: ["f2"],
-                photoUrl: nil,
-                price: nil,
-                category: "red",
                 grapeVarietal: "Cabernet Sauvignon",
                 region: "Napa Valley",
                 country: "USA",
                 priceGlass: "$22",
-                priceBottle: "$95"
+                priceBottle: "$95",
+                category: "red"
             )
         ]
 

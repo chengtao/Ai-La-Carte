@@ -21,11 +21,33 @@ struct RecommendationView: View {
 
             if viewModel.isLoading {
                 loadingView
-            } else if viewModel.foodRecommendations.isEmpty && viewModel.wineRecommendations.isEmpty {
+            } else if viewModel.scoredFoodRecommendations.isEmpty && viewModel.scoredWineRecommendations.isEmpty {
                 emptyView
             } else {
                 contentView
             }
+
+            // Floating preferences button
+            if !viewModel.isLoading && (!viewModel.scoredFoodRecommendations.isEmpty || !viewModel.scoredWineRecommendations.isEmpty) {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        floatingPreferencesButton
+                            .padding(.trailing, AppConstants.UI.defaultPadding)
+                            .padding(.bottom, 24)
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $viewModel.isPreferenceSheetPresented) {
+            PreferenceSheetView(
+                preferences: $viewModel.currentPreferences,
+                isPresented: $viewModel.isPreferenceSheetPresented
+            )
+            .presentationDetents([.height(300), .medium])
+            .presentationDragIndicator(.visible)
+            .presentationBackgroundInteraction(.enabled)
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
@@ -92,6 +114,30 @@ struct RecommendationView: View {
         }
     }
 
+    // MARK: - Floating Preferences Button
+
+    private var floatingPreferencesButton: some View {
+        Button {
+            withAnimation(.spring(response: 0.3)) {
+                viewModel.isPreferenceSheetPresented = true
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "slider.horizontal.3")
+                Text("Preferences")
+                    .font(.labelLarge)
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                Capsule()
+                    .fill(LinearGradient.magicPrimary)
+                    .shadow(color: Color.magicPurple.opacity(0.4), radius: 8, y: 4)
+            )
+        }
+    }
+
     // MARK: - Content View
 
     private var contentView: some View {
@@ -132,12 +178,12 @@ struct RecommendationView: View {
                         category: group.category,
                         items: group.items,
                         expandedItemId: viewModel.expandedItemId,
-                        isInCart: viewModel.isInCart,
+                        isInCart: viewModel.isFoodInCart,
                         onTap: { itemId in
                             viewModel.toggleExpanded(itemId)
                         },
                         onCartToggle: { item in
-                            viewModel.toggleCart(item)
+                            viewModel.toggleFoodCart(item)
                         },
                         animateIn: animateIn
                     )
@@ -145,6 +191,7 @@ struct RecommendationView: View {
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
             .padding(.vertical, 16)
+            .padding(.bottom, 80) // Space for floating button
         }
     }
 
@@ -158,12 +205,12 @@ struct RecommendationView: View {
                         category: group.category,
                         items: group.items,
                         expandedItemId: viewModel.expandedItemId,
-                        isInCart: viewModel.isInCart,
+                        isInCart: viewModel.isWineInCart,
                         onTap: { itemId in
                             viewModel.toggleExpanded(itemId)
                         },
                         onCartToggle: { item in
-                            viewModel.toggleCart(item)
+                            viewModel.toggleWineCart(item)
                         },
                         animateIn: animateIn
                     )
@@ -171,6 +218,7 @@ struct RecommendationView: View {
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
             .padding(.vertical, 16)
+            .padding(.bottom, 80) // Space for floating button
         }
     }
 
@@ -178,7 +226,7 @@ struct RecommendationView: View {
 
     private var cartTabContent: some View {
         Group {
-            if viewModel.cartItems.isEmpty {
+            if viewModel.cartItemCount == 0 {
                 emptyCartView
             } else {
                 ScrollView {
@@ -187,12 +235,15 @@ struct RecommendationView: View {
                         cartSummaryHeader
 
                         // Cart items
-                        ForEach(Array(viewModel.cartItems.enumerated()), id: \.element.id) { index, item in
+                        ForEach(viewModel.totalCartItems, id: \.id) { item in
                             CartItemRow(
-                                item: item,
+                                id: item.id,
+                                title: item.title,
+                                price: item.price,
+                                isFood: item.isFood,
                                 onRemove: {
                                     withAnimation(.easeInOut(duration: 0.2)) {
-                                        viewModel.removeFromCart(item)
+                                        viewModel.removeFromCartById(item.id)
                                     }
                                 }
                             )
@@ -377,11 +428,11 @@ struct RecommendationView: View {
 
 struct FoodSectionView: View {
     let category: FoodCategory
-    let items: [RecommendationItemResponse]
+    let items: [ScoredFoodItem]
     let expandedItemId: String?
-    let isInCart: (RecommendationItemResponse) -> Bool
+    let isInCart: (ScoredFoodItem) -> Bool
     let onTap: (String) -> Void
-    let onCartToggle: (RecommendationItemResponse) -> Void
+    let onCartToggle: (ScoredFoodItem) -> Void
     let animateIn: Bool
 
     @State private var isCollapsed = false
@@ -448,11 +499,10 @@ struct FoodSectionView: View {
             if !isCollapsed {
                 VStack(spacing: 12) {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                        RecommendationItemCard(
+                        FoodItemCard(
                             item: item,
                             isExpanded: expandedItemId == item.id,
                             isInCart: isInCart(item),
-                            showCartButton: true,
                             onTap: {
                                 onTap(item.id)
                             },
@@ -474,11 +524,11 @@ struct FoodSectionView: View {
 
 struct WineSectionView: View {
     let category: WineCategory
-    let items: [RecommendationItemResponse]
+    let items: [ScoredWineItem]
     let expandedItemId: String?
-    let isInCart: (RecommendationItemResponse) -> Bool
+    let isInCart: (ScoredWineItem) -> Bool
     let onTap: (String) -> Void
-    let onCartToggle: (RecommendationItemResponse) -> Void
+    let onCartToggle: (ScoredWineItem) -> Void
     let animateIn: Bool
 
     @State private var isCollapsed = false
@@ -549,11 +599,10 @@ struct WineSectionView: View {
             if !isCollapsed {
                 VStack(spacing: 12) {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                        RecommendationItemCard(
+                        WineItemCard(
                             item: item,
                             isExpanded: expandedItemId == item.id,
                             isInCart: isInCart(item),
-                            showCartButton: true,
                             onTap: {
                                 onTap(item.id)
                             },
@@ -574,10 +623,11 @@ struct WineSectionView: View {
 // MARK: - Cart Item Row
 
 struct CartItemRow: View {
-    let item: RecommendationItemResponse
+    let id: String
+    let title: String
+    let price: String?
+    let isFood: Bool
     let onRemove: () -> Void
-
-    private var isFood: Bool { item.type == "food" }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -610,30 +660,16 @@ struct CartItemRow: View {
 
             // Item details
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.title)
+                Text(title)
                     .font(.bodyMedium)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
-                // Price or wine info
-                if isFood, let price = item.price {
+                if let price = price {
                     Text(price)
                         .font(.caption)
-                        .foregroundStyle(Color.magicCoral)
-                } else if !isFood {
-                    HStack(spacing: 8) {
-                        if let glassPrice = item.priceGlass {
-                            Text("Glass: \(glassPrice)")
-                                .font(.caption)
-                                .foregroundStyle(Color.magicPurple)
-                        }
-                        if let bottlePrice = item.priceBottle {
-                            Text("Bottle: \(bottlePrice)")
-                                .font(.caption)
-                                .foregroundStyle(Color.magicPink)
-                        }
-                    }
+                        .foregroundStyle(isFood ? Color.magicCoral : Color.magicPurple)
                 }
             }
 
@@ -654,22 +690,19 @@ struct CartItemRow: View {
     }
 }
 
-// MARK: - Recommendation Item Card
+// MARK: - Food Item Card
 
-struct RecommendationItemCard: View {
-    let item: RecommendationItemResponse
+struct FoodItemCard: View {
+    let item: ScoredFoodItem
     let isExpanded: Bool
     let isInCart: Bool
-    let showCartButton: Bool
     let onTap: () -> Void
     let onCartToggle: () -> Void
-
-    private var isFood: Bool { item.type == "food" }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Food photo (if available)
-            if isFood, let photoUrl = item.photoUrl, let url = URL(string: photoUrl) {
+            if let photoUrl = item.photoUrl, let url = URL(string: photoUrl) {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .empty:
@@ -704,24 +737,19 @@ struct RecommendationItemCard: View {
             // Header
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    // Title with price for food
+                    // Title with price
                     HStack(alignment: .firstTextBaseline) {
                         Text(item.title)
                             .font(.headline)
                             .foregroundColor(.primary)
 
-                        if isFood, let price = item.price {
+                        if let price = item.price {
                             Spacer()
                             Text(price)
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color.magicCoral)
                         }
-                    }
-
-                    // Wine details
-                    if !isFood {
-                        wineDetailsView
                     }
 
                     // Reason tags
@@ -732,9 +760,99 @@ struct RecommendationItemCard: View {
                     }
                 }
 
-                if isFood {
-                    // Confidence indicator for food (wine shows it differently)
-                    confidenceIndicator
+                // Confidence indicator
+                confidenceIndicator
+            }
+
+            // Description (expandable)
+            Text(item.description)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .lineLimit(isExpanded ? nil : 2)
+
+            // Bottom row with expand indicator and cart button
+            HStack {
+                Spacer()
+
+                // Cart button
+                Button {
+                    onCartToggle()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isInCart ? "checkmark" : "plus")
+                            .font(.caption.weight(.semibold))
+                        Text(isInCart ? "Added" : "Add")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .foregroundStyle(isInCart ? Color.white : Color.magicPurple)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(isInCart
+                                ? LinearGradient.magicPrimary
+                                : LinearGradient(colors: [Color.magicPurple.opacity(0.15)], startPoint: .leading, endPoint: .trailing)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                    .font(.caption)
+                    .foregroundStyle(Color.magicPurple.opacity(0.6))
+            }
+        }
+        .padding(AppConstants.UI.cardPadding)
+        .magicCard(glowColor: .magicCoral)
+        .onTapGesture(perform: onTap)
+    }
+
+    private var confidenceIndicator: some View {
+        let percentage = Int(item.confidence * 100)
+        return Text("\(percentage)%")
+            .font(.labelSmall)
+            .fontWeight(.semibold)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color.magicTeal, Color.appSuccess],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(Color.appSuccess.opacity(0.12))
+            )
+    }
+}
+
+// MARK: - Wine Item Card
+
+struct WineItemCard: View {
+    let item: ScoredWineItem
+    let isExpanded: Bool
+    let isInCart: Bool
+    let onTap: () -> Void
+    let onCartToggle: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.title)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                // Wine details
+                wineDetailsView
+
+                // Reason tags
+                FlowLayout(spacing: 6) {
+                    ForEach(item.reasonTags) { tag in
+                        ReasonTagView(tag: tag)
+                    }
                 }
             }
 
@@ -745,41 +863,38 @@ struct RecommendationItemCard: View {
                 .lineLimit(isExpanded ? nil : 2)
 
             // Wine pricing row
-            if !isFood && item.hasWinePricing {
+            if item.hasWinePricing {
                 winePricingView
             }
 
             // Bottom row with confidence, expand indicator, and cart button
             HStack {
-                if !isFood {
-                    confidenceIndicator
-                }
+                confidenceIndicator
+
                 Spacer()
 
                 // Cart button
-                if showCartButton {
-                    Button {
-                        onCartToggle()
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: isInCart ? "checkmark" : "plus")
-                                .font(.caption.weight(.semibold))
-                            Text(isInCart ? "Added" : "Add")
-                                .font(.caption.weight(.semibold))
-                        }
-                        .foregroundStyle(isInCart ? Color.white : Color.magicPurple)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .fill(isInCart
-                                    ? LinearGradient.magicPrimary
-                                    : LinearGradient(colors: [Color.magicPurple.opacity(0.15)], startPoint: .leading, endPoint: .trailing)
-                                )
-                        )
+                Button {
+                    onCartToggle()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isInCart ? "checkmark" : "plus")
+                            .font(.caption.weight(.semibold))
+                        Text(isInCart ? "Added" : "Add")
+                            .font(.caption.weight(.semibold))
                     }
-                    .buttonStyle(.plain)
+                    .foregroundStyle(isInCart ? Color.white : Color.magicPurple)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(isInCart
+                                ? LinearGradient.magicPrimary
+                                : LinearGradient(colors: [Color.magicPurple.opacity(0.15)], startPoint: .leading, endPoint: .trailing)
+                            )
+                    )
                 }
+                .buttonStyle(.plain)
 
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                     .font(.caption)
@@ -787,11 +902,9 @@ struct RecommendationItemCard: View {
             }
         }
         .padding(AppConstants.UI.cardPadding)
-        .magicCard(glowColor: isFood ? .magicCoral : .magicPurple)
+        .magicCard(glowColor: .magicPurple)
         .onTapGesture(perform: onTap)
     }
-
-    // MARK: - Wine Details
 
     @ViewBuilder
     private var wineDetailsView: some View {
@@ -822,8 +935,6 @@ struct RecommendationItemCard: View {
         }
         .padding(.bottom, 4)
     }
-
-    // MARK: - Wine Pricing
 
     @ViewBuilder
     private var winePricingView: some View {
@@ -862,8 +973,6 @@ struct RecommendationItemCard: View {
         }
         .padding(.top, 4)
     }
-
-    // MARK: - Confidence Indicator
 
     private var confidenceIndicator: some View {
         let percentage = Int(item.confidence * 100)
@@ -989,6 +1098,7 @@ struct FlowLayout: Layout {
             viewModel: RecommendationViewModel(
                 sessionId: "test",
                 recommendationService: MockRecommendationAPIService(),
+                recommendationEngine: MockRecommendationEngine(),
                 analyticsService: MockAnalyticsService()
             )
         )

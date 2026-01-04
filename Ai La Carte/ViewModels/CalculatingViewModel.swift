@@ -36,23 +36,24 @@ final class CalculatingViewModel: BaseViewModel {
     func startPolling() {
         pollingTask?.cancel()
 
-        pollingTask = Task {
-            while !Task.isCancelled && status != .done && status != .failed {
-                await pollStatus()
+        pollingTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            while !Task.isCancelled && self.status != .done && self.status != .failed {
+                await self.pollStatus()
 
-                if status == .done {
-                    showRecommendations = true
+                if self.status == .done {
+                    self.showRecommendations = true
                     break
                 }
 
-                if status == .failed {
+                if self.status == .failed {
                     break
                 }
 
-                pollingAttempts += 1
-                if pollingAttempts >= AppConstants.Recommendation.maxPollingAttempts {
-                    status = .failed
-                    error = AppError.network(.serverError("Request timed out"))
+                self.pollingAttempts += 1
+                if self.pollingAttempts >= AppConstants.Recommendation.maxPollingAttempts {
+                    self.status = .failed
+                    self.error = AppError.network(.serverError("Request timed out"))
                     break
                 }
 
@@ -73,9 +74,14 @@ final class CalculatingViewModel: BaseViewModel {
                 jobId: jobId
             )
 
+            let newStatus = response.sessionStatus
+            let newProgress = response.progress ?? newStatus.progress
+
+            AppLogger.shared.debug("Polling update: status=\(newStatus.rawValue), progress=\(newProgress)", category: AppLogger.Category.recommendation)
+
             withAnimation(.easeInOut(duration: 0.3)) {
-                status = response.sessionStatus
-                progress = response.progress ?? status.progress
+                status = newStatus
+                progress = newProgress
             }
         } catch {
             AppLogger.shared.error("Polling error: \(error)", category: AppLogger.Category.recommendation)

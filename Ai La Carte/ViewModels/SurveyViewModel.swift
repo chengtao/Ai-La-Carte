@@ -11,7 +11,7 @@ import Foundation
 @Observable
 final class SurveyViewModel: BaseViewModel {
     let sessionId: String
-    let items: [RecommendationItemResponse]
+    let items: [ScoredFoodItem]
 
     var ratings: [String: FeedbackRating] = [:]
     var currentItemIndex = 0
@@ -22,7 +22,7 @@ final class SurveyViewModel: BaseViewModel {
 
     init(
         sessionId: String,
-        items: [RecommendationItemResponse],
+        items: [ScoredFoodItem],
         recommendationService: RecommendationAPIServiceProtocol,
         analyticsService: AnalyticsServiceProtocol
     ) {
@@ -33,7 +33,7 @@ final class SurveyViewModel: BaseViewModel {
         super.init()
     }
 
-    var currentItem: RecommendationItemResponse? {
+    var currentItem: ScoredFoodItem? {
         guard currentItemIndex < items.count else { return nil }
         return items[currentItemIndex]
     }

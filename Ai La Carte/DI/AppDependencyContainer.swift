@@ -56,6 +56,12 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         AnalyticsService(networkManager: networkManager)
     }()
 
+    // MARK: - Local Engines
+
+    lazy var recommendationEngine: RecommendationEngineProtocol = {
+        RecommendationEngine()
+    }()
+
     // MARK: - Utilities
 
     lazy var imageCacheService: ImageCacheServiceProtocol = {
@@ -72,6 +78,7 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         MainViewModel(
             restaurantService: restaurantAPIService,
             sessionService: sessionAPIService,
+            recommendationService: recommendationAPIService,
             locationService: locationService,
             cameraService: cameraService,
             analyticsService: analyticsService
@@ -83,15 +90,6 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
             sessionId: sessionId,
             photo: photo,
             sessionService: sessionAPIService
-        )
-    }
-
-    @MainActor func makeSessionPreferenceViewModel(sessionId: String) -> SessionPreferenceViewModel {
-        SessionPreferenceViewModel(
-            sessionId: sessionId,
-            sessionService: sessionAPIService,
-            recommendationService: recommendationAPIService,
-            analyticsService: analyticsService
         )
     }
 
@@ -107,11 +105,12 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         RecommendationViewModel(
             sessionId: sessionId,
             recommendationService: recommendationAPIService,
+            recommendationEngine: recommendationEngine,
             analyticsService: analyticsService
         )
     }
 
-    @MainActor func makeSurveyViewModel(sessionId: String, items: [RecommendationItemResponse]) -> SurveyViewModel {
+    @MainActor func makeSurveyViewModel(sessionId: String, items: [ScoredFoodItem]) -> SurveyViewModel {
         SurveyViewModel(
             sessionId: sessionId,
             items: items,
@@ -198,9 +197,9 @@ final class SessionAPIService: SessionAPIServiceProtocol, Sendable {
         )
     }
 
-    func submitPreferences(sessionId: String, preferences: SessionPreference) async throws {
+    func submitPreferences(sessionId: String, preferences: FoodPreference) async throws {
         let body = try JSONEncoder().encode([
-            "adventurous_classic": preferences.adventurousClassic,
+            "adventurous_classic": preferences.adventurousness,
             "spice_tolerance": preferences.spiceTolerance
         ])
         try await networkManager.requestWithoutResponse(

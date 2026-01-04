@@ -27,12 +27,17 @@ final class MainViewModel: BaseViewModel {
 
     // Navigation
     var showPhotoReview = false
-    var showPreferences = false
+    var showCalculating = false
     var showAccount = false
     var pendingPhoto: UIImage?
 
+    // Recommendation generation
+    var jobId: String?
+    var calculatingViewModel: CalculatingViewModel?
+
     private let restaurantService: RestaurantAPIServiceProtocol
     private let sessionService: SessionAPIServiceProtocol
+    private let recommendationService: RecommendationAPIServiceProtocol
     private let locationService: LocationServiceProtocol
     let cameraService: CameraServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
@@ -40,12 +45,14 @@ final class MainViewModel: BaseViewModel {
     init(
         restaurantService: RestaurantAPIServiceProtocol,
         sessionService: SessionAPIServiceProtocol,
+        recommendationService: RecommendationAPIServiceProtocol,
         locationService: LocationServiceProtocol,
         cameraService: CameraServiceProtocol,
         analyticsService: AnalyticsServiceProtocol
     ) {
         self.restaurantService = restaurantService
         self.sessionService = sessionService
+        self.recommendationService = recommendationService
         self.locationService = locationService
         self.cameraService = cameraService
         self.analyticsService = analyticsService
@@ -163,9 +170,33 @@ final class MainViewModel: BaseViewModel {
             meta: ["restaurant_id": restaurant.id]
         )
 
-        // Create session and navigate to preferences
+        // Create session and start recommendation generation
         await createSession(restaurantId: restaurant.id, restaurantName: restaurant.name)
-        showPreferences = true
+
+        // Start recommendation generation and navigate to calculating view
+        await startRecommendationGeneration()
+    }
+
+    /// Triggers recommendation generation and navigates to CalculatingView
+    func startRecommendationGeneration() async {
+        guard let session = currentSession else { return }
+
+        do {
+            let jobResponse = try await recommendationService.generateRecommendations(
+                sessionId: session.id,
+                includeReviews: true
+            )
+            jobId = jobResponse.jobId
+            // Create the viewModel once and store it
+            calculatingViewModel = CalculatingViewModel(
+                sessionId: session.id,
+                jobId: jobResponse.jobId,
+                recommendationService: recommendationService
+            )
+            showCalculating = true
+        } catch {
+            self.error = handleNetworkError(error)
+        }
     }
 
     func createSession(restaurantId: String?, restaurantName: String? = nil) async {
@@ -230,8 +261,12 @@ final class MainViewModel: BaseViewModel {
 
     func resetSession() {
         // Reset navigation state
-        showPreferences = false
+        showCalculating = false
         showPhotoReview = false
+
+        // Reset recommendation state
+        jobId = nil
+        calculatingViewModel = nil
 
         // Reset session data
         capturedPhotos.removeAll()

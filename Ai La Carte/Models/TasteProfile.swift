@@ -30,10 +30,10 @@ final class TasteProfile {
         self.lastUpdatedAt = lastUpdatedAt
     }
 
-    func updateFromSession(_ preference: SessionPreference) {
+    func updateFromSession(_ preference: FoodPreference) {
         // Session preference uses 1-5 scale, we use 0-1
         let newSpice = Double(preference.spiceTolerance - 1) / 4.0
-        let newAdventurous = Double(preference.adventurousClassic - 1) / 4.0
+        let newAdventurous = Double(preference.adventurousness - 1) / 4.0
 
         // Weighted average: give more weight to newer data
         let weight = 0.7
@@ -140,6 +140,7 @@ enum AnalyticsEventType: String {
     case photoAccepted = "photo_accepted"
     case recommendClicked = "recommend_clicked"
     case sliderSet = "slider_set"
+    case preferenceAdjusted = "preference_adjusted"
     case recommendationViewed = "recommendation_viewed"
     case itemExpanded = "item_expanded"
     case itemTapped = "item_tapped"

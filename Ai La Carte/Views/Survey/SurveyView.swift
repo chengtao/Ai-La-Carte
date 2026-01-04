@@ -45,7 +45,7 @@ struct SurveyView: View {
 
     // MARK: - Survey Content
 
-    private func surveyContent(for item: RecommendationItemResponse) -> some View {
+    private func surveyContent(for item: ScoredFoodItem) -> some View {
         VStack(spacing: 32) {
             // Progress
             progressIndicator
@@ -107,10 +107,10 @@ struct SurveyView: View {
 
     // MARK: - Item Card
 
-    private func itemCard(for item: RecommendationItemResponse) -> some View {
+    private func itemCard(for item: ScoredFoodItem) -> some View {
         VStack(spacing: 12) {
-            // Icon with gradient
-            Image(systemName: item.type == "food" ? "fork.knife" : "wineglass")
+            // Icon with gradient (always food for ScoredFoodItem)
+            Image(systemName: "fork.knife")
                 .font(.system(size: 40))
                 .foregroundStyle(
                     LinearGradient(
@@ -216,22 +216,18 @@ struct SurveyView: View {
         viewModel: SurveyViewModel(
             sessionId: "test",
             items: [
-                RecommendationItemResponse(
-                    id: "1",
-                    type: "food",
-                    title: "Kung Pao Chicken",
-                    description: "Tender chicken with peanuts and chili peppers",
-                    reasons: [],
-                    confidence: 0.9,
-                    pairingIds: nil,
-                    photoUrl: nil,
-                    price: "$18.95",
-                    category: "entree",
-                    grapeVarietal: nil,
-                    region: nil,
-                    country: nil,
-                    priceGlass: nil,
-                    priceBottle: nil
+                ScoredFoodItem(
+                    item: FoodItemResponse(
+                        id: "1",
+                        title: "Kung Pao Chicken",
+                        description: "Tender chicken with peanuts and chili peppers",
+                        reasons: [],
+                        pairingIds: nil,
+                        photoUrl: nil,
+                        price: "$18.95",
+                        category: "entree"
+                    ),
+                    confidence: 0.9
                 )
             ],
             recommendationService: MockRecommendationAPIService(),

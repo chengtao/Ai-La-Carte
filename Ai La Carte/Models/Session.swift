@@ -44,13 +44,13 @@ final class Session {
         self.statusRaw = status.rawValue
     }
 
-    var sessionPreference: SessionPreference? {
+    var foodPreference: FoodPreference? {
         guard let adv = adventurousClassic, let spice = spiceTolerance else { return nil }
-        return SessionPreference(adventurousClassic: adv, spiceTolerance: spice)
+        return FoodPreference(adventurousness: adv, spiceTolerance: spice)
     }
 
-    func setPreference(_ preference: SessionPreference) {
-        self.adventurousClassic = preference.adventurousClassic
+    func setPreference(_ preference: FoodPreference) {
+        self.adventurousClassic = preference.adventurousness
         self.spiceTolerance = preference.spiceTolerance
     }
 
@@ -119,16 +119,16 @@ enum SessionStatus: String, Codable {
     }
 }
 
-// MARK: - Session Preference
+// MARK: - Food Preference
 
-struct SessionPreference: Codable, Equatable {
-    var adventurousClassic: Int // 1 = Classic, 5 = Adventurous
-    var spiceTolerance: Int     // 1 = Non-spicy, 5 = The spicier the better
+struct FoodPreference: Codable, Equatable {
+    var adventurousness: Int // 1 = Classic, 5 = Adventurous
+    var spiceTolerance: Int  // 1 = Non-spicy, 5 = The spicier the better
 
-    static let `default` = SessionPreference(adventurousClassic: 3, spiceTolerance: 3)
+    static let `default` = FoodPreference(adventurousness: 3, spiceTolerance: 3)
 
     var adventurousnessLabel: String {
-        switch adventurousClassic {
+        switch adventurousness {
         case 1: return "Classic comfort"
         case 2: return "Mostly familiar"
         case 3: return "Balanced"
@@ -149,6 +149,9 @@ struct SessionPreference: Codable, Equatable {
         }
     }
 }
+
+// Type alias for backwards compatibility during migration
+typealias SessionPreference = FoodPreference
 
 // MARK: - Session Response DTOs
 
