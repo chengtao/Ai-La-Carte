@@ -163,7 +163,7 @@ struct MainView: View {
                 nearbyRestaurantsSection
             }
 
-            // Capture Button + Photo Thumbnails
+            // Capture Button + Photo Thumbnails + Recommend Button
             HStack(alignment: .bottom) {
                 // Photo thumbnails or placeholder for centering
                 if !viewModel.capturedPhotos.isEmpty {
@@ -179,8 +179,12 @@ struct MainView: View {
 
                 Spacer()
 
-                // Placeholder to balance layout
-                Color.clear.frame(width: 80, height: 48)
+                // Recommend button or placeholder to balance layout
+                if !viewModel.capturedPhotos.isEmpty {
+                    recommendButton
+                } else {
+                    Color.clear.frame(width: 80, height: 48)
+                }
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
             .padding(.bottom, 40)
@@ -254,6 +258,29 @@ struct MainView: View {
             }
         }
         .disabled(viewModel.cameraState != .running)
+    }
+
+    // MARK: - Recommend Button
+
+    private var recommendButton: some View {
+        Button {
+            viewModel.showPreferenceSheet = true
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "sparkles")
+                    .font(.subheadline.weight(.semibold))
+                Text("Recommend")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                LinearGradient.magicPrimary
+            )
+            .clipShape(Capsule())
+            .shadow(color: Color.magicPurple.opacity(0.4), radius: 6, y: 2)
+        }
     }
 
     // MARK: - Photo Thumbnails
