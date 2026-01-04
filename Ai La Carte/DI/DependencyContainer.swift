@@ -31,6 +31,7 @@ protocol DependencyContainer: Sendable {
 
     // Utilities
     var imageCacheService: ImageCacheServiceProtocol { get }
+    var userPreferencesStorage: UserPreferencesStorageProtocol { get }
 
     // ViewModel Factory Methods (MainActor since ViewModels are @MainActor)
     @MainActor func makeWelcomeViewModel() -> WelcomeViewModel
@@ -76,8 +77,6 @@ protocol SessionAPIServiceProtocol: Sendable {
     func pickRestaurant(sessionId: String, restaurantId: String) async throws
     /// Uploads a photo to the session
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse
-    /// Submits user preferences for the session
-    func submitPreferences(sessionId: String, preferences: FoodPreference) async throws
 }
 
 protocol RecommendationAPIServiceProtocol: Sendable {

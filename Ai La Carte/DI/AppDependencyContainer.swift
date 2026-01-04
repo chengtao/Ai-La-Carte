@@ -68,6 +68,10 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         ImageCacheService()
     }()
 
+    lazy var userPreferencesStorage: UserPreferencesStorageProtocol = {
+        UserPreferencesStorage()
+    }()
+
     // MARK: - ViewModel Factory Methods
 
     @MainActor func makeWelcomeViewModel() -> WelcomeViewModel {
@@ -81,7 +85,8 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
             recommendationService: recommendationAPIService,
             locationService: locationService,
             cameraService: cameraService,
-            analyticsService: analyticsService
+            analyticsService: analyticsService,
+            userPreferencesStorage: userPreferencesStorage
         )
     }
 
@@ -108,7 +113,8 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
             preferences: preferences,
             recommendationService: recommendationAPIService,
             recommendationEngine: recommendationEngine,
-            analyticsService: analyticsService
+            analyticsService: analyticsService,
+            userPreferencesStorage: userPreferencesStorage
         )
     }
 
@@ -213,18 +219,6 @@ final class SessionAPIService: SessionAPIServiceProtocol, Sendable {
             endpoint: .uploadPhoto(sessionId: sessionId),
             imageData: imageData,
             fileName: "\(UUID().uuidString).jpg"
-        )
-    }
-
-    func submitPreferences(sessionId: String, preferences: FoodPreference) async throws {
-        let body = try JSONEncoder().encode([
-            "adventurous_classic": preferences.adventurousness,
-            "spice_tolerance": preferences.spiceTolerance
-        ])
-        try await networkManager.requestWithoutResponse(
-            endpoint: .submitPreferences(sessionId: sessionId),
-            method: .POST,
-            body: body
         )
     }
 }

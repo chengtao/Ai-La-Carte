@@ -83,6 +83,9 @@ struct MainView: View {
                         Task {
                             await viewModel.confirmPreferencesAndProceed()
                         }
+                    },
+                    onReset: {
+                        viewModel.resetPreferences()
                     }
                 )
                 .presentationDetents([.large])
@@ -334,6 +337,7 @@ struct CameraPreviewRepresentable: UIViewRepresentable {
         recommendationService: MockRecommendationAPIService(),
         locationService: MockLocationService(),
         cameraService: CameraService(),
-        analyticsService: MockAnalyticsService()
+        analyticsService: MockAnalyticsService(),
+        userPreferencesStorage: MockUserPreferencesStorage()
     ))
 }

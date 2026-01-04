@@ -254,7 +254,6 @@ struct ReasonTag: Codable, Identifiable, Hashable {
 struct RecommendationResponse: Codable {
     let food: [FoodItemResponse]
     let wine: [WineItemResponse]
-    let explanations: ExplanationsResponse?
 }
 
 // MARK: - Food Item Response
@@ -359,12 +358,4 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
 struct ReasonTagResponse: Codable, Hashable {
     let code: String
     let label: String
-}
-
-struct ExplanationsResponse: Codable {
-    let profileSummary: String?
-
-    enum CodingKeys: String, CodingKey {
-        case profileSummary = "profile_summary"
-    }
 }

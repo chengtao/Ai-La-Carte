@@ -43,7 +43,10 @@ struct RecommendationView: View {
         .sheet(isPresented: $viewModel.isPreferenceSheetPresented) {
             PreferenceSheetView(
                 preferences: $viewModel.currentPreferences,
-                isPresented: $viewModel.isPreferenceSheetPresented
+                isPresented: $viewModel.isPreferenceSheetPresented,
+                onReset: {
+                    viewModel.resetPreferences()
+                }
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
@@ -1099,7 +1102,8 @@ struct FlowLayout: Layout {
                 sessionId: "test",
                 recommendationService: MockRecommendationAPIService(),
                 recommendationEngine: MockRecommendationEngine(),
-                analyticsService: MockAnalyticsService()
+                analyticsService: MockAnalyticsService(),
+                userPreferencesStorage: MockUserPreferencesStorage()
             )
         )
     }

@@ -63,6 +63,10 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         MockImageCacheService()
     }()
 
+    lazy var userPreferencesStorage: UserPreferencesStorageProtocol = {
+        MockUserPreferencesStorage()
+    }()
+
     // MARK: - ViewModel Factory Methods
 
     @MainActor func makeWelcomeViewModel() -> WelcomeViewModel {
@@ -76,7 +80,8 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
             recommendationService: recommendationAPIService,
             locationService: locationService,
             cameraService: cameraService,
-            analyticsService: analyticsService
+            analyticsService: analyticsService,
+            userPreferencesStorage: userPreferencesStorage
         )
     }
 
@@ -103,7 +108,8 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
             preferences: preferences,
             recommendationService: recommendationAPIService,
             recommendationEngine: recommendationEngine,
-            analyticsService: analyticsService
+            analyticsService: analyticsService,
+            userPreferencesStorage: userPreferencesStorage
         )
     }
 
@@ -256,12 +262,6 @@ final class MockSessionAPIService: SessionAPIServiceProtocol, @unchecked Sendabl
             photoId: photoId,
             url: "https://mock.ailacarte.app/photos/\(photoId).jpg"
         )
-    }
-
-    func submitPreferences(sessionId: String, preferences: FoodPreference) async throws {
-        try await Task.sleep(nanoseconds: 300_000_000)
-
-        AppLogger.shared.info("[MOCK] Submitted preferences for session \(sessionId): adventurous=\(preferences.adventurousness), spice=\(preferences.spiceTolerance)", category: AppLogger.Category.session)
     }
 }
 
@@ -517,8 +517,7 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
 
         return RecommendationResponse(
             food: foodItems,
-            wine: wineItems,
-            explanations: ExplanationsResponse(profileSummary: "Based on your preference for balanced adventure and medium spice, we've selected dishes that blend familiar comfort with exciting new flavors.")
+            wine: wineItems
         )
     }
 
@@ -614,5 +613,35 @@ final class MockImageCacheService: ImageCacheServiceProtocol, @unchecked Sendabl
 
     func clearCache() async {
         lock.withLock { _cache.removeAll() }
+    }
+}
+
+// MARK: - Mock User Preferences Storage
+// Note: Uses real UserDefaults so preferences persist across app restarts even in mock mode
+
+final class MockUserPreferencesStorage: UserPreferencesStorageProtocol, Sendable {
+    private let key = AppConstants.Storage.userPreferencesKey
+
+    func loadPreferences() -> UserPreferences {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let preferences = try? JSONDecoder().decode(UserPreferences.self, from: data)
+        else {
+            AppLogger.shared.debug("[MOCK] No saved preferences found, using defaults", category: AppLogger.Category.session)
+            return .default
+        }
+        AppLogger.shared.debug("[MOCK] Loaded preferences: adventurous=\(preferences.food.adventurousness), spice=\(preferences.food.spiceTolerance)", category: AppLogger.Category.session)
+        return preferences
+    }
+
+    func savePreferences(_ preferences: UserPreferences) {
+        if let data = try? JSONEncoder().encode(preferences) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+        AppLogger.shared.debug("[MOCK] Saved preferences: adventurous=\(preferences.food.adventurousness), spice=\(preferences.food.spiceTolerance)", category: AppLogger.Category.session)
+    }
+
+    func resetPreferences() {
+        UserDefaults.standard.removeObject(forKey: key)
+        AppLogger.shared.debug("[MOCK] Reset preferences to defaults", category: AppLogger.Category.session)
     }
 }

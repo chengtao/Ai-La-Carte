@@ -34,8 +34,14 @@ final class MainViewModel: BaseViewModel {
     var showAccount = false
     var pendingPhoto: UIImage?
 
-    // User preferences for recommendations
-    var userPreferences: UserPreferences = .default
+    // User preferences for recommendations - auto-saves on change
+    var userPreferences: UserPreferences = .default {
+        didSet {
+            if oldValue != userPreferences {
+                userPreferencesStorage.savePreferences(userPreferences)
+            }
+        }
+    }
 
     // Recommendation generation
     var jobId: String?
@@ -47,6 +53,7 @@ final class MainViewModel: BaseViewModel {
     private let locationService: LocationServiceProtocol
     let cameraService: CameraServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
+    private let userPreferencesStorage: UserPreferencesStorageProtocol
 
     init(
         restaurantService: RestaurantAPIServiceProtocol,
@@ -54,7 +61,8 @@ final class MainViewModel: BaseViewModel {
         recommendationService: RecommendationAPIServiceProtocol,
         locationService: LocationServiceProtocol,
         cameraService: CameraServiceProtocol,
-        analyticsService: AnalyticsServiceProtocol
+        analyticsService: AnalyticsServiceProtocol,
+        userPreferencesStorage: UserPreferencesStorageProtocol
     ) {
         self.restaurantService = restaurantService
         self.sessionService = sessionService
@@ -62,7 +70,11 @@ final class MainViewModel: BaseViewModel {
         self.locationService = locationService
         self.cameraService = cameraService
         self.analyticsService = analyticsService
+        self.userPreferencesStorage = userPreferencesStorage
         super.init()
+
+        // Load preferences from storage
+        self.userPreferences = userPreferencesStorage.loadPreferences()
     }
 
     // MARK: - Camera
@@ -368,7 +380,20 @@ final class MainViewModel: BaseViewModel {
         lastReportedLocation = nil
         sessionRegistered = false
 
-        // Reset preferences to default
+        // Note: User preferences are NOT reset here since they are user-level, not session-level
+        // Preferences persist across sessions
+    }
+
+    // MARK: - Preferences
+
+    /// Saves user preferences to local storage
+    func savePreferences(_ preferences: UserPreferences) {
+        userPreferencesStorage.savePreferences(preferences)
+    }
+
+    /// Resets user preferences to defaults
+    func resetPreferences() {
+        userPreferencesStorage.resetPreferences()
         userPreferences = .default
     }
 

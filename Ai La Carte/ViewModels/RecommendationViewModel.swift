@@ -24,11 +24,12 @@ final class RecommendationViewModel: BaseViewModel {
     var expandedItemId: String?
     var selectedTab: RecommendationTab = .food
 
-    // Preference state - local to this view, triggers re-scoring on change
+    // Preference state - triggers re-scoring and saves to storage on change
     var currentPreferences: UserPreferences = .default {
         didSet {
             if oldValue != currentPreferences {
                 recalculateScores()
+                userPreferencesStorage.savePreferences(currentPreferences)
             }
         }
     }
@@ -43,19 +44,22 @@ final class RecommendationViewModel: BaseViewModel {
     private let recommendationService: RecommendationAPIServiceProtocol
     private let recommendationEngine: RecommendationEngineProtocol
     private let analyticsService: AnalyticsServiceProtocol
+    private let userPreferencesStorage: UserPreferencesStorageProtocol
 
     init(
         sessionId: String,
         preferences: UserPreferences = .default,
         recommendationService: RecommendationAPIServiceProtocol,
         recommendationEngine: RecommendationEngineProtocol,
-        analyticsService: AnalyticsServiceProtocol
+        analyticsService: AnalyticsServiceProtocol,
+        userPreferencesStorage: UserPreferencesStorageProtocol
     ) {
         self.sessionId = sessionId
         self.currentPreferences = preferences
         self.recommendationService = recommendationService
         self.recommendationEngine = recommendationEngine
         self.analyticsService = analyticsService
+        self.userPreferencesStorage = userPreferencesStorage
         super.init()
     }
 
@@ -267,6 +271,14 @@ final class RecommendationViewModel: BaseViewModel {
     func clearCart() {
         foodCartItems.removeAll()
         wineCartItems.removeAll()
+    }
+
+    // MARK: - Preferences
+
+    /// Resets user preferences to defaults
+    func resetPreferences() {
+        userPreferencesStorage.resetPreferences()
+        currentPreferences = .default
     }
 }
 

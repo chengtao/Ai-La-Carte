@@ -14,6 +14,7 @@ enum AppConstants {
         static let currentUserIdKey = "current_user_id"
         static let deviceIdKey = "device_id"
         static let tasteProfileKey = "taste_profile"
+        static let userPreferencesKey = "user_preferences"
 
         enum Keychain {
             static let authTokenKey = "auth_token"

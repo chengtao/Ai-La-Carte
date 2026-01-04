@@ -27,6 +27,7 @@ struct PreferenceSheetView: View {
     @Binding var preferences: UserPreferences
     @Binding var isPresented: Bool
     var onContinue: (() -> Void)?
+    var onReset: (() -> Void)?
 
     @State private var selectedTab: PreferenceTab = .food
 
@@ -69,6 +70,21 @@ struct PreferenceSheetView: View {
                 .padding(.top, 8)
 
             HStack {
+                // Reset button
+                Button {
+                    preferences = .default
+                    onReset?()
+                } label: {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.body)
+                        .foregroundStyle(Color.magicPurple)
+                        .padding(8)
+                        .background(
+                            Circle()
+                                .fill(Color.magicPurple.opacity(0.1))
+                        )
+                }
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Your Preferences")
                         .font(.headline)
@@ -234,6 +250,12 @@ struct FoodPreferencesTab: View {
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
             .padding(.vertical, 20)
+        }
+        // Sync local state when preferences change externally (e.g., reset button)
+        .onChange(of: preferences) { _, newValue in
+            localAdventurousness = Double(newValue.adventurousness)
+            localSpiceTolerance = Double(newValue.spiceTolerance)
+            localRichness = Double(newValue.richness)
         }
     }
 }

@@ -290,7 +290,6 @@ enum APIEndpoint: Sendable {
     case updateSessionLocation(sessionId: String)
     case pickRestaurant(sessionId: String)
     case uploadPhoto(sessionId: String)
-    case submitPreferences(sessionId: String)
 
     // Recommendations
     case generateRecommendations(sessionId: String)
@@ -319,8 +318,6 @@ enum APIEndpoint: Sendable {
             return "/sessions/\(sessionId)/restaurant"
         case .uploadPhoto(let sessionId):
             return "/sessions/\(sessionId)/photos"
-        case .submitPreferences(let sessionId):
-            return "/sessions/\(sessionId)/preferences"
         case .generateRecommendations(let sessionId):
             return "/sessions/\(sessionId)/recommendations:generate"
         case .recommendationStatus(let sessionId, let jobId):
