@@ -9,6 +9,7 @@ import Foundation
 
 /// Protocol for centralized preference management
 /// Single source of truth for user preferences across all ViewModels
+@MainActor
 protocol PreferenceManagerProtocol: Sendable {
     /// The current user preferences
     var currentPreferences: UserPreferences { get }

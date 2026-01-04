@@ -205,15 +205,44 @@ struct MainView: View {
     // MARK: - Loading Restaurants View
 
     private var loadingRestaurantsView: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                Text("Take menu photos to start your personalized recommendations")
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .font(.title3)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.magicPurple, .magicPink],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .symbolEffect(.pulse.byLayer, options: .repeating)
+
+                Text("Snap the menu")
                     .font(.titleMedium)
-                    .foregroundStyle(.white.opacity(0.9))
+                    .foregroundStyle(.white)
+
+                Image(systemName: "arrow.right")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.6))
+
+                Text("Get perfect picks")
+                    .font(.titleMedium)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.magicPurple, .magicPink],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
             }
-            .padding(.horizontal, AppConstants.UI.defaultPadding)
-            .padding(.vertical, 16)
+
+            Text("AI-powered recommendations just for you")
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.6))
         }
+        .padding(.horizontal, AppConstants.UI.defaultPadding)
+        .padding(.vertical, 16)
     }
 
     // MARK: - Nearby Restaurants
