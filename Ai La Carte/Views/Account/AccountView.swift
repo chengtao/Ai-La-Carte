@@ -56,27 +56,6 @@ struct AccountView: View {
                     }
                 }
 
-                Section("About") {
-                    HStack {
-                        Text("Version")
-                        Spacer()
-                        Text("1.0.0")
-                            .foregroundStyle(.secondary)
-                    }
-
-                    NavigationLink {
-                        Text("Privacy Policy")
-                    } label: {
-                        Text("Privacy Policy")
-                    }
-
-                    NavigationLink {
-                        Text("Terms of Service")
-                    } label: {
-                        Text("Terms of Service")
-                    }
-                }
-
                 Section {
                     Button(role: .destructive) {
                         // TODO: Implement delete account

@@ -144,17 +144,6 @@ struct WelcomeView: View {
             }
             .buttonStyle(MagicButtonStyle())
             .disabled(viewModel.isLoading)
-
-            // Secondary Button (skip)
-            if viewModel.currentStep == .welcome {
-                Button {
-                    viewModel.proceedWithoutPermissions()
-                } label: {
-                    Text("Maybe later")
-                        .font(.bodyMedium)
-                        .foregroundStyle(.secondary)
-                }
-            }
         }
     }
 

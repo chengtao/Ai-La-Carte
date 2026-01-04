@@ -135,7 +135,7 @@ struct MainView: View {
             }
         }
         .padding(.horizontal, AppConstants.UI.defaultPadding)
-        .padding(.top, 60)
+        .padding(.top, 8)
     }
 
     // MARK: - Bottom Section
