@@ -160,12 +160,20 @@ struct PreferenceSheetView: View {
 
     // MARK: - Continue Button
 
+    private var isDefaultPreferences: Bool {
+        preferences == .default
+    }
+
+    private var continueButtonText: String {
+        isDefaultPreferences ? "Continue with Default Settings" : "Continue with Your Settings"
+    }
+
     private func continueButton(action: @escaping () -> Void) -> some View {
         Button {
             action()
         } label: {
             HStack(spacing: 8) {
-                Text("Continue")
+                Text(continueButtonText)
                     .font(.headline)
                 Image(systemName: "arrow.right")
                     .font(.subheadline.weight(.semibold))
