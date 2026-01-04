@@ -65,9 +65,7 @@ struct MainView: View {
                         },
                         onRecommend: {
                             viewModel.showPhotoReview = false
-                            Task {
-                                await viewModel.startRecommendationGeneration()
-                            }
+                            viewModel.showPreferenceSheet = true
                         }
                     )
                 }
@@ -76,6 +74,20 @@ struct MainView: View {
                 if let calculatingViewModel = viewModel.calculatingViewModel {
                     CalculatingView(viewModel: calculatingViewModel)
                 }
+            }
+            .sheet(isPresented: $viewModel.showPreferenceSheet) {
+                PreferenceSheetView(
+                    preferences: $viewModel.userPreferences,
+                    isPresented: $viewModel.showPreferenceSheet,
+                    onContinue: {
+                        Task {
+                            await viewModel.confirmPreferencesAndProceed()
+                        }
+                    }
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .interactiveDismissDisabled()
             }
             .sheet(isPresented: $viewModel.showAccount) {
                 AccountView()

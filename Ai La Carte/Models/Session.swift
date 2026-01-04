@@ -19,6 +19,7 @@ final class Session {
     // Session preferences
     var adventurousClassic: Int? // 1-5
     var spiceTolerance: Int? // 1-5
+    var richness: Int? // 1-5
 
     // Relationships
     @Relationship(deleteRule: .cascade, inverse: \PhotoAsset.session) var photos: [PhotoAsset] = []
@@ -46,12 +47,13 @@ final class Session {
 
     var foodPreference: FoodPreference? {
         guard let adv = adventurousClassic, let spice = spiceTolerance else { return nil }
-        return FoodPreference(adventurousness: adv, spiceTolerance: spice)
+        return FoodPreference(adventurousness: adv, spiceTolerance: spice, richness: richness ?? 3)
     }
 
     func setPreference(_ preference: FoodPreference) {
         self.adventurousClassic = preference.adventurousness
         self.spiceTolerance = preference.spiceTolerance
+        self.richness = preference.richness
     }
 
     var foodRecommendations: [RecommendationItem] {
@@ -124,8 +126,9 @@ enum SessionStatus: String, Codable {
 struct FoodPreference: Codable, Equatable {
     var adventurousness: Int // 1 = Classic, 5 = Adventurous
     var spiceTolerance: Int  // 1 = Non-spicy, 5 = The spicier the better
+    var richness: Int        // 1 = Light, 5 = Rich
 
-    static let `default` = FoodPreference(adventurousness: 3, spiceTolerance: 3)
+    static let `default` = FoodPreference(adventurousness: 3, spiceTolerance: 3, richness: 3)
 
     var adventurousnessLabel: String {
         switch adventurousness {
@@ -148,6 +151,84 @@ struct FoodPreference: Codable, Equatable {
         default: return "Medium"
         }
     }
+
+    var richnessLabel: String {
+        switch richness {
+        case 1: return "Very light"
+        case 2: return "Light"
+        case 3: return "Balanced"
+        case 4: return "Rich"
+        case 5: return "Very rich"
+        default: return "Balanced"
+        }
+    }
+}
+
+// MARK: - Wine Preference
+
+struct WinePreference: Codable, Equatable {
+    var countries: Set<WineCountry>
+    var whiteVarietals: Set<WhiteGrapeVarietal>
+    var redVarietals: Set<RedGrapeVarietal>
+    var flavors: Set<WineFlavor>
+
+    static let `default` = WinePreference(
+        countries: Set(WineCountry.allCases),
+        whiteVarietals: Set(WhiteGrapeVarietal.allCases),
+        redVarietals: Set(RedGrapeVarietal.allCases),
+        flavors: Set(WineFlavor.allCases)
+    )
+
+    var isEmpty: Bool {
+        countries.isEmpty && whiteVarietals.isEmpty && redVarietals.isEmpty && flavors.isEmpty
+    }
+}
+
+enum WineCountry: String, Codable, CaseIterable, Identifiable {
+    case france = "France"
+    case usa = "USA"
+    case italy = "Italy"
+    case spain = "Spain"
+    case others = "Others"
+
+    var id: String { rawValue }
+}
+
+enum WhiteGrapeVarietal: String, Codable, CaseIterable, Identifiable {
+    case sauvignonBlanc = "Sauvignon Blanc"
+    case chardonnay = "Chardonnay"
+    case pinotGrigio = "Pinot Grigio"
+    case others = "Others"
+
+    var id: String { rawValue }
+}
+
+enum RedGrapeVarietal: String, Codable, CaseIterable, Identifiable {
+    case pinotNoir = "Pinot Noir"
+    case cabernetSauvignon = "Cabernet Sauvignon"
+    case merlot = "Merlot"
+    case others = "Others"
+
+    var id: String { rawValue }
+}
+
+enum WineFlavor: String, Codable, CaseIterable, Identifiable {
+    case elegant = "Elegant"
+    case fruity = "Fruity"
+    case fullBody = "Full-Body"
+    case sweet = "Sweet"
+    case acidic = "Acidic"
+
+    var id: String { rawValue }
+}
+
+// MARK: - Combined User Preferences
+
+struct UserPreferences: Codable, Equatable {
+    var food: FoodPreference
+    var wine: WinePreference
+
+    static let `default` = UserPreferences(food: .default, wine: .default)
 }
 
 // Type alias for backwards compatibility during migration

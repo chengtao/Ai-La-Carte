@@ -29,9 +29,13 @@ final class MainViewModel: BaseViewModel {
 
     // Navigation
     var showPhotoReview = false
+    var showPreferenceSheet = false
     var showCalculating = false
     var showAccount = false
     var pendingPhoto: UIImage?
+
+    // User preferences for recommendations
+    var userPreferences: UserPreferences = .default
 
     // Recommendation generation
     var jobId: String?
@@ -263,7 +267,24 @@ final class MainViewModel: BaseViewModel {
             AppLogger.shared.error("Failed to pick restaurant: \(error)", category: AppLogger.Category.network)
         }
 
-        // Start recommendation generation and navigate to calculating view
+        // Show preference sheet before starting recommendation generation
+        showPreferenceSheet = true
+    }
+
+    /// Called when user confirms preferences and wants to proceed with recommendations
+    func confirmPreferencesAndProceed() async {
+        showPreferenceSheet = false
+
+        analyticsService.track(
+            event: .sliderSet,
+            sessionId: currentSession?.id,
+            meta: [
+                "adventurousness": "\(userPreferences.food.adventurousness)",
+                "spice": "\(userPreferences.food.spiceTolerance)",
+                "richness": "\(userPreferences.food.richness)"
+            ]
+        )
+
         await startRecommendationGeneration()
     }
 
@@ -332,6 +353,7 @@ final class MainViewModel: BaseViewModel {
         // Reset navigation state
         showCalculating = false
         showPhotoReview = false
+        showPreferenceSheet = false
 
         // Reset recommendation state
         jobId = nil
@@ -344,6 +366,9 @@ final class MainViewModel: BaseViewModel {
         pendingPhoto = nil
         lastReportedLocation = nil
         sessionRegistered = false
+
+        // Reset preferences to default
+        userPreferences = .default
     }
 
     var mostLikelyRestaurant: RestaurantResponse? {

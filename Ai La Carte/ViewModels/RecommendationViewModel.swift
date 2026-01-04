@@ -25,7 +25,7 @@ final class RecommendationViewModel: BaseViewModel {
     var selectedTab: RecommendationTab = .food
 
     // Preference state - local to this view, triggers re-scoring on change
-    var currentPreferences: FoodPreference = .default {
+    var currentPreferences: UserPreferences = .default {
         didSet {
             if oldValue != currentPreferences {
                 recalculateScores()
@@ -87,11 +87,11 @@ final class RecommendationViewModel: BaseViewModel {
     private func recalculateScores() {
         scoredFoodRecommendations = recommendationEngine.scoreFood(
             items: rawFoodItems,
-            preferences: currentPreferences
+            preferences: currentPreferences.food
         )
         scoredWineRecommendations = recommendationEngine.scoreWine(
             items: rawWineItems,
-            preferences: currentPreferences
+            preferences: currentPreferences.food
         )
 
         // Update cart items with new scores
@@ -101,8 +101,9 @@ final class RecommendationViewModel: BaseViewModel {
             event: .preferenceAdjusted,
             sessionId: sessionId,
             meta: [
-                "adventurousness": "\(currentPreferences.adventurousness)",
-                "spice": "\(currentPreferences.spiceTolerance)"
+                "adventurousness": "\(currentPreferences.food.adventurousness)",
+                "spice": "\(currentPreferences.food.spiceTolerance)",
+                "richness": "\(currentPreferences.food.richness)"
             ]
         )
     }

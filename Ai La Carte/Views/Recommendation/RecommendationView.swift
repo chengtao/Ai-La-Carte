@@ -45,7 +45,7 @@ struct RecommendationView: View {
                 preferences: $viewModel.currentPreferences,
                 isPresented: $viewModel.isPreferenceSheetPresented
             )
-            .presentationDetents([.height(300), .medium])
+            .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
             .presentationBackgroundInteraction(.enabled)
         }
