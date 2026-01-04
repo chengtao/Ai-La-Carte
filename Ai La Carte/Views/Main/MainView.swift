@@ -142,8 +142,10 @@ struct MainView: View {
 
     private var bottomSection: some View {
         VStack(spacing: 16) {
-            // Nearby Restaurants Overlay
-            if !viewModel.nearbyRestaurants.isEmpty {
+            // Nearby Restaurants Overlay or Loading State
+            if viewModel.isLoadingRestaurants && viewModel.nearbyRestaurants.isEmpty {
+                loadingRestaurantsView
+            } else if !viewModel.nearbyRestaurants.isEmpty {
                 nearbyRestaurantsSection
             }
 
@@ -177,6 +179,23 @@ struct MainView: View {
             )
             .ignoresSafeArea(edges: .bottom)
         )
+    }
+
+    // MARK: - Loading Restaurants View
+
+    private var loadingRestaurantsView: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                ProgressView()
+                    .tint(.white)
+
+                Text("Finding nearby restaurants...")
+                    .font(.bodyMedium)
+                    .foregroundStyle(.white.opacity(0.9))
+            }
+            .padding(.horizontal, AppConstants.UI.defaultPadding)
+            .padding(.vertical, 16)
+        }
     }
 
     // MARK: - Nearby Restaurants
