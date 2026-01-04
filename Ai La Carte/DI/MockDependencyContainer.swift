@@ -173,49 +173,49 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
             RestaurantResponse(
                 id: "r1",
                 name: "Golden Dragon",
-                distanceMeters: 42,
+                cuisine: "Chinese",
+                address: "123 Main Street",
                 hasFoodMenu: true,
                 hasWineMenu: false,
-                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 2)),
-                confidence: 95
+                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 2))
             ),
             RestaurantResponse(
                 id: "r2",
                 name: "Trattoria Milano",
-                distanceMeters: 120,
+                cuisine: "Italian",
+                address: "456 Oak Avenue",
                 hasFoodMenu: true,
                 hasWineMenu: true,
-                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400)),
-                confidence: 88
+                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400))
             ),
             RestaurantResponse(
                 id: "r3",
                 name: "Sakura Sushi",
-                distanceMeters: 85,
+                cuisine: "Japanese",
+                address: "789 Cherry Lane",
                 hasFoodMenu: true,
                 hasWineMenu: true,
-                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 5)),
-                confidence: 72
+                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 5))
             ),
             RestaurantResponse(
                 id: "r4",
                 name: "The Spice Room",
-                distanceMeters: 200,
+                cuisine: "Indian",
+                address: "321 Curry Road",
                 hasFoodMenu: true,
                 hasWineMenu: false,
-                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3)),
-                confidence: 65
+                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3))
             ),
             RestaurantResponse(
                 id: "r5",
                 name: "Bistro Parisien",
-                distanceMeters: 350,
+                cuisine: "French",
+                address: "555 French Quarter",
                 hasFoodMenu: true,
                 hasWineMenu: true,
-                menuUpdatedAt: ISO8601DateFormatter().string(from: Date()),
-                confidence: 80
+                menuUpdatedAt: ISO8601DateFormatter().string(from: Date())
             )
-        ].sorted { $0.distanceMeters < $1.distanceMeters }
+        ]
     }
 }
 

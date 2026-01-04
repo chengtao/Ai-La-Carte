@@ -147,13 +147,12 @@ struct MainView: View {
                 nearbyRestaurantsSection
             }
 
-            // Capture Button + Photo Count
+            // Capture Button + Photo Thumbnails
             HStack(alignment: .bottom) {
                 // Photo thumbnails or placeholder for centering
                 if !viewModel.capturedPhotos.isEmpty {
                     photoThumbnails
                 } else {
-                    // Placeholder to balance the right side
                     Color.clear.frame(width: 80, height: 48)
                 }
 
@@ -164,12 +163,8 @@ struct MainView: View {
 
                 Spacer()
 
-                // Recommend button (if has photos) or placeholder
-                if viewModel.hasPhotosOrRestaurant {
-                    recommendButton
-                } else {
-                    Color.clear.frame(width: 80, height: 48)
-                }
+                // Placeholder to balance layout
+                Color.clear.frame(width: 80, height: 48)
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
             .padding(.bottom, 40)
@@ -190,7 +185,7 @@ struct MainView: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             if let mostLikely = viewModel.mostLikelyRestaurant {
-                Text("Are you at \(mostLikely.name)?")
+                Text("Are you at?")
                     .font(.titleMedium)
                     .foregroundStyle(.white)
             } else {
@@ -264,36 +259,6 @@ struct MainView: View {
         }
     }
 
-    // MARK: - Recommend Button
-
-    private var recommendButton: some View {
-        Button {
-            viewModel.proceedToRecommendations()
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "sparkles")
-                    .font(.caption)
-                Text("Recommend")
-            }
-                .font(.labelLarge)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 12)
-                .background(
-                    ZStack {
-                        Capsule()
-                            .fill(LinearGradient.magicPrimary)
-                            .blur(radius: 4)
-                            .opacity(0.6)
-                            .offset(y: 2)
-
-                        Capsule()
-                            .fill(LinearGradient.magicPrimary)
-                    }
-                )
-        }
-    }
 }
 
 // MARK: - Camera Preview Representable

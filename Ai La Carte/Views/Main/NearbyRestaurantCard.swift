@@ -20,18 +20,24 @@ struct NearbyRestaurantCard: View {
                     .foregroundColor(.primary)
                     .lineLimit(1)
 
-                // Distance and update time
-                HStack {
-                    Text(restaurant.formattedDistance)
-                        .font(.caption)
+                // Cuisine
+                if let cuisine = restaurant.cuisine {
+                    Text(cuisine)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
 
-                    Spacer()
-
-                    if let age = restaurant.menuAgeDescription {
-                        Text("Updated \(age)")
+                // Address with icon
+                if let address = restaurant.address {
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text(address)
                             .font(.caption)
                             .foregroundColor(.secondary)
+                            .lineLimit(1)
                     }
                 }
 
@@ -46,42 +52,21 @@ struct NearbyRestaurantCard: View {
                     }
                 }
 
-                // Confidence indicator with magical styling
-                if restaurant.confidence >= 80 {
+                // Last updated at bottom
+                if let age = restaurant.menuAgeDescription {
                     HStack(spacing: 4) {
-                        Image(systemName: "sparkle")
-                            .font(.caption)
-                            .foregroundStyle(Color.magicPurple)
-
-                        Text("Most likely")
-                            .font(.caption)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.magicPurple, Color.magicPink],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                        Image(systemName: "clock")
+                            .font(.caption2)
+                        Text(age)
+                            .font(.caption2)
                     }
+                    .foregroundStyle(.tertiary)
                 }
             }
             .padding(AppConstants.UI.cardPadding)
             .frame(width: 200)
             .background(Color.appCardBackground)
             .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius)
-                    .stroke(
-                        restaurant.confidence >= 80
-                            ? LinearGradient(
-                                colors: [Color.magicPurple.opacity(0.4), Color.magicPink.opacity(0.2)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            : LinearGradient(colors: [Color.clear], startPoint: .leading, endPoint: .trailing),
-                        lineWidth: restaurant.confidence >= 80 ? 1.5 : 0
-                    )
-            )
             .shadow(color: Color.magicPurple.opacity(0.15), radius: 10, y: 4)
         }
         .buttonStyle(.plain)
@@ -147,11 +132,11 @@ struct MenuBadge: View {
             restaurant: RestaurantResponse(
                 id: "1",
                 name: "Golden Dragon",
-                distanceMeters: 42,
+                cuisine: "Chinese",
+                address: "123 Main Street",
                 hasFoodMenu: true,
                 hasWineMenu: false,
-                menuUpdatedAt: ISO8601DateFormatter().string(from: Date()),
-                confidence: 95
+                menuUpdatedAt: ISO8601DateFormatter().string(from: Date())
             )
         ) {}
 
@@ -159,11 +144,11 @@ struct MenuBadge: View {
             restaurant: RestaurantResponse(
                 id: "2",
                 name: "Trattoria Milano",
-                distanceMeters: 150,
+                cuisine: "Italian",
+                address: "456 Oak Avenue",
                 hasFoodMenu: true,
                 hasWineMenu: true,
-                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3)),
-                confidence: 72
+                menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3))
             )
         ) {}
     }

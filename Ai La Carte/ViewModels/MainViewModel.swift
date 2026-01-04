@@ -221,13 +221,6 @@ final class MainViewModel: BaseViewModel {
         }
     }
 
-    func proceedToRecommendations() {
-        guard !capturedPhotos.isEmpty || selectedRestaurant != nil else { return }
-
-        analyticsService.track(event: .recommendClicked, sessionId: currentSession?.id, meta: nil)
-        showPreferences = true
-    }
-
     func cancelSession() {
         capturedPhotos.removeAll()
         currentSession = nil
@@ -247,12 +240,8 @@ final class MainViewModel: BaseViewModel {
         pendingPhoto = nil
     }
 
-    var hasPhotosOrRestaurant: Bool {
-        !capturedPhotos.isEmpty || selectedRestaurant != nil
-    }
-
     var mostLikelyRestaurant: RestaurantResponse? {
-        nearbyRestaurants.first { $0.confidence >= 80 }
+        nearbyRestaurants.first
     }
 }
 

@@ -55,29 +55,20 @@ final class Restaurant {
 struct RestaurantResponse: Codable, Identifiable, Hashable {
     let id: String
     let name: String
-    let distanceMeters: Double
+    let cuisine: String?
+    let address: String?
     let hasFoodMenu: Bool
     let hasWineMenu: Bool
     let menuUpdatedAt: String?
-    let confidence: Int
 
     enum CodingKeys: String, CodingKey {
         case id
         case name
-        case distanceMeters = "distance_m"
+        case cuisine
+        case address
         case hasFoodMenu = "has_food_menu"
         case hasWineMenu = "has_wine_menu"
         case menuUpdatedAt = "menu_updated_at"
-        case confidence
-    }
-
-    var formattedDistance: String {
-        if distanceMeters < 1000 {
-            return "\(Int(distanceMeters))m"
-        } else {
-            let km = distanceMeters / 1000
-            return String(format: "%.1fkm", km)
-        }
     }
 
     var menuAgeDescription: String? {
@@ -89,17 +80,17 @@ struct RestaurantResponse: Codable, Identifiable, Hashable {
         let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
 
         if days == 0 {
-            return "Updated today"
+            return "Today"
         } else if days == 1 {
-            return "Updated yesterday"
+            return "Yesterday"
         } else if days < 7 {
-            return "Updated \(days)d ago"
+            return "\(days)d ago"
         } else if days < 30 {
             let weeks = days / 7
-            return "Updated \(weeks)w ago"
+            return "\(weeks)w ago"
         } else {
             let months = days / 30
-            return "Updated \(months)mo ago"
+            return "\(months)mo ago"
         }
     }
 }
