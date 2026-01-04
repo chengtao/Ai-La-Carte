@@ -82,7 +82,7 @@ enum SessionStatus: String, Codable {
         case .created:
             return "Getting started..."
         case .photosUploading:
-            return "Uploading photos for processing..."
+            return "Preparing the menu..."
         case .parsingMenu:
             return "Reading the menu..."
         case .collectingReviews:
@@ -173,10 +173,10 @@ struct WinePreference: Codable, Equatable {
     var flavors: Set<WineFlavor>
 
     static let `default` = WinePreference(
-        countries: Set(WineCountry.allCases),
-        whiteVarietals: Set(WhiteGrapeVarietal.allCases),
-        redVarietals: Set(RedGrapeVarietal.allCases),
-        flavors: Set(WineFlavor.allCases)
+        countries: [],
+        whiteVarietals: [],
+        redVarietals: [],
+        flavors: []
     )
 
     var isEmpty: Bool {
