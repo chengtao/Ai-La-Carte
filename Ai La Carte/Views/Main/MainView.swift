@@ -48,27 +48,25 @@ struct MainView: View {
             .onDisappear {
                 viewModel.stopCamera()
             }
-            .sheet(isPresented: $viewModel.showPhotoReview) {
-                if let photo = viewModel.pendingPhoto {
-                    PhotoReviewSheet(
-                        viewModel: dependencyContainer.makePhotoReviewViewModel(
-                            sessionId: viewModel.currentSession?.id ?? "",
-                            photo: photo
-                        ),
-                        onAccept: { acceptedPhoto in
-                            Task {
-                                await viewModel.acceptPhoto(acceptedPhoto)
-                            }
-                        },
-                        onRetake: {
-                            viewModel.pendingPhoto = nil
-                        },
-                        onRecommend: {
-                            viewModel.showPhotoReview = false
-                            viewModel.showPreferenceSheet = true
+            .fullScreenCover(isPresented: $viewModel.showPhotoCarouselReview) {
+                PhotoCarouselReviewView(
+                    viewModel: dependencyContainer.makePhotoCarouselReviewViewModel(
+                        photos: viewModel.pendingPhotos,
+                        sessionId: viewModel.currentSession?.id
+                    ),
+                    onContinue: { reviewedPhotos in
+                        Task {
+                            await viewModel.completeReview(withPhotos: reviewedPhotos)
                         }
-                    )
-                }
+                    },
+                    onTakeMore: {
+                        viewModel.returnToCamera()
+                    },
+                    onDiscardAll: {
+                        viewModel.discardAllPendingPhotos()
+                    },
+                    launchedFromThumbnails: viewModel.reviewLaunchedFromThumbnails
+                )
             }
             .navigationDestination(isPresented: $viewModel.showCalculating) {
                 if let calculatingViewModel = viewModel.calculatingViewModel {
@@ -147,7 +145,7 @@ struct MainView: View {
             // Capture Button + Photo Thumbnails + Recommend Button
             HStack(alignment: .bottom) {
                 // Photo thumbnails or placeholder for centering
-                if !viewModel.capturedPhotos.isEmpty {
+                if !viewModel.pendingPhotos.isEmpty {
                     photoThumbnails
                 } else {
                     Color.clear.frame(width: 80, height: 48)
@@ -161,7 +159,7 @@ struct MainView: View {
                 Spacer()
 
                 // Recommend button or placeholder to balance layout
-                if !viewModel.capturedPhotos.isEmpty {
+                if !viewModel.pendingPhotos.isEmpty {
                     recommendButton
                 } else {
                     Color.clear.frame(width: 80, height: 48)
@@ -245,7 +243,7 @@ struct MainView: View {
 
     private var recommendButton: some View {
         Button {
-            viewModel.showPreferenceSheet = true
+            viewModel.showReviewFromRecommend()
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "sparkles")
@@ -267,28 +265,33 @@ struct MainView: View {
     // MARK: - Photo Thumbnails
 
     private var photoThumbnails: some View {
-        HStack(spacing: -8) {
-            ForEach(viewModel.capturedPhotos.prefix(3)) { photo in
-                Image(uiImage: photo.image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 48, height: 48)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(.white, lineWidth: 2)
-                    )
-            }
+        Button {
+            viewModel.showReviewFromThumbnails()
+        } label: {
+            HStack(spacing: -8) {
+                ForEach(viewModel.pendingPhotos.prefix(3)) { photo in
+                    Image(uiImage: photo.image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(.white, lineWidth: 2)
+                        )
+                }
 
-            if viewModel.capturedPhotos.count > 3 {
-                Text("+\(viewModel.capturedPhotos.count - 3)")
-                    .font(.labelSmall)
-                    .foregroundStyle(.white)
-                    .frame(width: 48, height: 48)
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                if viewModel.pendingPhotos.count > 3 {
+                    Text("+\(viewModel.pendingPhotos.count - 3)")
+                        .font(.labelSmall)
+                        .foregroundStyle(.white)
+                        .frame(width: 48, height: 48)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
             }
         }
+        .buttonStyle(.plain)
     }
 
 }

@@ -21,6 +21,10 @@ final class MainViewModel: BaseViewModel {
     // User preferences - managed by PreferenceManager
     private let preferenceManager: PreferenceManagerProtocol
 
+    // Navigation state for photo carousel review
+    var showPhotoCarouselReview = false
+    var reviewLaunchedFromThumbnails = false
+
     var userPreferences: UserPreferences {
         get { preferenceManager.currentPreferences }
         set { preferenceManager.updatePreferences(newValue) }
@@ -44,15 +48,12 @@ final class MainViewModel: BaseViewModel {
     // Camera
     var cameraState: CameraState { cameraViewModel.cameraState }
     var cameraService: CameraServiceProtocol { cameraViewModel.cameraService }
-    var pendingPhoto: UIImage? {
-        get { cameraViewModel.pendingPhoto }
-        set { cameraViewModel.pendingPhoto = newValue }
-    }
-    var showPhotoReview: Bool {
-        get { cameraViewModel.showPhotoReview }
-        set { cameraViewModel.showPhotoReview = newValue }
-    }
     var cameraPermissionStatus: CameraAuthorizationStatus { cameraViewModel.cameraPermissionStatus }
+
+    // Pending photos (pre-review)
+    var pendingPhotos: [CapturedPhoto] { sessionViewModel.pendingPhotos }
+    var canCaptureMore: Bool { sessionViewModel.canCaptureMore }
+    var isAtPhotoLimit: Bool { sessionViewModel.isAtPhotoLimit }
 
     // Location
     var nearbyRestaurants: [RestaurantResponse] { locationViewModel.nearbyRestaurants }
@@ -85,7 +86,15 @@ final class MainViewModel: BaseViewModel {
     }
 
     func capturePhoto() async {
-        await cameraViewModel.capturePhoto(sessionId: sessionViewModel.currentSession?.id)
+        // If at limit, show carousel instead of capturing
+        guard sessionViewModel.canCaptureMore else {
+            showPhotoCarouselReview = true
+            return
+        }
+
+        if let image = await cameraViewModel.capturePhoto(sessionId: sessionViewModel.currentSession?.id) {
+            sessionViewModel.addPendingPhoto(image)
+        }
     }
 
     // MARK: - Location Operations
@@ -120,6 +129,40 @@ final class MainViewModel: BaseViewModel {
         await sessionViewModel.acceptPhoto(photo)
     }
 
+    // MARK: - Photo Review Flow
+
+    /// Opens the photo carousel review view from thumbnails (hides Next button)
+    func showReviewFromThumbnails() {
+        guard !sessionViewModel.pendingPhotos.isEmpty else { return }
+        reviewLaunchedFromThumbnails = true
+        showPhotoCarouselReview = true
+    }
+
+    /// Opens the photo carousel review view from Recommend button (shows Next button)
+    func showReviewFromRecommend() {
+        guard !sessionViewModel.pendingPhotos.isEmpty else { return }
+        reviewLaunchedFromThumbnails = false
+        showPhotoCarouselReview = true
+    }
+
+    /// Completes the review and proceeds to preference sheet
+    func completeReview(withPhotos photos: [CapturedPhoto]) async {
+        showPhotoCarouselReview = false
+        await sessionViewModel.acceptPhotosFromReview(photos)
+        sessionViewModel.showPreferenceSheet = true
+    }
+
+    /// Returns to camera from review (preserves pending photos)
+    func returnToCamera() {
+        showPhotoCarouselReview = false
+    }
+
+    /// Discards all pending photos and returns to camera
+    func discardAllPendingPhotos() {
+        sessionViewModel.clearPendingPhotos()
+        showPhotoCarouselReview = false
+    }
+
     // MARK: - Recommendation Flow
 
     func confirmPreferencesAndProceed() async {
@@ -136,12 +179,12 @@ final class MainViewModel: BaseViewModel {
 
     func cancelSession() {
         sessionViewModel.cancelSession()
-        cameraViewModel.clearPendingPhoto()
+        showPhotoCarouselReview = false
     }
 
     func resetSession() {
         sessionViewModel.resetSession()
-        cameraViewModel.clearPendingPhoto()
+        showPhotoCarouselReview = false
     }
 }
 

@@ -54,6 +54,10 @@ enum AppConstants {
         static let maxImageDimension: CGFloat = 2048
     }
 
+    enum Photo {
+        static let maxPhotos = 10
+    }
+
     enum Recommendation {
         static let pollingInterval: TimeInterval = 1.0
         static let maxPollingAttempts = 30

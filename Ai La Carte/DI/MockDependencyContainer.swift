@@ -151,6 +151,14 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
             analyticsService: analyticsService
         )
     }
+
+    @MainActor func makePhotoCarouselReviewViewModel(photos: [CapturedPhoto], sessionId: String?) -> PhotoCarouselReviewViewModel {
+        PhotoCarouselReviewViewModel(
+            photos: photos,
+            sessionId: sessionId,
+            analyticsService: analyticsService
+        )
+    }
 }
 
 // MARK: - Mock Restaurant API Service

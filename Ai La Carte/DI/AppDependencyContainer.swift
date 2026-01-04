@@ -157,6 +157,14 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
             analyticsService: analyticsService
         )
     }
+
+    @MainActor func makePhotoCarouselReviewViewModel(photos: [CapturedPhoto], sessionId: String?) -> PhotoCarouselReviewViewModel {
+        PhotoCarouselReviewViewModel(
+            photos: photos,
+            sessionId: sessionId,
+            analyticsService: analyticsService
+        )
+    }
 }
 
 // MARK: - Production API Services
@@ -310,6 +318,9 @@ enum AnalyticsEventType: String {
     case restaurantSelected = "restaurant_selected"
     case photoCaptured = "photo_captured"
     case photoAccepted = "photo_accepted"
+    case photoDiscarded = "photo_discarded"
+    case carouselReviewOpened = "carousel_review_opened"
+    case carouselReviewCompleted = "carousel_review_completed"
     case recommendClicked = "recommend_clicked"
     case sliderSet = "slider_set"
     case preferenceAdjusted = "preference_adjusted"

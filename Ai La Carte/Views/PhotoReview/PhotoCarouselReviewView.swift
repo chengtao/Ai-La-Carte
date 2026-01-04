@@ -1,0 +1,308 @@
+//
+//  PhotoCarouselReviewView.swift
+//  AILaCarte
+//
+//  Created by Claude on 1/4/26.
+//
+
+import SwiftUI
+
+struct PhotoCarouselReviewView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Bindable var viewModel: PhotoCarouselReviewViewModel
+
+    let onContinue: ([CapturedPhoto]) -> Void
+    let onTakeMore: () -> Void
+    let onDiscardAll: () -> Void
+    let launchedFromThumbnails: Bool
+
+    // Track swipe offset for each photo
+    @State private var dragOffsets: [String: CGSize] = [:]
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black.ignoresSafeArea()
+
+                if viewModel.isEmpty {
+                    emptyState
+                } else {
+                    VStack(spacing: 0) {
+                        // Photo carousel
+                        photoCarousel
+
+                        // Page indicator
+                        pageIndicator
+                            .padding(.vertical, 16)
+
+                        // Bottom action bar
+                        bottomActionBar
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        onTakeMore()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .foregroundStyle(.white)
+                    }
+                }
+
+                ToolbarItem(placement: .principal) {
+                    Text("Review Photos")
+                        .font(.titleMedium)
+                        .foregroundStyle(.white)
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !viewModel.isEmpty {
+                        Text("\(viewModel.currentIndex + 1)/\(viewModel.photoCount)")
+                            .font(.labelSmall)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+    }
+
+    // MARK: - Photo Carousel
+
+    private var photoCarousel: some View {
+        TabView(selection: $viewModel.currentIndex) {
+            ForEach(Array(viewModel.photos.enumerated()), id: \.element.id) { index, photo in
+                photoCard(photo: photo, index: index)
+                    .tag(index)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+    }
+
+    private func photoCard(photo: CapturedPhoto, index: Int) -> some View {
+        let offset = dragOffsets[photo.id] ?? .zero
+
+        return ZStack {
+            // Photo
+            Image(uiImage: photo.image)
+                .resizable()
+                .scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: AppConstants.UI.defaultCornerRadius))
+                .padding(.horizontal, AppConstants.UI.defaultPadding)
+                .offset(y: offset.height)
+                .opacity(1 - Double(abs(offset.height)) / 300)
+                .rotationEffect(.degrees(Double(offset.height) / 20))
+                .gesture(
+                    DragGesture()
+                        .onChanged { gesture in
+                            // Only track upward swipes
+                            if gesture.translation.height < 0 {
+                                dragOffsets[photo.id] = gesture.translation
+                            }
+                        }
+                        .onEnded { gesture in
+                            // If swiped up enough, delete the photo
+                            if gesture.translation.height < -100 {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    dragOffsets[photo.id] = CGSize(width: 0, height: -500)
+                                }
+                                // Delay deletion to allow animation to complete
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        viewModel.deletePhoto(at: index)
+                                        dragOffsets.removeValue(forKey: photo.id)
+                                    }
+                                }
+                            } else {
+                                // Snap back
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                    dragOffsets[photo.id] = .zero
+                                }
+                            }
+                        }
+                )
+
+            // Swipe hint indicator (shows when dragging)
+            if offset.height < -20 {
+                VStack {
+                    Image(systemName: "trash")
+                        .font(.title)
+                        .foregroundStyle(.white)
+                        .opacity(min(1, Double(abs(offset.height)) / 100))
+                    Text("Release to remove")
+                        .font(.labelSmall)
+                        .foregroundStyle(.white.opacity(0.8))
+                        .opacity(offset.height < -60 ? 1 : 0)
+                }
+                .padding(.top, 60)
+                .frame(maxHeight: .infinity, alignment: .top)
+            }
+        }
+    }
+
+    // MARK: - Page Indicator
+
+    private var pageIndicator: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<viewModel.photoCount, id: \.self) { index in
+                Circle()
+                    .fill(index == viewModel.currentIndex ? Color.magicPurple : Color.white.opacity(0.4))
+                    .frame(width: index == viewModel.currentIndex ? 10 : 8, height: index == viewModel.currentIndex ? 10 : 8)
+                    .animation(.easeInOut(duration: 0.2), value: viewModel.currentIndex)
+            }
+        }
+    }
+
+    // MARK: - Bottom Action Bar
+
+    private var bottomActionBar: some View {
+        VStack(spacing: 12) {
+            // Hint text
+            Text("Swipe up to remove unwanted photos")
+                .font(.bodyMedium)
+                .foregroundStyle(.white.opacity(0.8))
+                .multilineTextAlignment(.center)
+
+            // Action buttons
+            if launchedFromThumbnails {
+                // Only show Take More button when launched from thumbnails
+                Button {
+                    onTakeMore()
+                    dismiss()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "camera")
+                            .font(.bodyLarge)
+                        Text(viewModel.canTakeMore ? "Take More" : "Limit Reached")
+                            .font(.labelLarge)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(viewModel.canTakeMore ? LinearGradient.magicPrimary : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .disabled(!viewModel.canTakeMore)
+            } else {
+                // Show both buttons when launched from Recommend button
+                HStack(spacing: 16) {
+                    // Take More Photos
+                    Button {
+                        onTakeMore()
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "camera")
+                                .font(.bodyLarge)
+                            Text(viewModel.canTakeMore ? "Take More" : "Limit Reached")
+                                .font(.labelLarge)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(.white.opacity(0.2))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .disabled(!viewModel.canTakeMore)
+                    .opacity(viewModel.canTakeMore ? 1 : 0.5)
+
+                    // Next to Recommendations
+                    Button {
+                        viewModel.trackReviewCompleted()
+                        onContinue(viewModel.photos)
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.bodyLarge)
+                            Text("Next")
+                                .font(.labelLarge)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(LinearGradient.magicPrimary)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, AppConstants.UI.defaultPadding)
+        .padding(.bottom, 40)
+        .background(
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.8)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+    }
+
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.system(size: 64))
+                .foregroundStyle(.white.opacity(0.5))
+
+            VStack(spacing: 8) {
+                Text("No Photos")
+                    .font(.titleLarge)
+                    .foregroundStyle(.white)
+
+                Text("Take photos of the menu to get recommendations")
+                    .font(.bodyMedium)
+                    .foregroundStyle(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+            }
+
+            Spacer()
+
+            // Take Photos button
+            Button {
+                onTakeMore()
+                dismiss()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "camera")
+                        .font(.bodyLarge)
+                    Text("Take Photos")
+                        .font(.labelLarge)
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(LinearGradient.magicPrimary)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(.horizontal, AppConstants.UI.defaultPadding)
+            .padding(.bottom, 40)
+        }
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    PhotoCarouselReviewView(
+        viewModel: PhotoCarouselReviewViewModel(
+            photos: [
+                CapturedPhoto(id: "1", image: UIImage(systemName: "photo")!),
+                CapturedPhoto(id: "2", image: UIImage(systemName: "photo.fill")!),
+                CapturedPhoto(id: "3", image: UIImage(systemName: "photo.badge.plus")!)
+            ],
+            sessionId: "test",
+            analyticsService: MockAnalyticsService()
+        ),
+        onContinue: { _ in },
+        onTakeMore: {},
+        onDiscardAll: {},
+        launchedFromThumbnails: false
+    )
+}

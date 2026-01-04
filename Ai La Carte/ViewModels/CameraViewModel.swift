@@ -16,10 +16,6 @@ final class CameraViewModel: BaseViewModel {
     // Camera state
     var cameraState: CameraState = .stopped
 
-    // Captured photo awaiting review
-    var pendingPhoto: UIImage?
-    var showPhotoReview = false
-
     let cameraService: CameraServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
 
@@ -73,22 +69,17 @@ final class CameraViewModel: BaseViewModel {
         cameraState = .stopped
     }
 
-    func capturePhoto(sessionId: String?) async {
-        guard cameraState == .running else { return }
+    /// Captures a photo and returns it directly (no review trigger)
+    func capturePhoto(sessionId: String?) async -> UIImage? {
+        guard cameraState == .running else { return nil }
 
         do {
             let photo = try await cameraService.capturePhoto()
-            pendingPhoto = photo
-            showPhotoReview = true
-
             analyticsService.track(event: .photoCaptured, sessionId: sessionId, meta: nil)
+            return photo
         } catch {
             self.error = handleNetworkError(error)
+            return nil
         }
-    }
-
-    func clearPendingPhoto() {
-        pendingPhoto = nil
-        showPhotoReview = false
     }
 }

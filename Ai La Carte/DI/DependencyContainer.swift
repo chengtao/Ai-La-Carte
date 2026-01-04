@@ -43,6 +43,7 @@ protocol DependencyContainer: Sendable {
     @MainActor func makeLocationViewModel() -> LocationViewModel
     @MainActor func makeSessionViewModel() -> SessionViewModel
     @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel
+    @MainActor func makePhotoCarouselReviewViewModel(photos: [CapturedPhoto], sessionId: String?) -> PhotoCarouselReviewViewModel
     @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String, preferences: UserPreferences) -> CalculatingViewModel
     @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel
     @MainActor func makeSurveyViewModel(sessionId: String, items: [ScoredFoodItem]) -> SurveyViewModel

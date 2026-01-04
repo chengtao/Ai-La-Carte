@@ -15,8 +15,18 @@ final class SessionViewModel: BaseViewModel {
     // Session state
     var currentSession: SessionInfo?
     var capturedPhotos: [CapturedPhoto] = []
+    var pendingPhotos: [CapturedPhoto] = []
     private var lastReportedLocation: LocationCoordinate?
     private var sessionRegistered = false
+
+    // Photo limit computed properties
+    var canCaptureMore: Bool {
+        pendingPhotos.count < AppConstants.Photo.maxPhotos
+    }
+
+    var isAtPhotoLimit: Bool {
+        pendingPhotos.count >= AppConstants.Photo.maxPhotos
+    }
 
     // Restaurant selection
     var selectedRestaurant: RestaurantResponse?
@@ -146,6 +156,42 @@ final class SessionViewModel: BaseViewModel {
 
     // MARK: - Photo Management
 
+    /// Adds a photo to the pending collection (pre-review, no upload)
+    func addPendingPhoto(_ image: UIImage) {
+        guard canCaptureMore else { return }
+
+        ensureSession()
+        let photo = CapturedPhoto(id: UUID().uuidString, image: image)
+        pendingPhotos.append(photo)
+    }
+
+    /// Accepts photos from review, moves to capturedPhotos, and starts uploads
+    func acceptPhotosFromReview(_ photos: [CapturedPhoto]) async {
+        guard let session = currentSession else { return }
+
+        // Move reviewed photos to capturedPhotos
+        capturedPhotos = photos
+        pendingPhotos.removeAll()
+
+        analyticsService.track(
+            event: .photoAccepted,
+            sessionId: session.id,
+            meta: ["count": "\(photos.count)"]
+        )
+
+        // Upload all accepted photos
+        for photo in photos {
+            Task {
+                await uploadPhoto(photo, sessionId: session.id)
+            }
+        }
+    }
+
+    /// Clears all pending photos
+    func clearPendingPhotos() {
+        pendingPhotos.removeAll()
+    }
+
     func acceptPhoto(_ photo: UIImage) async {
         ensureSession()
         guard let session = currentSession else { return }
@@ -220,6 +266,7 @@ final class SessionViewModel: BaseViewModel {
 
     func cancelSession() {
         capturedPhotos.removeAll()
+        pendingPhotos.removeAll()
         currentSession = nil
         selectedRestaurant = nil
     }
@@ -235,6 +282,7 @@ final class SessionViewModel: BaseViewModel {
 
         // Reset session data
         capturedPhotos.removeAll()
+        pendingPhotos.removeAll()
         currentSession = nil
         selectedRestaurant = nil
         lastReportedLocation = nil
