@@ -31,7 +31,6 @@ final class MainViewModel: BaseViewModel {
     var showPhotoReview = false
     var showPreferenceSheet = false
     var showCalculating = false
-    var showAccount = false
     var pendingPhoto: UIImage?
 
     // User preferences for recommendations - auto-saves on change

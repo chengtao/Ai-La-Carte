@@ -91,9 +91,6 @@ struct MainView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
-            .sheet(isPresented: $viewModel.showAccount) {
-                AccountView()
-            }
             .onReceive(NotificationCenter.default.publisher(for: AppConstants.Notifications.dismissToMain)) { _ in
                 viewModel.resetSession()
             }
@@ -133,23 +130,7 @@ struct MainView: View {
     // MARK: - Top Bar
 
     private var topBar: some View {
-        HStack {
-            Spacer()
-
-            // Account button
-            Button {
-                viewModel.showAccount = true
-            } label: {
-                Image(systemName: "person.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(.white)
-                    .padding(12)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
-            }
-        }
-        .padding(.horizontal, AppConstants.UI.defaultPadding)
-        .padding(.top, 8)
+        EmptyView()
     }
 
     // MARK: - Bottom Section

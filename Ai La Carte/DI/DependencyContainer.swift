@@ -16,7 +16,6 @@ protocol DependencyContainer: Sendable {
     var networkManager: NetworkManagerProtocol { get }
 
     // API Services
-    var userAPIService: UserAPIServiceProtocol { get }
     var restaurantAPIService: RestaurantAPIServiceProtocol { get }
     var sessionAPIService: SessionAPIServiceProtocol { get }
     var recommendationAPIService: RecommendationAPIServiceProtocol { get }
@@ -56,13 +55,6 @@ extension EnvironmentValues {
 }
 
 // MARK: - Service Protocols
-
-protocol UserAPIServiceProtocol: Sendable {
-    func signInWithApple(identityToken: String) async throws -> UserResponse
-    func signOut() async throws
-    func deleteAccount() async throws
-    func getCurrentUser() async throws -> UserResponse?
-}
 
 protocol RestaurantAPIServiceProtocol: Sendable {
     func getNearbyRestaurants(lat: Double, lon: Double, radius: Int) async throws -> [RestaurantResponse]

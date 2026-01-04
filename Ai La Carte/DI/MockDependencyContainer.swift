@@ -19,10 +19,6 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
 
     // MARK: - API Services
 
-    lazy var userAPIService: UserAPIServiceProtocol = {
-        MockUserAPIService()
-    }()
-
     lazy var restaurantAPIService: RestaurantAPIServiceProtocol = {
         MockRestaurantAPIService()
     }()
@@ -120,51 +116,6 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
             recommendationService: recommendationAPIService,
             analyticsService: analyticsService
         )
-    }
-}
-
-// MARK: - Mock User API Service
-
-final class MockUserAPIService: UserAPIServiceProtocol, @unchecked Sendable {
-    private let lock = NSLock()
-    private var _currentUser: UserResponse?
-
-    private var currentUser: UserResponse? {
-        get { lock.withLock { _currentUser } }
-        set { lock.withLock { _currentUser = newValue } }
-    }
-
-    func signInWithApple(identityToken: String) async throws -> UserResponse {
-        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
-
-        let user = UserResponse(
-            id: UUID().uuidString,
-            name: "Test User",
-            email: "test@example.com",
-            phoneNumber: nil,
-            deviceId: KeychainHelper.getOrCreateDeviceId(),
-            createdAt: ISO8601DateFormatter().string(from: Date())
-        )
-
-        currentUser = user
-        AppLogger.shared.info("[MOCK] User signed in: \(user.id)", category: AppLogger.Category.authentication)
-        return user
-    }
-
-    func signOut() async throws {
-        try await Task.sleep(nanoseconds: 500_000_000)
-        currentUser = nil
-        AppLogger.shared.info("[MOCK] User signed out", category: AppLogger.Category.authentication)
-    }
-
-    func deleteAccount() async throws {
-        try await Task.sleep(nanoseconds: 500_000_000)
-        currentUser = nil
-        AppLogger.shared.info("[MOCK] Account deleted", category: AppLogger.Category.authentication)
-    }
-
-    func getCurrentUser() async throws -> UserResponse? {
-        return currentUser
     }
 }
 

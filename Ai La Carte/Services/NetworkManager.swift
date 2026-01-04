@@ -277,11 +277,6 @@ enum HTTPMethod: String, Sendable {
 // MARK: - API Endpoints
 
 enum APIEndpoint: Sendable {
-    // Auth
-    case appleAuth
-    case logout
-    case deleteAccount
-
     // Restaurants
     case nearbyRestaurants(lat: Double, lon: Double, radius: Int)
 
@@ -302,12 +297,6 @@ enum APIEndpoint: Sendable {
 
     var path: String {
         switch self {
-        case .appleAuth:
-            return "/auth/apple"
-        case .logout:
-            return "/auth/logout"
-        case .deleteAccount:
-            return "/users/me"
         case .nearbyRestaurants(let lat, let lon, let radius):
             return "/restaurants/nearby?lat=\(lat)&lon=\(lon)&radius_m=\(radius)"
         case .registerSession:

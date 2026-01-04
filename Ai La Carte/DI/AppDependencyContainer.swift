@@ -26,10 +26,6 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
 
     // MARK: - API Services
 
-    lazy var userAPIService: UserAPIServiceProtocol = {
-        UserAPIService(networkManager: networkManager)
-    }()
-
     lazy var restaurantAPIService: RestaurantAPIServiceProtocol = {
         RestaurantAPIService(networkManager: networkManager)
     }()
@@ -129,32 +125,6 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
 }
 
 // MARK: - Production API Services
-
-final class UserAPIService: UserAPIServiceProtocol, Sendable {
-    private let networkManager: NetworkManagerProtocol
-
-    init(networkManager: NetworkManagerProtocol) {
-        self.networkManager = networkManager
-    }
-
-    func signInWithApple(identityToken: String) async throws -> UserResponse {
-        let body = try JSONEncoder().encode(["identity_token": identityToken])
-        return try await networkManager.request(endpoint: .appleAuth, method: .POST, body: body)
-    }
-
-    func signOut() async throws {
-        try await networkManager.requestWithoutResponse(endpoint: .logout, method: .POST, body: nil)
-    }
-
-    func deleteAccount() async throws {
-        try await networkManager.requestWithoutResponse(endpoint: .deleteAccount, method: .DELETE, body: nil)
-    }
-
-    func getCurrentUser() async throws -> UserResponse? {
-        // Could implement with a /me endpoint
-        return nil
-    }
-}
 
 final class RestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
