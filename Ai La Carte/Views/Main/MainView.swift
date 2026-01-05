@@ -301,7 +301,7 @@ struct MainView: View {
             HStack(spacing: 4) {
                 Image(systemName: "sparkles")
                     .font(.subheadline.weight(.semibold))
-                Text("Next")
+                Text("Review")
                     .font(.subheadline.weight(.semibold))
             }
             .foregroundStyle(.white)

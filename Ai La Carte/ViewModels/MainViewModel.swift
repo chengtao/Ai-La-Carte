@@ -168,7 +168,16 @@ final class MainViewModel: BaseViewModel {
     // MARK: - Recommendation Flow
 
     func confirmPreferencesAndProceed() async {
-        await sessionViewModel.confirmPreferencesAndProceed(preferences: userPreferences)
+        // Fetch location if not already available (photo scan flow)
+        var location = locationViewModel.currentLocation
+        if location == nil {
+            location = await locationViewModel.fetchCurrentLocation()
+        }
+
+        await sessionViewModel.confirmPreferencesAndProceed(
+            preferences: userPreferences,
+            location: location
+        )
     }
 
     // MARK: - Preferences

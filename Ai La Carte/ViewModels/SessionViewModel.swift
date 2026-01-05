@@ -176,8 +176,21 @@ final class SessionViewModel: BaseViewModel {
     // MARK: - Recommendation Generation
 
     /// Called when user confirms preferences and wants to proceed with recommendations
-    func confirmPreferencesAndProceed(preferences: UserPreferences) async {
+    func confirmPreferencesAndProceed(preferences: UserPreferences, location: LocationCoordinate?) async {
         showPreferenceSheet = false
+
+        // Update session with location if not already set (photo scan flow)
+        if let session = currentSession, session.latitude == nil, let location = location {
+            currentSession = SessionInfo(
+                id: session.id,
+                restaurantId: session.restaurantId,
+                restaurantName: session.restaurantName,
+                foodMenuId: session.foodMenuId,
+                wineMenuId: session.wineMenuId,
+                latitude: location.latitude,
+                longitude: location.longitude
+            )
+        }
 
         analyticsService.track(
             event: .sliderSet,

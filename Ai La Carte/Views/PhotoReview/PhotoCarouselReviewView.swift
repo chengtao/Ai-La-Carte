@@ -243,7 +243,7 @@ struct PhotoCarouselReviewView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "sparkles")
                                 .font(.bodyLarge)
-                            Text("Next")
+                            Text("Preferences")
                                 .font(.labelLarge)
                         }
                         .foregroundStyle(.white)
