@@ -141,7 +141,8 @@ enum FoodIngredient: String, Codable, CaseIterable, Identifiable {
     case seafood = "Seafood"
     case noodle = "Noodle"
     case rice = "Rice"
-
+    case other = "Other"
+    
     var id: String { rawValue }
 }
 

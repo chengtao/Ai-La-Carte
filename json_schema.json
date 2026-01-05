@@ -1,0 +1,140 @@
+chema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/recommendation-response.schema.json",
+  "title": "RecommendationResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["food", "wine"],
+  "properties": {
+    "food": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/FoodItemResponse" }
+    },
+    "wine": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/WineItemResponse" }
+    }
+  },
+  "$defs": {
+    "FoodCategory": {
+      "type": "string",
+      "enum": ["Appetizer", "Soup", "Entree", "Seafood", "Dessert", "Other"]
+    },
+    "FoodIngredient": {
+      "type": "string",
+      "enum": ["Beef", "Pork", "Chicken", "Seafood", "Noodle", "Rice", "Other"]
+    },
+    "WineCategory": {
+      "type": "string",
+      "enum": ["Sparkling", "White", "Rose", "Red", "Sweet", "Other"]
+    },
+    "WineCountry": {
+      "type": "string",
+      "enum": ["France", "USA", "Italy", "Spain", "Other"]
+    },
+    "WineGrapeVarietal": {
+      "type": "string",
+      "enum": ["Sauvinon Blanc", "Chardonnay", "Pinot Grigio", "Cabernet Sauvginon", "Merlot", "Pinot Noir", "Other"]
+    },
+    "WineFlavor": {
+      "type": "string",
+      "enum": ["Elegant", "Fruity", "Full-Body", "Sweet", "Acidit"]
+    },
+
+    "FoodTagCode": {
+      "type": "string",
+      "enum": [
+        "COMMUNITY_FAVORITE",
+        "CHEF_SIGNATURE",
+        "CROWD_PLEASER",
+        "GREAT_VALUE"
+      ]
+    },
+    "WineTagCode": {
+      "type": "string",
+      "enum": [
+        "HIGH_CP_VALUE",
+        "RISING_STAR",
+        "FINE_AND_RARE",
+        "AWARD_WINNING",
+        "FAMOUS",
+        "HIGH_SCORE"
+      ]
+    },
+
+    "FoodTagResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "label"],
+      "properties": {
+        "code": { "$ref": "#/$defs/FoodTagCode" },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "WineTagResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "label"],
+      "properties": {
+        "code": { "$ref": "#/$defs/WineTagCode" },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "FoodItemResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "description", "tags"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FoodTagResponse" }
+        },
+
+        "photo_url": { "type": ["string", "null"], "format": "uri" },
+        "price": { "type": ["string", "null"] },
+
+        "category": { "type": ["string", "null"], "allOf": [{ "$ref": "#/$defs/FoodCategory" }] },
+
+        "spice": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "richness": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+
+        "ingredients": {
+          "type": ["array", "null"],
+          "items": { "type": "string", "allOf": [{ "$ref": "#/$defs/FoodIngredient" }] }
+        }
+      }
+    },
+
+    "WineItemResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "description", "tags"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/WineTagResponse" }
+        },
+
+        "grape_varietal": { "type": ["string", "null"], "allOf": [{ "$ref": "#/$defs/WineGrapeVarietal" }] },
+        "region": { "type": ["string", "null"] },
+        "country": { "type": ["string", "null"], "allOf": [{ "$ref": "#/$defs/WineCountry" }] },
+
+        "price_glass": { "type": ["string", "null"] },
+        "price_bottle": { "type": ["string", "null"] },
+
+        "category": { "type": ["string", "null"], "allOf": [{ "$ref": "#/$defs/WineCategory" }] },
+
+        "flavor": { "type": ["string", "null"], "allOf": [{ "$ref": "#/$defs/WineFlavor" }] }
+      }
+    }
+  }
+}
+

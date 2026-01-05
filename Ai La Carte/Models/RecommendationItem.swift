@@ -116,16 +116,9 @@ enum RecommendationType: String, Codable {
 
 enum FoodCategory: String, Codable, CaseIterable, Identifiable {
     case appetizer = "appetizer"
-    case coldDish = "cold_dish"
     case soup = "soup"
-    case salad = "salad"
-    case pasta = "pasta"
-    case pizza = "pizza"
     case entree = "entree"
     case seafood = "seafood"
-    case grill = "grill"
-    case vegetarian = "vegetarian"
-    case sides = "sides"
     case dessert = "dessert"
     case other = "other"
 
@@ -134,34 +127,20 @@ enum FoodCategory: String, Codable, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .appetizer: return "Appetizers"
-        case .coldDish: return "Cold Dishes"
         case .soup: return "Soups"
-        case .salad: return "Salads"
-        case .pasta: return "Pasta"
-        case .pizza: return "Pizza"
         case .entree: return "Entrees"
         case .seafood: return "Seafood"
-        case .grill: return "From the Grill"
-        case .vegetarian: return "Vegetarian"
-        case .sides: return "Sides"
         case .dessert: return "Desserts"
-        case .other: return "Chef's Specials"
+        case .other: return "Other"
         }
     }
 
     var icon: String {
         switch self {
         case .appetizer: return "sparkles"
-        case .coldDish: return "snowflake"
         case .soup: return "cup.and.saucer.fill"
-        case .salad: return "leaf.fill"
-        case .pasta: return "fork.knife"
-        case .pizza: return "circle.grid.2x2.fill"
         case .entree: return "flame.fill"
         case .seafood: return "fish.fill"
-        case .grill: return "flame"
-        case .vegetarian: return "leaf.circle.fill"
-        case .sides: return "square.grid.2x2"
         case .dessert: return "birthday.cake.fill"
         case .other: return "star.fill"
         }
@@ -170,19 +149,12 @@ enum FoodCategory: String, Codable, CaseIterable, Identifiable {
     /// Sort order for displaying sections
     var sortOrder: Int {
         switch self {
-        case .appetizer: return 0
-        case .coldDish: return 1
+        case .appetizer: return 1
         case .soup: return 2
-        case .salad: return 3
-        case .pasta: return 4
-        case .pizza: return 5
-        case .entree: return 6
-        case .seafood: return 7
-        case .grill: return 8
-        case .vegetarian: return 9
-        case .sides: return 10
-        case .dessert: return 11
-        case .other: return 12
+        case .entree: return 3
+        case .seafood: return 4
+        case .other: return 6
+        case .dessert: return 5
         }
     }
 }
@@ -194,7 +166,7 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
     case white = "white"
     case rose = "rose"
     case red = "red"
-    case dessertWine = "dessert"
+    case sweetWine = "sweet"
     case other = "other"
 
     var id: String { rawValue }
@@ -205,7 +177,7 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
         case .white: return "White Wines"
         case .rose: return "Rosé"
         case .red: return "Red Wines"
-        case .dessertWine: return "Dessert Wines"
+        case .sweetWine: return "Sweet Wines"
         case .other: return "Other Wines"
         }
     }
@@ -216,7 +188,7 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
         case .white: return "wineglass"
         case .rose: return "wineglass.fill"
         case .red: return "wineglass.fill"
-        case .dessertWine: return "drop.fill"
+        case .sweetWine: return "drop.fill"
         case .other: return "wineglass"
         }
     }
@@ -228,7 +200,7 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
         case .white: return 1
         case .rose: return 2
         case .red: return 3
-        case .dessertWine: return 4
+        case .sweetWine: return 4
         case .other: return 6
         }
     }
@@ -245,16 +217,8 @@ struct FoodTag: Codable, Identifiable, Hashable {
     // Food-specific reason codes
     static let communityFavorite = FoodTag(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
     static let chefSignature = FoodTag(code: "CHEF_SIGNATURE", label: "Chef's Signature")
-    static let matchesSpice = FoodTag(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
-    static let adventurousPick = FoodTag(code: "ADVENTUROUS_PICK", label: "Adventurous Pick")
     static let crowdPleaser = FoodTag(code: "CROWD_PLEASER", label: "Crowd Pleaser")
     static let greatValue = FoodTag(code: "GREAT_VALUE", label: "Great Value")
-    static let pairsWithDish = FoodTag(code: "PAIRS_WITH_DISH", label: "Perfect Pairing")
-    static let similarToPast = FoodTag(code: "SIMILAR_TO_PAST", label: "Similar to Your Favorites")
-    static let lightAndFresh = FoodTag(code: "LIGHT_FRESH", label: "Light & Fresh")
-    static let richAndBold = FoodTag(code: "RICH_BOLD", label: "Rich & Bold")
-    static let vegetarianFriendly = FoodTag(code: "VEGETARIAN", label: "Vegetarian Friendly")
-    static let houseSpecialty = FoodTag(code: "HOUSE_SPECIALTY", label: "House Specialty")
 }
 
 // MARK: - Wine Tag
@@ -266,7 +230,7 @@ struct WineTag: Codable, Identifiable, Hashable {
     var id: String { code }
 
     // Wine-specific reason codes
-    static let highCpValue = WineTag(code: "HIGH_CP_VALUE", label: "High CP Value")
+    static let highCpValue = WineTag(code: "HIGH_CP_VALUE", label: "High QPR")
     static let risingStar = WineTag(code: "RISING_STAR", label: "Rising Star")
     static let fineAndRare = WineTag(code: "FINE_AND_RARE", label: "Fine & Rare")
     static let awardWinning = WineTag(code: "AWARD_WINNING", label: "Award Winning")
