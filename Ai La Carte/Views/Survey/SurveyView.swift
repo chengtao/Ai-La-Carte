@@ -224,7 +224,10 @@ struct SurveyView: View {
                         tags: [],
                         photoUrl: nil,
                         price: "$18.95",
-                        category: "entree"
+                        category: "entree",
+                        spice: 4,
+                        richness: 3,
+                        ingredients: ["Chicken"]
                     ),
                     confidence: 0.9
                 )

@@ -102,7 +102,7 @@ final class RecommendationViewModel: BaseViewModel {
         )
         scoredWineRecommendations = recommendationEngine.scoreWine(
             items: rawWineItems,
-            preferences: currentPreferences.food
+            preferences: currentPreferences.wine
         )
 
         // Update cart items with new scores

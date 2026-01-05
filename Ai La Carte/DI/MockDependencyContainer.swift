@@ -302,7 +302,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
                 price: "$24.00",
-                category: "appetizer"
+                category: "appetizer",
+                spice: 1,
+                richness: 3,
+                ingredients: ["Pork", "Seafood"]
             ),
             FoodItemResponse(
                 id: "f5",
@@ -314,7 +317,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1548507243-d1f7c03cb2ac?w=400",
                 price: "$8.95",
-                category: "appetizer"
+                category: "appetizer",
+                spice: 2,
+                richness: 2,
+                ingredients: nil
             ),
             // Entrees
             FoodItemResponse(
@@ -327,7 +333,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400",
                 price: "$18.95",
-                category: "entree"
+                category: "entree",
+                spice: 4,
+                richness: 3,
+                ingredients: ["Chicken"]
             ),
             FoodItemResponse(
                 id: "f2",
@@ -339,7 +348,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400",
                 price: "$42.00",
-                category: "entree"
+                category: "entree",
+                spice: 1,
+                richness: 5,
+                ingredients: nil
             ),
             FoodItemResponse(
                 id: "f3",
@@ -351,7 +363,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1582452919408-39bddf60a4a2?w=400",
                 price: "$14.50",
-                category: "entree"
+                category: "entree",
+                spice: 5,
+                richness: 4,
+                ingredients: ["Pork"]
             ),
             // Dessert
             FoodItemResponse(
@@ -363,7 +378,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1621293954908-907159247fc8?w=400",
                 price: "$9.50",
-                category: "dessert"
+                category: "dessert",
+                spice: 1,
+                richness: 3,
+                ingredients: ["Rice"]
             ),
             FoodItemResponse(
                 id: "f7",
@@ -374,7 +392,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400",
                 price: "$6.00",
-                category: "dessert"
+                category: "dessert",
+                spice: 1,
+                richness: 4,
+                ingredients: ["Rice"]
             )
         ]
 
@@ -393,7 +414,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 country: "France",
                 priceGlass: nil,
                 priceBottle: "$85",
-                category: "sparkling"
+                category: "sparkling",
+                flavor: "Elegant"
             ),
             // White Wines
             WineItemResponse(
@@ -409,7 +431,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 country: "France",
                 priceGlass: "$14",
                 priceBottle: "$52",
-                category: "white"
+                category: "white",
+                flavor: "Acidic"
             ),
             WineItemResponse(
                 id: "w4",
@@ -424,7 +447,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 country: "New Zealand",
                 priceGlass: "$15",
                 priceBottle: "$58",
-                category: "white"
+                category: "white",
+                flavor: "Fruity"
             ),
             // Rosé
             WineItemResponse(
@@ -440,7 +464,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 country: "France",
                 priceGlass: "$14",
                 priceBottle: "$48",
-                category: "rose"
+                category: "rose",
+                flavor: "Fruity"
             ),
             // Red Wines
             WineItemResponse(
@@ -456,7 +481,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 country: "USA",
                 priceGlass: "$16",
                 priceBottle: "$64",
-                category: "red"
+                category: "red",
+                flavor: "Elegant"
             ),
             WineItemResponse(
                 id: "w6",
@@ -471,7 +497,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 country: "USA",
                 priceGlass: "$22",
                 priceBottle: "$95",
-                category: "red"
+                category: "red",
+                flavor: "Full-Body"
             )
         ]
 

@@ -264,9 +264,23 @@ struct FoodPreferencesTab: View {
 struct WinePreferencesTab: View {
     @Binding var preferences: WinePreference
 
+    /// Wine categories excluding "other"
+    private var selectableCategories: [WineCategory] {
+        WineCategory.allCases.filter { $0 != .other }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                // Wine Types (Categories)
+                PreferenceCheckboxGroup(
+                    title: "Wine Types",
+                    icon: "wineglass.fill",
+                    options: selectableCategories,
+                    selection: $preferences.categories,
+                    accentColor: .magicTeal
+                )
+
                 // Countries
                 PreferenceCheckboxGroup(
                     title: "Countries",
@@ -307,9 +321,33 @@ struct WinePreferencesTab: View {
     }
 }
 
+// MARK: - Preference Option Protocol
+
+/// Protocol for preference options that can display a user-friendly label
+protocol PreferenceOption: RawRepresentable & CaseIterable & Hashable & Identifiable where RawValue == String {
+    var displayLabel: String { get }
+}
+
+// Default implementation: use rawValue as label
+extension PreferenceOption {
+    var displayLabel: String { rawValue }
+}
+
+// Make all preference enums conform to PreferenceOption
+extension FoodIngredient: PreferenceOption {}
+extension WineCountry: PreferenceOption {}
+extension WhiteGrapeVarietal: PreferenceOption {}
+extension RedGrapeVarietal: PreferenceOption {}
+extension WineFlavor: PreferenceOption {}
+
+// WineCategory uses displayName instead of rawValue
+extension WineCategory: PreferenceOption {
+    var displayLabel: String { displayName }
+}
+
 // MARK: - Preference Checkbox Group
 
-struct PreferenceCheckboxGroup<T: RawRepresentable & CaseIterable & Hashable & Identifiable>: View where T.RawValue == String {
+struct PreferenceCheckboxGroup<T: PreferenceOption>: View {
     let title: String
     let icon: String
     let options: [T]
@@ -348,7 +386,7 @@ struct PreferenceCheckboxGroup<T: RawRepresentable & CaseIterable & Hashable & I
             FlowLayout(spacing: 8) {
                 ForEach(options, id: \.id) { option in
                     PreferenceCheckbox(
-                        label: option.rawValue,
+                        label: option.displayLabel,
                         isSelected: selection.contains(option),
                         accentColor: accentColor
                     ) {

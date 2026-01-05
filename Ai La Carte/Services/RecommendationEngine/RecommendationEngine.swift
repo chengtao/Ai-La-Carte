@@ -25,6 +25,7 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
 
         // Preference matching
         static let spiceMatch: Double = 0.10
+        static let propertyMatch: Double = 0.10  // Boost for property matches
 
         // Wine-specific
         static let wineBoldnessMatch: Double = 0.08
@@ -74,7 +75,7 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
 
     func scoreWine(
         items: [WineItemResponse],
-        preferences: FoodPreference
+        preferences: WinePreference
     ) -> [ScoredWineItem] {
         items.map { item in
             let confidence = calculateWineScore(item: item, preferences: preferences)
@@ -112,18 +113,45 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
             score += 0.08
         }
 
-        // Spice preference matching
+        // Spice preference matching (tag-based)
         score += calculateSpiceBoost(
             hasSpiceMatch: reasonCodes.contains(FoodTagCode.matchesSpice),
             preference: preferences.spicePreference
         )
+
+        // Property-based boosts
+
+        // Spice match: boost if item's spice level is close to preference
+        if let itemSpice = item.spice {
+            let spiceDiff = abs(itemSpice - preferences.spicePreference)
+            if spiceDiff <= 1 {  // Within 1 level = good match
+                score += Weights.propertyMatch * (1.0 - Double(spiceDiff) * 0.5)
+            }
+        }
+
+        // Richness match: boost if item's richness is close to preference
+        if let itemRichness = item.richness {
+            let richnessDiff = abs(itemRichness - preferences.richness)
+            if richnessDiff <= 1 {  // Within 1 level = good match
+                score += Weights.propertyMatch * (1.0 - Double(richnessDiff) * 0.5)
+            }
+        }
+
+        // Ingredients match: boost if any preferred ingredient is in item
+        let itemIngredients = Set(item.foodIngredients)
+        if !preferences.ingredients.isEmpty && !itemIngredients.isEmpty {
+            let matchCount = itemIngredients.intersection(preferences.ingredients).count
+            if matchCount > 0 {
+                score += Weights.propertyMatch * min(Double(matchCount) * 0.5, 1.0)
+            }
+        }
 
         return clamp(score)
     }
 
     private func calculateWineScore(
         item: WineItemResponse,
-        preferences: FoodPreference
+        preferences: WinePreference
     ) -> Double {
         var score = Weights.baseScore
         let tagCodes = Set(item.tags.map { $0.code })
@@ -146,6 +174,20 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
         }
         if tagCodes.contains(WineTagCode.highScore) {
             score += 0.10
+        }
+
+        // Property-based boosts
+
+        // Flavor match: boost if item's flavor is in user's preferred flavors
+        if let itemFlavor = item.wineFlavor,
+           preferences.flavors.contains(itemFlavor) {
+            score += Weights.propertyMatch
+        }
+
+        // Category match: boost if item's category is in user's preferred categories
+        if !preferences.categories.isEmpty,
+           preferences.categories.contains(item.wineCategory) {
+            score += Weights.propertyMatch
         }
 
         return clamp(score)

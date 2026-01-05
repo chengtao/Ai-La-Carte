@@ -291,6 +291,9 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
     let photoUrl: String?
     let price: String?
     let category: String?
+    let spice: Int?           // 1-5 scale
+    let richness: Int?        // 1-5 scale
+    let ingredients: [String]? // Maps to FoodIngredient raw values
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -300,6 +303,9 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
         case photoUrl = "photo_url"
         case price
         case category
+        case spice
+        case richness
+        case ingredients
     }
 
     var foodTags: [FoodTag] {
@@ -309,6 +315,10 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
     var foodCategory: FoodCategory {
         guard let category = category else { return .other }
         return FoodCategory(rawValue: category) ?? .other
+    }
+
+    var foodIngredients: [FoodIngredient] {
+        (ingredients ?? []).compactMap { FoodIngredient(rawValue: $0) }
     }
 
     // Hashable conformance
@@ -334,6 +344,7 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
     let priceGlass: String?
     let priceBottle: String?
     let category: String?
+    let flavor: String?        // Maps to WineFlavor raw value
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -346,6 +357,7 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
         case priceGlass = "price_glass"
         case priceBottle = "price_bottle"
         case category
+        case flavor
     }
 
     var wineTags: [WineTag] {
@@ -355,6 +367,11 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
     var wineCategory: WineCategory {
         guard let category = category else { return .other }
         return WineCategory(rawValue: category) ?? .other
+    }
+
+    var wineFlavor: WineFlavor? {
+        guard let flavor = flavor else { return nil }
+        return WineFlavor(rawValue: flavor)
     }
 
     var wineOrigin: String? {

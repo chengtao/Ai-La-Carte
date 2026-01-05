@@ -130,11 +130,11 @@ protocol RecommendationEngineProtocol: Sendable {
     /// Score wine items based on user preferences
     /// - Parameters:
     ///   - items: Raw wine items from the server
-    ///   - preferences: User's current food preferences
+    ///   - preferences: User's current wine preferences
     /// - Returns: Scored wine items sorted by confidence (highest first)
     func scoreWine(
         items: [WineItemResponse],
-        preferences: FoodPreference
+        preferences: WinePreference
     ) -> [ScoredWineItem]
 }
 

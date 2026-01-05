@@ -184,16 +184,18 @@ struct WinePreference: Codable, Equatable {
     var whiteVarietals: Set<WhiteGrapeVarietal>
     var redVarietals: Set<RedGrapeVarietal>
     var flavors: Set<WineFlavor>
+    var categories: Set<WineCategory>
 
     static let `default` = WinePreference(
         countries: [],
         whiteVarietals: [],
         redVarietals: [],
-        flavors: []
+        flavors: [],
+        categories: []
     )
 
     var isEmpty: Bool {
-        countries.isEmpty && whiteVarietals.isEmpty && redVarietals.isEmpty && flavors.isEmpty
+        countries.isEmpty && whiteVarietals.isEmpty && redVarietals.isEmpty && flavors.isEmpty && categories.isEmpty
     }
 }
 

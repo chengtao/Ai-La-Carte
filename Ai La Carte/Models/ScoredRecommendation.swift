@@ -23,6 +23,9 @@ struct ScoredFoodItem: Identifiable, Hashable {
     var photoUrl: String? { item.photoUrl }
     var price: String? { item.price }
     var foodCategory: FoodCategory { item.foodCategory }
+    var spice: Int? { item.spice }
+    var richness: Int? { item.richness }
+    var foodIngredients: [FoodIngredient] { item.foodIngredients }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -54,6 +57,7 @@ struct ScoredWineItem: Identifiable, Hashable {
     var wineCategory: WineCategory { item.wineCategory }
     var wineOrigin: String? { item.wineOrigin }
     var hasWinePricing: Bool { item.hasWinePricing }
+    var wineFlavor: WineFlavor? { item.wineFlavor }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
