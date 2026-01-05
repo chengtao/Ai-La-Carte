@@ -75,7 +75,7 @@ protocol SessionAPIServiceProtocol: Sendable {
 
 protocol MenuAPIServiceProtocol: Sendable {
     /// Creates menus from uploaded photos for a session
-    func createMenus(sessionId: String, lat: Double, lon: Double) async throws -> JobResponse
+    func createMenus(sessionId: String, lat: Double?, lon: Double?) async throws -> JobResponse
     /// Gets the status of menu creation job
     func getMenusCreationStatus(jobId: String) async throws -> JobStatusResponse
     /// Gets menus by their IDs

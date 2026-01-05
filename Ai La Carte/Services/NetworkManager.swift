@@ -284,7 +284,7 @@ enum APIEndpoint: Sendable {
     case uploadPhoto(sessionId: String)
 
     // Menus
-    case createMenus(sessionId: String, lat: Double, lon: Double)
+    case createMenus(sessionId: String, lat: Double?, lon: Double?)
     case menusCreationStatus(jobId: String)
     case getMenus(foodMenuId: String?, wineMenuId: String?)
 
@@ -299,7 +299,11 @@ enum APIEndpoint: Sendable {
         case .uploadPhoto(let sessionId):
             return "/sessions/\(sessionId)/photos"
         case .createMenus(let sessionId, let lat, let lon):
-            return "/sessions/\(sessionId)/menus/create?lat=\(lat)&lon=\(lon)"
+            var params: [String] = []
+            if let lat = lat { params.append("lat=\(lat)") }
+            if let lon = lon { params.append("lon=\(lon)") }
+            let queryString = params.isEmpty ? "" : "?\(params.joined(separator: "&"))"
+            return "/sessions/\(sessionId)/menus/create\(queryString)"
         case .menusCreationStatus(let jobId):
             return "/menus/status?job_id=\(jobId)"
         case .getMenus(let foodMenuId, let wineMenuId):

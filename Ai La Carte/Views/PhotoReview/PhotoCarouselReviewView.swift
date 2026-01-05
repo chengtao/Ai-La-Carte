@@ -191,28 +191,9 @@ struct PhotoCarouselReviewView: View {
                 .foregroundStyle(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
 
-            // Action buttons
-            if launchedFromThumbnails {
-                // Only show Take More button when launched from thumbnails
-                Button {
-                    onTakeMore(viewModel.photos)
-                    dismiss()
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "camera")
-                            .font(.bodyLarge)
-                        Text(viewModel.canTakeMore ? "Take More" : "Limit Reached")
-                            .font(.labelLarge)
-                    }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(viewModel.canTakeMore ? LinearGradient.magicPrimary : LinearGradient(colors: [.gray], startPoint: .leading, endPoint: .trailing))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-                .disabled(!viewModel.canTakeMore)
-            } else {
-                // Show both buttons when launched from Recommend button
+            // Action buttons - only show when launched from Recommend button
+            // When launched from thumbnails, user uses back button at top left
+            if !launchedFromThumbnails {
                 HStack(spacing: 16) {
                     // Take More Photos
                     Button {

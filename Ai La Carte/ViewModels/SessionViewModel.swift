@@ -222,16 +222,12 @@ final class SessionViewModel: BaseViewModel {
         }
 
         // FLOW B: Photo scan -> createMenus(sessionId, lat, lon) -> polling mode
-        guard let lat = session.latitude, let lon = session.longitude else {
-            self.error = AppError.validation(.fieldRequired("Location"))
-            return
-        }
-
+        // Location is optional - backend will handle missing location gracefully
         do {
             let jobResponse = try await menuService.createMenus(
                 sessionId: session.id,
-                lat: lat,
-                lon: lon
+                lat: session.latitude,
+                lon: session.longitude
             )
             jobId = jobResponse.jobId
 

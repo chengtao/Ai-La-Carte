@@ -251,13 +251,14 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
         lock.withLock { _jobProgress[jobId] = value }
     }
 
-    func createMenus(sessionId: String, lat: Double, lon: Double) async throws -> JobResponse {
+    func createMenus(sessionId: String, lat: Double?, lon: Double?) async throws -> JobResponse {
         try await Task.sleep(nanoseconds: 300_000_000)
 
         let jobId = UUID().uuidString
         setProgress(jobId, 0)
 
-        AppLogger.shared.info("[MOCK] Started menu creation job \(jobId) for session \(sessionId) at (\(lat), \(lon))", category: AppLogger.Category.recommendation)
+        let locationStr = lat != nil && lon != nil ? "(\(lat!), \(lon!))" : "(no location)"
+        AppLogger.shared.info("[MOCK] Started menu creation job \(jobId) for session \(sessionId) at \(locationStr)", category: AppLogger.Category.recommendation)
         return JobResponse(jobId: jobId, status: "queued")
     }
 

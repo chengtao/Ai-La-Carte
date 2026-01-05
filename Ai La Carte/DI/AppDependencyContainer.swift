@@ -211,7 +211,7 @@ final class MenuAPIService: MenuAPIServiceProtocol, Sendable {
         self.networkManager = networkManager
     }
 
-    func createMenus(sessionId: String, lat: Double, lon: Double) async throws -> JobResponse {
+    func createMenus(sessionId: String, lat: Double?, lon: Double?) async throws -> JobResponse {
         return try await networkManager.request(
             endpoint: .createMenus(sessionId: sessionId, lat: lat, lon: lon),
             method: .POST,
