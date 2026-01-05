@@ -16,8 +16,6 @@ final class SessionViewModel: BaseViewModel {
     var currentSession: SessionInfo?
     var capturedPhotos: [CapturedPhoto] = []
     var pendingPhotos: [CapturedPhoto] = []
-    private var lastReportedLocation: LocationCoordinate?
-    private var sessionRegistered = false
 
     // Photo limit computed properties
     var canCaptureMore: Bool {
@@ -40,16 +38,16 @@ final class SessionViewModel: BaseViewModel {
     var calculatingViewModel: CalculatingViewModel?
 
     private let sessionService: SessionAPIServiceProtocol
-    private let recommendationService: RecommendationAPIServiceProtocol
+    private let menuService: MenuAPIServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
 
     init(
         sessionService: SessionAPIServiceProtocol,
-        recommendationService: RecommendationAPIServiceProtocol,
+        menuService: MenuAPIServiceProtocol,
         analyticsService: AnalyticsServiceProtocol
     ) {
         self.sessionService = sessionService
-        self.recommendationService = recommendationService
+        self.menuService = menuService
         self.analyticsService = analyticsService
         super.init()
     }
@@ -59,20 +57,9 @@ final class SessionViewModel: BaseViewModel {
     /// Creates a new local session with UUID - call this when starting a recommendation flow
     func createLocalSession() {
         let sessionId = UUID().uuidString
-        currentSession = SessionInfo(
-            id: sessionId,
-            restaurantId: nil,
-            restaurantName: nil
-        )
-        sessionRegistered = false
-        lastReportedLocation = nil
+        currentSession = SessionInfo(id: sessionId)
 
         AppLogger.shared.info("Created local session: \(sessionId)", category: AppLogger.Category.session)
-
-        // Register with server in background
-        Task {
-            await registerSessionWithServer()
-        }
     }
 
     /// Ensures a session exists, creating one if necessary
@@ -82,49 +69,10 @@ final class SessionViewModel: BaseViewModel {
         }
     }
 
-    /// Registers the local session with the server
-    private func registerSessionWithServer() async {
-        guard let session = currentSession, !sessionRegistered else { return }
-
-        do {
-            try await sessionService.registerSession(sessionId: session.id)
-            sessionRegistered = true
-            AppLogger.shared.info("Session registered with server: \(session.id)", category: AppLogger.Category.session)
-        } catch {
-            AppLogger.shared.error("Failed to register session: \(error)", category: AppLogger.Category.network)
-        }
-    }
-
-    /// Updates the server with the current location (call when location improves)
-    func updateSessionLocation(_ location: LocationCoordinate) async {
-        guard let session = currentSession else { return }
-
-        // Skip if location hasn't changed significantly (within ~10 meters)
-        if let lastLocation = lastReportedLocation {
-            let latDiff = abs(lastLocation.latitude - location.latitude)
-            let lonDiff = abs(lastLocation.longitude - location.longitude)
-            if latDiff < 0.0001 && lonDiff < 0.0001 {
-                return
-            }
-        }
-
-        lastReportedLocation = location
-
-        do {
-            try await sessionService.updateSessionLocation(
-                sessionId: session.id,
-                lat: location.latitude,
-                lon: location.longitude
-            )
-            AppLogger.shared.debug("Updated session location: (\(location.latitude), \(location.longitude))", category: AppLogger.Category.session)
-        } catch {
-            AppLogger.shared.error("Failed to update session location: \(error)", category: AppLogger.Category.network)
-        }
-    }
-
     // MARK: - Restaurant Selection
 
-    func selectRestaurant(_ restaurant: RestaurantResponse) async {
+    /// Selects a nearby restaurant (with existing menus or for photo scan)
+    func selectRestaurant(_ restaurant: RestaurantResponse, location: LocationCoordinate?) async {
         selectedRestaurant = restaurant
 
         ensureSession()
@@ -133,22 +81,22 @@ final class SessionViewModel: BaseViewModel {
         analyticsService.track(
             event: .restaurantSelected,
             sessionId: session.id,
-            meta: ["restaurant_id": restaurant.id]
+            meta: [
+                "restaurant_id": restaurant.id,
+                "has_existing_menus": "\(restaurant.hasExistingMenus)"
+            ]
         )
 
-        // Update session with restaurant selection
+        // Update session with restaurant selection, menu IDs, and location
         currentSession = SessionInfo(
             id: session.id,
             restaurantId: restaurant.id,
-            restaurantName: restaurant.name
+            restaurantName: restaurant.name,
+            foodMenuId: restaurant.latestFoodMenuId,
+            wineMenuId: restaurant.latestWineMenuId,
+            latitude: location?.latitude,
+            longitude: location?.longitude
         )
-
-        // Tell server about restaurant selection
-        do {
-            try await sessionService.pickRestaurant(sessionId: session.id, restaurantId: restaurant.id)
-        } catch {
-            AppLogger.shared.error("Failed to pick restaurant: \(error)", category: AppLogger.Category.network)
-        }
 
         // Show preference sheet before starting recommendation generation
         showPreferenceSheet = true
@@ -248,18 +196,37 @@ final class SessionViewModel: BaseViewModel {
     func startRecommendationGeneration(preferences: UserPreferences) async {
         guard let session = currentSession else { return }
 
-        do {
-            let jobResponse = try await recommendationService.generateRecommendations(
-                sessionId: session.id,
-                includeReviews: true
-            )
-            jobId = jobResponse.jobId
-            // Create the viewModel once and store it, passing user preferences
+        // FLOW A: Restaurant has existing menus -> artificial delay mode (no createMenus call)
+        if session.hasExistingMenus {
             calculatingViewModel = CalculatingViewModel(
                 sessionId: session.id,
-                jobId: jobResponse.jobId,
+                mode: .artificialDelay(foodMenuId: session.foodMenuId, wineMenuId: session.wineMenuId),
                 preferences: preferences,
-                recommendationService: recommendationService
+                menuService: menuService
+            )
+            showCalculating = true
+            return
+        }
+
+        // FLOW B: Photo scan -> createMenus(sessionId, lat, lon) -> polling mode
+        guard let lat = session.latitude, let lon = session.longitude else {
+            self.error = AppError.validation(.fieldRequired("Location"))
+            return
+        }
+
+        do {
+            let jobResponse = try await menuService.createMenus(
+                sessionId: session.id,
+                lat: lat,
+                lon: lon
+            )
+            jobId = jobResponse.jobId
+
+            calculatingViewModel = CalculatingViewModel(
+                sessionId: session.id,
+                mode: .polling(jobId: jobResponse.jobId),
+                preferences: preferences,
+                menuService: menuService
             )
             showCalculating = true
         } catch {
@@ -290,7 +257,5 @@ final class SessionViewModel: BaseViewModel {
         pendingPhotos.removeAll()
         currentSession = nil
         selectedRestaurant = nil
-        lastReportedLocation = nil
-        sessionRegistered = false
     }
 }

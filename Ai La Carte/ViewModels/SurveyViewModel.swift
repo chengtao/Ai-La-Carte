@@ -17,18 +17,18 @@ final class SurveyViewModel: BaseViewModel {
     var currentItemIndex = 0
     var isComplete = false
 
-    private let recommendationService: RecommendationAPIServiceProtocol
+    private let menuService: MenuAPIServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
 
     init(
         sessionId: String,
         items: [ScoredFoodItem],
-        recommendationService: RecommendationAPIServiceProtocol,
+        menuService: MenuAPIServiceProtocol,
         analyticsService: AnalyticsServiceProtocol
     ) {
         self.sessionId = sessionId
         self.items = Array(items.prefix(3)) // Only rate top 3
-        self.recommendationService = recommendationService
+        self.menuService = menuService
         self.analyticsService = analyticsService
         super.init()
     }
@@ -50,7 +50,7 @@ final class SurveyViewModel: BaseViewModel {
 
         // Submit to backend
         do {
-            try await recommendationService.submitFeedback(
+            try await menuService.submitFeedback(
                 sessionId: sessionId,
                 itemId: item.id,
                 rating: rating

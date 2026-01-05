@@ -35,11 +35,11 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
     }()
 
     lazy var sessionAPIService: SessionAPIServiceProtocol = {
-        SessionAPIService(networkManager: networkManager, deviceIdentifierService: deviceIdentifierService)
+        SessionAPIService(networkManager: networkManager)
     }()
 
-    lazy var recommendationAPIService: RecommendationAPIServiceProtocol = {
-        RecommendationAPIService(networkManager: networkManager)
+    lazy var menuAPIService: MenuAPIServiceProtocol = {
+        MenuAPIService(networkManager: networkManager)
     }()
 
     // MARK: - Device Services
@@ -103,7 +103,7 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
     @MainActor func makeSessionViewModel() -> SessionViewModel {
         SessionViewModel(
             sessionService: sessionAPIService,
-            recommendationService: recommendationAPIService,
+            menuService: menuAPIService,
             analyticsService: analyticsService
         )
     }
@@ -130,19 +130,21 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         )
     }
 
-    @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String, preferences: UserPreferences) -> CalculatingViewModel {
+    @MainActor func makeCalculatingViewModel(sessionId: String, mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel {
         CalculatingViewModel(
             sessionId: sessionId,
-            jobId: jobId,
+            mode: mode,
             preferences: preferences,
-            recommendationService: recommendationAPIService
+            menuService: menuAPIService
         )
     }
 
-    @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel {
+    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: String?, wineMenuId: String?, preferences: UserPreferences) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
-            recommendationService: recommendationAPIService,
+            foodMenuId: foodMenuId,
+            wineMenuId: wineMenuId,
+            menuService: menuAPIService,
             recommendationEngine: recommendationEngine,
             analyticsService: analyticsService,
             preferenceManager: preferenceManager
@@ -153,7 +155,7 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         SurveyViewModel(
             sessionId: sessionId,
             items: items,
-            recommendationService: recommendationAPIService,
+            menuService: menuAPIService,
             analyticsService: analyticsService
         )
     }
@@ -188,45 +190,9 @@ final class RestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
 
 final class SessionAPIService: SessionAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
-    private let deviceIdentifierService: DeviceIdentifierServiceProtocol
 
-    init(networkManager: NetworkManagerProtocol, deviceIdentifierService: DeviceIdentifierServiceProtocol) {
+    init(networkManager: NetworkManagerProtocol) {
         self.networkManager = networkManager
-        self.deviceIdentifierService = deviceIdentifierService
-    }
-
-    func registerSession(sessionId: String) async throws {
-        let params: [String: Any] = [
-            "session_id": sessionId,
-            "device_id": deviceIdentifierService.getDeviceId()
-        ]
-        let body = try JSONSerialization.data(withJSONObject: params)
-        try await networkManager.requestWithoutResponse(endpoint: .registerSession, method: .POST, body: body)
-    }
-
-    func updateSessionLocation(sessionId: String, lat: Double, lon: Double) async throws {
-        let params: [String: Any] = [
-            "lat": lat,
-            "lon": lon
-        ]
-        let body = try JSONSerialization.data(withJSONObject: params)
-        try await networkManager.requestWithoutResponse(
-            endpoint: .updateSessionLocation(sessionId: sessionId),
-            method: .PUT,
-            body: body
-        )
-    }
-
-    func pickRestaurant(sessionId: String, restaurantId: String) async throws {
-        let params: [String: Any] = [
-            "restaurant_id": restaurantId
-        ]
-        let body = try JSONSerialization.data(withJSONObject: params)
-        try await networkManager.requestWithoutResponse(
-            endpoint: .pickRestaurant(sessionId: sessionId),
-            method: .PUT,
-            body: body
-        )
     }
 
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse {
@@ -238,33 +204,32 @@ final class SessionAPIService: SessionAPIServiceProtocol, Sendable {
     }
 }
 
-final class RecommendationAPIService: RecommendationAPIServiceProtocol, Sendable {
+final class MenuAPIService: MenuAPIServiceProtocol, Sendable {
     private let networkManager: NetworkManagerProtocol
 
     init(networkManager: NetworkManagerProtocol) {
         self.networkManager = networkManager
     }
 
-    func generateRecommendations(sessionId: String, includeReviews: Bool) async throws -> JobResponse {
-        let body = try JSONEncoder().encode(["include_reviews": includeReviews])
+    func createMenus(sessionId: String, lat: Double, lon: Double) async throws -> JobResponse {
         return try await networkManager.request(
-            endpoint: .generateRecommendations(sessionId: sessionId),
+            endpoint: .createMenus(sessionId: sessionId, lat: lat, lon: lon),
             method: .POST,
-            body: body
+            body: nil
         )
     }
 
-    func getRecommendationStatus(sessionId: String, jobId: String) async throws -> JobStatusResponse {
+    func getMenusCreationStatus(jobId: String) async throws -> JobStatusResponse {
         return try await networkManager.request(
-            endpoint: .recommendationStatus(sessionId: sessionId, jobId: jobId),
+            endpoint: .menusCreationStatus(jobId: jobId),
             method: .GET,
             body: nil
         )
     }
 
-    func getRecommendations(sessionId: String) async throws -> RecommendationResponse {
+    func getMenus(foodMenuId: String?, wineMenuId: String?) async throws -> RecommendationResponse {
         return try await networkManager.request(
-            endpoint: .getRecommendations(sessionId: sessionId),
+            endpoint: .getMenus(foodMenuId: foodMenuId, wineMenuId: wineMenuId),
             method: .GET,
             body: nil
         )

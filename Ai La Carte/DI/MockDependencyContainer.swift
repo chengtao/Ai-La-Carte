@@ -31,8 +31,8 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         MockSessionAPIService()
     }()
 
-    lazy var recommendationAPIService: RecommendationAPIServiceProtocol = {
-        MockRecommendationAPIService()
+    lazy var menuAPIService: MenuAPIServiceProtocol = {
+        MockMenuAPIService()
     }()
 
     // MARK: - Device Services
@@ -97,7 +97,7 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
     @MainActor func makeSessionViewModel() -> SessionViewModel {
         SessionViewModel(
             sessionService: sessionAPIService,
-            recommendationService: recommendationAPIService,
+            menuService: menuAPIService,
             analyticsService: analyticsService
         )
     }
@@ -124,19 +124,21 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         )
     }
 
-    @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String, preferences: UserPreferences) -> CalculatingViewModel {
+    @MainActor func makeCalculatingViewModel(sessionId: String, mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel {
         CalculatingViewModel(
             sessionId: sessionId,
-            jobId: jobId,
+            mode: mode,
             preferences: preferences,
-            recommendationService: recommendationAPIService
+            menuService: menuAPIService
         )
     }
 
-    @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel {
+    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: String?, wineMenuId: String?, preferences: UserPreferences) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
-            recommendationService: recommendationAPIService,
+            foodMenuId: foodMenuId,
+            wineMenuId: wineMenuId,
+            menuService: menuAPIService,
             recommendationEngine: recommendationEngine,
             analyticsService: analyticsService,
             preferenceManager: preferenceManager
@@ -147,7 +149,7 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         SurveyViewModel(
             sessionId: sessionId,
             items: items,
-            recommendationService: recommendationAPIService,
+            menuService: menuAPIService,
             analyticsService: analyticsService
         )
     }
@@ -175,8 +177,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Golden Dragon",
                 cuisine: "Chinese",
                 address: "123 Main Street",
-                hasFoodMenu: true,
-                hasWineMenu: false,
+                latestFoodMenuId: "menu_food_r1",
+                latestWineMenuId: nil,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 2))
             ),
             RestaurantResponse(
@@ -184,8 +186,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Trattoria Milano",
                 cuisine: "Italian",
                 address: "456 Oak Avenue",
-                hasFoodMenu: true,
-                hasWineMenu: true,
+                latestFoodMenuId: "menu_food_r2",
+                latestWineMenuId: "menu_wine_r2",
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400))
             ),
             RestaurantResponse(
@@ -193,8 +195,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Sakura Sushi",
                 cuisine: "Japanese",
                 address: "789 Cherry Lane",
-                hasFoodMenu: true,
-                hasWineMenu: true,
+                latestFoodMenuId: "menu_food_r3",
+                latestWineMenuId: "menu_wine_r3",
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 5))
             ),
             RestaurantResponse(
@@ -202,8 +204,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "The Spice Room",
                 cuisine: "Indian",
                 address: "321 Curry Road",
-                hasFoodMenu: true,
-                hasWineMenu: false,
+                latestFoodMenuId: "menu_food_r4",
+                latestWineMenuId: nil,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3))
             ),
             RestaurantResponse(
@@ -211,8 +213,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Bistro Parisien",
                 cuisine: "French",
                 address: "555 French Quarter",
-                hasFoodMenu: true,
-                hasWineMenu: true,
+                latestFoodMenuId: "menu_food_r5",
+                latestWineMenuId: "menu_wine_r5",
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date())
             )
         ]
@@ -221,30 +223,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
 
 // MARK: - Mock Session API Service
 
-final class MockSessionAPIService: SessionAPIServiceProtocol, @unchecked Sendable {
-    private let lock = NSLock()
-    private var _sessions: [String: Bool] = [:]
-
-    private func addSession(_ id: String) {
-        lock.withLock { _sessions[id] = true }
-    }
-
-    func registerSession(sessionId: String) async throws {
-        try await Task.sleep(nanoseconds: 100_000_000) // 100ms
-        addSession(sessionId)
-        AppLogger.shared.info("[MOCK] Registered session: \(sessionId)", category: AppLogger.Category.session)
-    }
-
-    func updateSessionLocation(sessionId: String, lat: Double, lon: Double) async throws {
-        try await Task.sleep(nanoseconds: 100_000_000) // 100ms
-        AppLogger.shared.info("[MOCK] Updated session \(sessionId) location: (\(lat), \(lon))", category: AppLogger.Category.session)
-    }
-
-    func pickRestaurant(sessionId: String, restaurantId: String) async throws {
-        try await Task.sleep(nanoseconds: 100_000_000) // 100ms
-        AppLogger.shared.info("[MOCK] Session \(sessionId) picked restaurant: \(restaurantId)", category: AppLogger.Category.session)
-    }
-
+final class MockSessionAPIService: SessionAPIServiceProtocol, Sendable {
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse {
         try await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 second delay
 
@@ -258,9 +237,9 @@ final class MockSessionAPIService: SessionAPIServiceProtocol, @unchecked Sendabl
     }
 }
 
-// MARK: - Mock Recommendation API Service
+// MARK: - Mock Menu API Service
 
-final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unchecked Sendable {
+final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
     private let lock = NSLock()
     private var _jobProgress: [String: Int] = [:]
 
@@ -272,17 +251,17 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
         lock.withLock { _jobProgress[jobId] = value }
     }
 
-    func generateRecommendations(sessionId: String, includeReviews: Bool) async throws -> JobResponse {
+    func createMenus(sessionId: String, lat: Double, lon: Double) async throws -> JobResponse {
         try await Task.sleep(nanoseconds: 300_000_000)
 
         let jobId = UUID().uuidString
         setProgress(jobId, 0)
 
-        AppLogger.shared.info("[MOCK] Started recommendation job \(jobId) for session \(sessionId)", category: AppLogger.Category.recommendation)
+        AppLogger.shared.info("[MOCK] Started menu creation job \(jobId) for session \(sessionId) at (\(lat), \(lon))", category: AppLogger.Category.recommendation)
         return JobResponse(jobId: jobId, status: "queued")
     }
 
-    func getRecommendationStatus(sessionId: String, jobId: String) async throws -> JobStatusResponse {
+    func getMenusCreationStatus(jobId: String) async throws -> JobStatusResponse {
         try await Task.sleep(nanoseconds: 500_000_000)
 
         let currentStep = getProgress(jobId)
@@ -305,8 +284,10 @@ final class MockRecommendationAPIService: RecommendationAPIServiceProtocol, @unc
         return JobStatusResponse(status: status.rawValue, progress: status.progress)
     }
 
-    func getRecommendations(sessionId: String) async throws -> RecommendationResponse {
+    func getMenus(foodMenuId: String?, wineMenuId: String?) async throws -> RecommendationResponse {
         try await Task.sleep(nanoseconds: 500_000_000)
+
+        AppLogger.shared.info("[MOCK] Fetching menus - food: \(foodMenuId ?? "nil"), wine: \(wineMenuId ?? "nil")", category: AppLogger.Category.recommendation)
 
         let foodItems: [FoodItemResponse] = [
             // Appetizers

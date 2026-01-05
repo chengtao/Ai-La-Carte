@@ -281,15 +281,12 @@ enum APIEndpoint: Sendable {
     case nearbyRestaurants(lat: Double, lon: Double, radius: Int)
 
     // Sessions
-    case registerSession
-    case updateSessionLocation(sessionId: String)
-    case pickRestaurant(sessionId: String)
     case uploadPhoto(sessionId: String)
 
-    // Recommendations
-    case generateRecommendations(sessionId: String)
-    case recommendationStatus(sessionId: String, jobId: String)
-    case getRecommendations(sessionId: String)
+    // Menus
+    case createMenus(sessionId: String, lat: Double, lon: Double)
+    case menusCreationStatus(jobId: String)
+    case getMenus(foodMenuId: String?, wineMenuId: String?)
 
     // Events & Feedback
     case trackEvent
@@ -299,20 +296,17 @@ enum APIEndpoint: Sendable {
         switch self {
         case .nearbyRestaurants(let lat, let lon, let radius):
             return "/restaurants/nearby?lat=\(lat)&lon=\(lon)&radius_m=\(radius)"
-        case .registerSession:
-            return "/sessions"
-        case .updateSessionLocation(let sessionId):
-            return "/sessions/\(sessionId)/location"
-        case .pickRestaurant(let sessionId):
-            return "/sessions/\(sessionId)/restaurant"
         case .uploadPhoto(let sessionId):
             return "/sessions/\(sessionId)/photos"
-        case .generateRecommendations(let sessionId):
-            return "/sessions/\(sessionId)/recommendations:generate"
-        case .recommendationStatus(let sessionId, let jobId):
-            return "/sessions/\(sessionId)/recommendations/status?job_id=\(jobId)"
-        case .getRecommendations(let sessionId):
-            return "/sessions/\(sessionId)/recommendations"
+        case .createMenus(let sessionId, let lat, let lon):
+            return "/sessions/\(sessionId)/menus/create?lat=\(lat)&lon=\(lon)"
+        case .menusCreationStatus(let jobId):
+            return "/menus/status?job_id=\(jobId)"
+        case .getMenus(let foodMenuId, let wineMenuId):
+            var params: [String] = []
+            if let foodId = foodMenuId { params.append("food_id=\(foodId)") }
+            if let wineId = wineMenuId { params.append("wine_id=\(wineId)") }
+            return "/menus?\(params.joined(separator: "&"))"
         case .trackEvent:
             return "/events"
         case .submitFeedback(let sessionId):

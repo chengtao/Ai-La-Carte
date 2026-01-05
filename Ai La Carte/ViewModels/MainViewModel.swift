@@ -116,19 +116,12 @@ final class MainViewModel: BaseViewModel {
         sessionViewModel.ensureSession()
 
         await locationViewModel.fetchNearbyRestaurants(sessionId: sessionViewModel.currentSession?.id)
-
-        // Update session location if we got one
-        if let location = locationViewModel.currentLocation {
-            Task {
-                await sessionViewModel.updateSessionLocation(location)
-            }
-        }
     }
 
     // MARK: - Restaurant Selection
 
     func selectRestaurant(_ restaurant: RestaurantResponse) async {
-        await sessionViewModel.selectRestaurant(restaurant)
+        await sessionViewModel.selectRestaurant(restaurant, location: locationViewModel.currentLocation)
     }
 
     // MARK: - Photo Management
@@ -211,6 +204,32 @@ struct SessionInfo {
     let id: String
     let restaurantId: String?
     let restaurantName: String?
+    let foodMenuId: String?
+    let wineMenuId: String?
+    let latitude: Double?
+    let longitude: Double?
+
+    init(
+        id: String,
+        restaurantId: String? = nil,
+        restaurantName: String? = nil,
+        foodMenuId: String? = nil,
+        wineMenuId: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil
+    ) {
+        self.id = id
+        self.restaurantId = restaurantId
+        self.restaurantName = restaurantName
+        self.foodMenuId = foodMenuId
+        self.wineMenuId = wineMenuId
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+
+    var hasExistingMenus: Bool {
+        foodMenuId != nil || wineMenuId != nil
+    }
 }
 
 struct CapturedPhoto: Identifiable {

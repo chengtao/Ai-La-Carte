@@ -15,8 +15,8 @@ final class Restaurant {
     var name: String
     var latitude: Double
     var longitude: Double
-    var hasFoodMenu: Bool
-    var hasWineMenu: Bool
+    var latestFoodMenuId: String?
+    var latestWineMenuId: String?
     var menuUpdatedAt: Date?
     var confidenceScore: Int // 0-100
 
@@ -25,8 +25,8 @@ final class Restaurant {
         name: String,
         latitude: Double,
         longitude: Double,
-        hasFoodMenu: Bool = false,
-        hasWineMenu: Bool = false,
+        latestFoodMenuId: String? = nil,
+        latestWineMenuId: String? = nil,
         menuUpdatedAt: Date? = nil,
         confidenceScore: Int = 0
     ) {
@@ -34,10 +34,14 @@ final class Restaurant {
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
-        self.hasFoodMenu = hasFoodMenu
-        self.hasWineMenu = hasWineMenu
+        self.latestFoodMenuId = latestFoodMenuId
+        self.latestWineMenuId = latestWineMenuId
         self.menuUpdatedAt = menuUpdatedAt
         self.confidenceScore = confidenceScore
+    }
+
+    var hasExistingMenus: Bool {
+        latestFoodMenuId != nil || latestWineMenuId != nil
     }
 
     var location: CLLocationCoordinate2D {
@@ -57,8 +61,8 @@ struct RestaurantResponse: Codable, Identifiable, Hashable {
     let name: String
     let cuisine: String?
     let address: String?
-    let hasFoodMenu: Bool
-    let hasWineMenu: Bool
+    let latestFoodMenuId: String?
+    let latestWineMenuId: String?
     let menuUpdatedAt: String?
 
     enum CodingKeys: String, CodingKey {
@@ -66,9 +70,13 @@ struct RestaurantResponse: Codable, Identifiable, Hashable {
         case name
         case cuisine
         case address
-        case hasFoodMenu = "has_food_menu"
-        case hasWineMenu = "has_wine_menu"
+        case latestFoodMenuId = "latest_food_menu_id"
+        case latestWineMenuId = "latest_wine_menu_id"
         case menuUpdatedAt = "menu_updated_at"
+    }
+
+    var hasExistingMenus: Bool {
+        latestFoodMenuId != nil || latestWineMenuId != nil
     }
 
     var menuAgeDescription: String? {

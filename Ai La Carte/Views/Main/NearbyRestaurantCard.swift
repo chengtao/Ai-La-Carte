@@ -43,11 +43,11 @@ struct NearbyRestaurantCard: View {
 
                 // Menu badges
                 HStack(spacing: 8) {
-                    if restaurant.hasFoodMenu {
+                    if restaurant.latestFoodMenuId != nil {
                         MenuBadge(type: .food, available: true)
                     }
 
-                    if restaurant.hasWineMenu {
+                    if restaurant.latestWineMenuId != nil {
                         MenuBadge(type: .wine, available: true)
                     }
                 }
@@ -134,8 +134,8 @@ struct MenuBadge: View {
                 name: "Golden Dragon",
                 cuisine: "Chinese",
                 address: "123 Main Street",
-                hasFoodMenu: true,
-                hasWineMenu: false,
+                latestFoodMenuId: "menu_food_1",
+                latestWineMenuId: nil,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date())
             )
         ) {}
@@ -146,8 +146,8 @@ struct MenuBadge: View {
                 name: "Trattoria Milano",
                 cuisine: "Italian",
                 address: "456 Oak Avenue",
-                hasFoodMenu: true,
-                hasWineMenu: true,
+                latestFoodMenuId: "menu_food_2",
+                latestWineMenuId: "menu_wine_2",
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3))
             )
         ) {}

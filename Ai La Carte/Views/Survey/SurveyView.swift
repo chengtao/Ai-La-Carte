@@ -230,7 +230,7 @@ struct SurveyView: View {
                     confidence: 0.9
                 )
             ],
-            recommendationService: MockRecommendationAPIService(),
+            menuService: MockMenuAPIService(),
             analyticsService: MockAnalyticsService()
         )
     )

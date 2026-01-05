@@ -19,7 +19,7 @@ protocol DependencyContainer: Sendable {
     // API Services
     var restaurantAPIService: RestaurantAPIServiceProtocol { get }
     var sessionAPIService: SessionAPIServiceProtocol { get }
-    var recommendationAPIService: RecommendationAPIServiceProtocol { get }
+    var menuAPIService: MenuAPIServiceProtocol { get }
 
     // Device Services
     var locationService: LocationServiceProtocol { get }
@@ -44,8 +44,8 @@ protocol DependencyContainer: Sendable {
     @MainActor func makeSessionViewModel() -> SessionViewModel
     @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel
     @MainActor func makePhotoCarouselReviewViewModel(photos: [CapturedPhoto], sessionId: String?) -> PhotoCarouselReviewViewModel
-    @MainActor func makeCalculatingViewModel(sessionId: String, jobId: String, preferences: UserPreferences) -> CalculatingViewModel
-    @MainActor func makeRecommendationViewModel(sessionId: String, preferences: UserPreferences) -> RecommendationViewModel
+    @MainActor func makeCalculatingViewModel(sessionId: String, mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel
+    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: String?, wineMenuId: String?, preferences: UserPreferences) -> RecommendationViewModel
     @MainActor func makeSurveyViewModel(sessionId: String, items: [ScoredFoodItem]) -> SurveyViewModel
 }
 
@@ -69,20 +69,18 @@ protocol RestaurantAPIServiceProtocol: Sendable {
 }
 
 protocol SessionAPIServiceProtocol: Sendable {
-    /// Registers a locally-created session with the server
-    func registerSession(sessionId: String) async throws
-    /// Updates the session's location (call when location is acquired or improved)
-    func updateSessionLocation(sessionId: String, lat: Double, lon: Double) async throws
-    /// Sets the restaurant for this session
-    func pickRestaurant(sessionId: String, restaurantId: String) async throws
     /// Uploads a photo to the session
     func uploadPhoto(sessionId: String, imageData: Data) async throws -> PhotoUploadResponse
 }
 
-protocol RecommendationAPIServiceProtocol: Sendable {
-    func generateRecommendations(sessionId: String, includeReviews: Bool) async throws -> JobResponse
-    func getRecommendationStatus(sessionId: String, jobId: String) async throws -> JobStatusResponse
-    func getRecommendations(sessionId: String) async throws -> RecommendationResponse
+protocol MenuAPIServiceProtocol: Sendable {
+    /// Creates menus from uploaded photos for a session
+    func createMenus(sessionId: String, lat: Double, lon: Double) async throws -> JobResponse
+    /// Gets the status of menu creation job
+    func getMenusCreationStatus(jobId: String) async throws -> JobStatusResponse
+    /// Gets menus by their IDs
+    func getMenus(foodMenuId: String?, wineMenuId: String?) async throws -> RecommendationResponse
+    /// Submit feedback for a menu item
     func submitFeedback(sessionId: String, itemId: String, rating: FeedbackRating) async throws
 }
 
@@ -141,6 +139,14 @@ protocol RecommendationEngineProtocol: Sendable {
 }
 
 // MARK: - Supporting Types
+
+/// Mode for the calculating view - either artificial delay (for nearby restaurants) or real polling
+enum CalculationMode: Sendable {
+    /// Artificial delay when restaurant has existing menus
+    case artificialDelay(foodMenuId: String?, wineMenuId: String?)
+    /// Real polling for photo scan flow
+    case polling(jobId: String)
+}
 
 struct SessionContext: Codable, Sendable {
     let lat: Double?

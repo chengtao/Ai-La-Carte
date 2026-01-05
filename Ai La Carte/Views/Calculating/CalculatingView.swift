@@ -68,6 +68,8 @@ struct CalculatingView: View {
             RecommendationView(
                 viewModel: dependencyContainer.makeRecommendationViewModel(
                     sessionId: viewModel.sessionId,
+                    foodMenuId: viewModel.foodMenuId,
+                    wineMenuId: viewModel.wineMenuId,
                     preferences: viewModel.preferences
                 )
             )
@@ -269,9 +271,9 @@ struct CalculatingView: View {
         CalculatingView(
             viewModel: CalculatingViewModel(
                 sessionId: "test",
-                jobId: "job1",
+                mode: .polling(jobId: "job1"),
                 preferences: .default,
-                recommendationService: MockRecommendationAPIService()
+                menuService: MockMenuAPIService()
             )
         )
     }

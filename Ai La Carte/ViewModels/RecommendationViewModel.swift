@@ -11,6 +11,8 @@ import Foundation
 @Observable
 final class RecommendationViewModel: BaseViewModel {
     let sessionId: String
+    let foodMenuId: String?
+    let wineMenuId: String?
 
     // Raw items from server (no confidence scores)
     private var rawFoodItems: [FoodItemResponse] = []
@@ -42,20 +44,24 @@ final class RecommendationViewModel: BaseViewModel {
     var foodCartItems: [ScoredFoodItem] = []
     var wineCartItems: [ScoredWineItem] = []
 
-    private let recommendationService: RecommendationAPIServiceProtocol
+    private let menuService: MenuAPIServiceProtocol
     private let recommendationEngine: RecommendationEngineProtocol
     private let analyticsService: AnalyticsServiceProtocol
     private let preferenceManager: PreferenceManagerProtocol
 
     init(
         sessionId: String,
-        recommendationService: RecommendationAPIServiceProtocol,
+        foodMenuId: String?,
+        wineMenuId: String?,
+        menuService: MenuAPIServiceProtocol,
         recommendationEngine: RecommendationEngineProtocol,
         analyticsService: AnalyticsServiceProtocol,
         preferenceManager: PreferenceManagerProtocol
     ) {
         self.sessionId = sessionId
-        self.recommendationService = recommendationService
+        self.foodMenuId = foodMenuId
+        self.wineMenuId = wineMenuId
+        self.menuService = menuService
         self.recommendationEngine = recommendationEngine
         self.analyticsService = analyticsService
         self.preferenceManager = preferenceManager
@@ -68,7 +74,7 @@ final class RecommendationViewModel: BaseViewModel {
         isLoading = true
 
         do {
-            let response = try await recommendationService.getRecommendations(sessionId: sessionId)
+            let response = try await menuService.getMenus(foodMenuId: foodMenuId, wineMenuId: wineMenuId)
             rawFoodItems = response.food
             rawWineItems = response.wine
             profileSummary = "Dish photos are for illustrative purposes only and not from the restaurant."

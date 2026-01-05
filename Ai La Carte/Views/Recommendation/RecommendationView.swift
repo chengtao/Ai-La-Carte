@@ -1099,7 +1099,12 @@ struct FlowLayout: Layout {
     let container = MockDependencyContainer()
     return NavigationStack {
         RecommendationView(
-            viewModel: container.makeRecommendationViewModel(sessionId: "test", preferences: .default)
+            viewModel: container.makeRecommendationViewModel(
+                sessionId: "test",
+                foodMenuId: "mock_food_menu",
+                wineMenuId: "mock_wine_menu",
+                preferences: .default
+            )
         )
     }
 }
