@@ -31,9 +31,9 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
         static let winePairingBoost: Double = 0.12  // Pairing more important for wine
     }
 
-    // MARK: - Reason Codes
+    // MARK: - Food Tag Codes
 
-    private enum ReasonCode {
+    private enum FoodTagCode {
         static let communityFavorite = "COMMUNITY_FAVORITE"
         static let chefSignature = "CHEF_SIGNATURE"
         static let matchesSpice = "MATCHES_SPICE"
@@ -46,6 +46,17 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
         static let richAndBold = "RICH_BOLD"
         static let vegetarian = "VEGETARIAN"
         static let houseSpecialty = "HOUSE_SPECIALTY"
+    }
+
+    // MARK: - Wine Tag Codes
+
+    private enum WineTagCode {
+        static let highCpValue = "HIGH_CP_VALUE"
+        static let risingStar = "RISING_STAR"
+        static let fineAndRare = "FINE_AND_RARE"
+        static let awardWinning = "AWARD_WINNING"
+        static let famous = "FAMOUS"
+        static let highScore = "HIGH_SCORE"
     }
 
     // MARK: - Public Methods
@@ -79,31 +90,31 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
         preferences: FoodPreference
     ) -> Double {
         var score = Weights.baseScore
-        let reasonCodes = Set(item.reasons.map { $0.code })
+        let reasonCodes = Set(item.tags.map { $0.code })
 
-        // Reason tag boosts
-        if reasonCodes.contains(ReasonCode.communityFavorite) {
+        // Food tag boosts
+        if reasonCodes.contains(FoodTagCode.communityFavorite) {
             score += Weights.communityFavorite
         }
-        if reasonCodes.contains(ReasonCode.chefSignature) {
+        if reasonCodes.contains(FoodTagCode.chefSignature) {
             score += Weights.chefSignature
         }
-        if reasonCodes.contains(ReasonCode.greatValue) {
+        if reasonCodes.contains(FoodTagCode.greatValue) {
             score += Weights.greatValue
         }
-        if reasonCodes.contains(ReasonCode.pairsWithDish) {
+        if reasonCodes.contains(FoodTagCode.pairsWithDish) {
             score += Weights.pairingBoost
         }
-        if reasonCodes.contains(ReasonCode.houseSpecialty) {
+        if reasonCodes.contains(FoodTagCode.houseSpecialty) {
             score += Weights.houseSpecialty
         }
-        if reasonCodes.contains(ReasonCode.similarToPast) {
+        if reasonCodes.contains(FoodTagCode.similarToPast) {
             score += 0.08
         }
 
         // Spice preference matching
         score += calculateSpiceBoost(
-            hasSpiceMatch: reasonCodes.contains(ReasonCode.matchesSpice),
+            hasSpiceMatch: reasonCodes.contains(FoodTagCode.matchesSpice),
             preference: preferences.spicePreference
         )
 
@@ -115,36 +126,27 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
         preferences: FoodPreference
     ) -> Double {
         var score = Weights.baseScore
-        let reasonCodes = Set(item.reasons.map { $0.code })
+        let tagCodes = Set(item.tags.map { $0.code })
 
-        // Reason tag boosts
-        if reasonCodes.contains(ReasonCode.communityFavorite) {
-            score += Weights.communityFavorite
-        }
-        if reasonCodes.contains(ReasonCode.chefSignature) {
-            score += Weights.chefSignature
-        }
-        if reasonCodes.contains(ReasonCode.greatValue) {
+        // Wine tag boosts (using new wine-specific tags)
+        if tagCodes.contains(WineTagCode.highCpValue) {
             score += Weights.greatValue
         }
-        if reasonCodes.contains(ReasonCode.houseSpecialty) {
+        if tagCodes.contains(WineTagCode.awardWinning) {
+            score += Weights.chefSignature
+        }
+        if tagCodes.contains(WineTagCode.famous) {
+            score += Weights.communityFavorite
+        }
+        if tagCodes.contains(WineTagCode.fineAndRare) {
             score += Weights.houseSpecialty
         }
-        if reasonCodes.contains(ReasonCode.similarToPast) {
+        if tagCodes.contains(WineTagCode.risingStar) {
             score += 0.08
         }
-
-        // Pairing is more important for wine
-        if reasonCodes.contains(ReasonCode.pairsWithDish) {
-            score += Weights.winePairingBoost
+        if tagCodes.contains(WineTagCode.highScore) {
+            score += 0.10
         }
-
-        // Bold vs light preference based on richness preference
-        score += calculateWineBoldnessBoost(
-            hasRichBold: reasonCodes.contains(ReasonCode.richAndBold),
-            hasLightFresh: reasonCodes.contains(ReasonCode.lightAndFresh),
-            richness: preferences.richness
-        )
 
         return clamp(score)
     }

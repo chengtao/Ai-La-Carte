@@ -221,8 +221,7 @@ struct SurveyView: View {
                         id: "1",
                         title: "Kung Pao Chicken",
                         description: "Tender chicken with peanuts and chili peppers",
-                        reasons: [],
-                        pairingIds: nil,
+                        tags: [],
                         photoUrl: nil,
                         price: "$18.95",
                         category: "entree"

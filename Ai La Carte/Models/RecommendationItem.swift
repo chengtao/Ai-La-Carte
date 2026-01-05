@@ -14,9 +14,8 @@ final class RecommendationItem {
     var typeRaw: String
     var title: String
     var itemDescription: String
-    var reasonsData: Data? // Encoded [ReasonTag]
+    var tagsData: Data? // Encoded [FoodTag] or [WineTag] based on type
     var confidence: Double // 0-1
-    var pairingIds: [String]
     var sessionId: String
 
     // Food-specific fields
@@ -46,13 +45,23 @@ final class RecommendationItem {
         set { categoryRaw = newValue?.rawValue }
     }
 
-    var reasons: [ReasonTag] {
+    var foodTags: [FoodTag] {
         get {
-            guard let data = reasonsData else { return [] }
-            return (try? JSONDecoder().decode([ReasonTag].self, from: data)) ?? []
+            guard type == .food, let data = tagsData else { return [] }
+            return (try? JSONDecoder().decode([FoodTag].self, from: data)) ?? []
         }
         set {
-            reasonsData = try? JSONEncoder().encode(newValue)
+            tagsData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    var wineTags: [WineTag] {
+        get {
+            guard type == .wine, let data = tagsData else { return [] }
+            return (try? JSONDecoder().decode([WineTag].self, from: data)) ?? []
+        }
+        set {
+            tagsData = try? JSONEncoder().encode(newValue)
         }
     }
 
@@ -61,9 +70,9 @@ final class RecommendationItem {
         type: RecommendationType,
         title: String,
         description: String,
-        reasons: [ReasonTag] = [],
+        foodTags: [FoodTag] = [],
+        wineTags: [WineTag] = [],
         confidence: Double = 0.0,
-        pairingIds: [String] = [],
         sessionId: String,
         photoUrl: String? = nil,
         price: String? = nil,
@@ -78,9 +87,12 @@ final class RecommendationItem {
         self.typeRaw = type.rawValue
         self.title = title
         self.itemDescription = description
-        self.reasonsData = try? JSONEncoder().encode(reasons)
+        if type == .food {
+            self.tagsData = try? JSONEncoder().encode(foodTags)
+        } else {
+            self.tagsData = try? JSONEncoder().encode(wineTags)
+        }
         self.confidence = confidence
-        self.pairingIds = pairingIds
         self.sessionId = sessionId
         self.photoUrl = photoUrl
         self.price = price
@@ -183,7 +195,6 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
     case rose = "rose"
     case red = "red"
     case dessertWine = "dessert"
-    case fortified = "fortified"
     case other = "other"
 
     var id: String { rawValue }
@@ -195,7 +206,6 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
         case .rose: return "Rosé"
         case .red: return "Red Wines"
         case .dessertWine: return "Dessert Wines"
-        case .fortified: return "Fortified"
         case .other: return "Other Wines"
         }
     }
@@ -207,7 +217,6 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
         case .rose: return "wineglass.fill"
         case .red: return "wineglass.fill"
         case .dessertWine: return "drop.fill"
-        case .fortified: return "flame.fill"
         case .other: return "wineglass"
         }
     }
@@ -220,33 +229,49 @@ enum WineCategory: String, Codable, CaseIterable, Identifiable {
         case .rose: return 2
         case .red: return 3
         case .dessertWine: return 4
-        case .fortified: return 5
         case .other: return 6
         }
     }
 }
 
-// MARK: - Reason Tag
+// MARK: - Food Tag
 
-struct ReasonTag: Codable, Identifiable, Hashable {
+struct FoodTag: Codable, Identifiable, Hashable {
     let code: String
     let label: String
 
     var id: String { code }
 
-    // Common reason codes
-    static let communityFavorite = ReasonTag(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
-    static let chefSignature = ReasonTag(code: "CHEF_SIGNATURE", label: "Chef's Signature")
-    static let matchesSpice = ReasonTag(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
-    static let adventurousPick = ReasonTag(code: "ADVENTUROUS_PICK", label: "Adventurous Pick")
-    static let crowdPleaser = ReasonTag(code: "CROWD_PLEASER", label: "Crowd Pleaser")
-    static let greatValue = ReasonTag(code: "GREAT_VALUE", label: "Great Value")
-    static let pairsWithDish = ReasonTag(code: "PAIRS_WITH_DISH", label: "Perfect Pairing")
-    static let similarToPast = ReasonTag(code: "SIMILAR_TO_PAST", label: "Similar to Your Favorites")
-    static let lightAndFresh = ReasonTag(code: "LIGHT_FRESH", label: "Light & Fresh")
-    static let richAndBold = ReasonTag(code: "RICH_BOLD", label: "Rich & Bold")
-    static let vegetarianFriendly = ReasonTag(code: "VEGETARIAN", label: "Vegetarian Friendly")
-    static let houseSpecialty = ReasonTag(code: "HOUSE_SPECIALTY", label: "House Specialty")
+    // Food-specific reason codes
+    static let communityFavorite = FoodTag(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
+    static let chefSignature = FoodTag(code: "CHEF_SIGNATURE", label: "Chef's Signature")
+    static let matchesSpice = FoodTag(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
+    static let adventurousPick = FoodTag(code: "ADVENTUROUS_PICK", label: "Adventurous Pick")
+    static let crowdPleaser = FoodTag(code: "CROWD_PLEASER", label: "Crowd Pleaser")
+    static let greatValue = FoodTag(code: "GREAT_VALUE", label: "Great Value")
+    static let pairsWithDish = FoodTag(code: "PAIRS_WITH_DISH", label: "Perfect Pairing")
+    static let similarToPast = FoodTag(code: "SIMILAR_TO_PAST", label: "Similar to Your Favorites")
+    static let lightAndFresh = FoodTag(code: "LIGHT_FRESH", label: "Light & Fresh")
+    static let richAndBold = FoodTag(code: "RICH_BOLD", label: "Rich & Bold")
+    static let vegetarianFriendly = FoodTag(code: "VEGETARIAN", label: "Vegetarian Friendly")
+    static let houseSpecialty = FoodTag(code: "HOUSE_SPECIALTY", label: "House Specialty")
+}
+
+// MARK: - Wine Tag
+
+struct WineTag: Codable, Identifiable, Hashable {
+    let code: String
+    let label: String
+
+    var id: String { code }
+
+    // Wine-specific reason codes
+    static let highCpValue = WineTag(code: "HIGH_CP_VALUE", label: "High CP Value")
+    static let risingStar = WineTag(code: "RISING_STAR", label: "Rising Star")
+    static let fineAndRare = WineTag(code: "FINE_AND_RARE", label: "Fine & Rare")
+    static let awardWinning = WineTag(code: "AWARD_WINNING", label: "Award Winning")
+    static let famous = WineTag(code: "FAMOUS", label: "Famous")
+    static let highScore = WineTag(code: "HIGH_SCORE", label: "High Score")
 }
 
 // MARK: - Recommendation Response DTOs
@@ -262,8 +287,7 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
     let id: String
     let title: String
     let description: String
-    let reasons: [ReasonTagResponse]
-    let pairingIds: [String]?
+    let tags: [FoodTagResponse]
     let photoUrl: String?
     let price: String?
     let category: String?
@@ -272,15 +296,14 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
         case id
         case title
         case description
-        case reasons
-        case pairingIds = "pairing_ids"
+        case tags
         case photoUrl = "photo_url"
         case price
         case category
     }
 
-    var reasonTags: [ReasonTag] {
-        reasons.map { ReasonTag(code: $0.code, label: $0.label) }
+    var foodTags: [FoodTag] {
+        tags.map { FoodTag(code: $0.code, label: $0.label) }
     }
 
     var foodCategory: FoodCategory {
@@ -304,8 +327,7 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
     let id: String
     let title: String
     let description: String
-    let reasons: [ReasonTagResponse]
-    let pairingIds: [String]?
+    let tags: [WineTagResponse]
     let grapeVarietal: String?
     let region: String?
     let country: String?
@@ -317,8 +339,7 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
         case id
         case title
         case description
-        case reasons
-        case pairingIds = "pairing_ids"
+        case tags
         case grapeVarietal = "grape_varietal"
         case region
         case country
@@ -327,8 +348,8 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
         case category
     }
 
-    var reasonTags: [ReasonTag] {
-        reasons.map { ReasonTag(code: $0.code, label: $0.label) }
+    var wineTags: [WineTag] {
+        tags.map { WineTag(code: $0.code, label: $0.label) }
     }
 
     var wineCategory: WineCategory {
@@ -355,7 +376,12 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
     }
 }
 
-struct ReasonTagResponse: Codable, Hashable {
+struct FoodTagResponse: Codable, Hashable {
+    let code: String
+    let label: String
+}
+
+struct WineTagResponse: Codable, Hashable {
     let code: String
     let label: String
 }

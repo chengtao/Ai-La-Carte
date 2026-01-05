@@ -19,8 +19,7 @@ struct ScoredFoodItem: Identifiable, Hashable {
     // Convenience accessors
     var title: String { item.title }
     var description: String { item.description }
-    var reasonTags: [ReasonTag] { item.reasonTags }
-    var pairingIds: [String]? { item.pairingIds }
+    var foodTags: [FoodTag] { item.foodTags }
     var photoUrl: String? { item.photoUrl }
     var price: String? { item.price }
     var foodCategory: FoodCategory { item.foodCategory }
@@ -46,8 +45,7 @@ struct ScoredWineItem: Identifiable, Hashable {
     // Convenience accessors
     var title: String { item.title }
     var description: String { item.description }
-    var reasonTags: [ReasonTag] { item.reasonTags }
-    var pairingIds: [String]? { item.pairingIds }
+    var wineTags: [WineTag] { item.wineTags }
     var grapeVarietal: String? { item.grapeVarietal }
     var region: String? { item.region }
     var country: String? { item.country }
@@ -71,7 +69,6 @@ struct ScoredWineItem: Identifiable, Hashable {
 /// Protocol for common scoring behavior across food and wine items
 protocol ScoredRecommendation {
     var confidence: Double { get }
-    var reasonTags: [ReasonTag] { get }
 }
 
 extension ScoredFoodItem: ScoredRecommendation {}

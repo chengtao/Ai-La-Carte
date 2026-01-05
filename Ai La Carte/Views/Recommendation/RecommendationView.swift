@@ -755,10 +755,10 @@ struct FoodItemCard: View {
                         }
                     }
 
-                    // Reason tags
+                    // Food tags
                     FlowLayout(spacing: 6) {
-                        ForEach(item.reasonTags) { tag in
-                            ReasonTagView(tag: tag)
+                        ForEach(item.foodTags) { tag in
+                            FoodTagView(tag: tag)
                         }
                     }
                 }
@@ -851,10 +851,10 @@ struct WineItemCard: View {
                 // Wine details
                 wineDetailsView
 
-                // Reason tags
+                // Wine tags
                 FlowLayout(spacing: 6) {
-                    ForEach(item.reasonTags) { tag in
-                        ReasonTagView(tag: tag)
+                    ForEach(item.wineTags) { tag in
+                        WineTagView(tag: tag)
                     }
                 }
             }
@@ -998,10 +998,20 @@ struct WineItemCard: View {
     }
 }
 
-// MARK: - Reason Tag View
+// MARK: - Displayable Tag Protocol
 
-struct ReasonTagView: View {
-    let tag: ReasonTag
+protocol DisplayableTag: Identifiable {
+    var code: String { get }
+    var label: String { get }
+}
+
+extension FoodTag: DisplayableTag {}
+extension WineTag: DisplayableTag {}
+
+// MARK: - Food Tag View
+
+struct FoodTagView: View {
+    let tag: FoodTag
 
     var body: some View {
         HStack(spacing: 4) {
@@ -1030,6 +1040,8 @@ struct ReasonTagView: View {
         case "HOUSE_SPECIALTY": return "house.fill"
         case "LIGHT_FRESH": return "drop.fill"
         case "RICH_BOLD": return "circle.fill"
+        case "SIMILAR_TO_PAST": return "heart.fill"
+        case "VEGETARIAN": return "leaf.circle.fill"
         default: return "checkmark"
         }
     }
@@ -1041,6 +1053,53 @@ struct ReasonTagView: View {
         case "MATCHES_SPICE": return .magicTeal
         case "ADVENTUROUS_PICK": return .magicPurple
         case "PAIRS_WITH_DISH": return .magicBlue
+        case "GREAT_VALUE": return .appSuccess
+        case "VEGETARIAN": return .magicTeal
+        default: return Color.magicPurple
+        }
+    }
+}
+
+// MARK: - Wine Tag View
+
+struct WineTagView: View {
+    let tag: WineTag
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: iconForTag(tag.code))
+                .font(.caption2)
+
+            Text(tag.label)
+                .font(.caption2)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(colorForTag(tag.code).opacity(0.15))
+        .foregroundStyle(colorForTag(tag.code))
+        .clipShape(Capsule())
+    }
+
+    private func iconForTag(_ code: String) -> String {
+        switch code {
+        case "HIGH_CP_VALUE": return "chart.line.uptrend.xyaxis"
+        case "RISING_STAR": return "star.leadinghalf.filled"
+        case "FINE_AND_RARE": return "diamond.fill"
+        case "AWARD_WINNING": return "medal.fill"
+        case "FAMOUS": return "crown.fill"
+        case "HIGH_SCORE": return "gauge.with.needle.fill"
+        default: return "checkmark"
+        }
+    }
+
+    private func colorForTag(_ code: String) -> Color {
+        switch code {
+        case "HIGH_CP_VALUE": return .appSuccess
+        case "RISING_STAR": return .magicCoral
+        case "FINE_AND_RARE": return .magicPink
+        case "AWARD_WINNING": return .magicPurple
+        case "FAMOUS": return .magicBlue
+        case "HIGH_SCORE": return .magicTeal
         default: return Color.magicPurple
         }
     }

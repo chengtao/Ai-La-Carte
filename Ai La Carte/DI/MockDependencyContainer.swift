@@ -296,11 +296,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "f4",
                 title: "Dim Sum Platter",
                 description: "An assortment of hand-crafted dumplings including har gow, siu mai, and char siu bao. Perfect for sharing.",
-                reasons: [
-                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
-                    ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
+                tags: [
+                    FoodTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
+                    FoodTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
-                pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
                 price: "$24.00",
                 category: "appetizer"
@@ -309,11 +308,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "f5",
                 title: "Spring Rolls",
                 description: "Crispy golden rolls filled with vegetables and glass noodles. Served with sweet chili dipping sauce.",
-                reasons: [
-                    ReasonTagResponse(code: "VEGETARIAN", label: "Vegetarian Friendly"),
-                    ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
+                tags: [
+                    FoodTagResponse(code: "VEGETARIAN", label: "Vegetarian Friendly"),
+                    FoodTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
-                pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1548507243-d1f7c03cb2ac?w=400",
                 price: "$8.95",
                 category: "appetizer"
@@ -323,11 +321,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "f1",
                 title: "Kung Pao Chicken",
                 description: "Tender chicken with peanuts, vegetables, and chili peppers in a savory-sweet sauce. A perfect balance of spice and flavor.",
-                reasons: [
-                    ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite"),
-                    ReasonTagResponse(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
+                tags: [
+                    FoodTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite"),
+                    FoodTagResponse(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
                 ],
-                pairingIds: ["w1"],
                 photoUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400",
                 price: "$18.95",
                 category: "entree"
@@ -336,11 +333,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "f2",
                 title: "Peking Duck",
                 description: "Crispy roasted duck served with thin pancakes, scallions, and hoisin sauce. A house specialty that's been perfected over generations.",
-                reasons: [
-                    ReasonTagResponse(code: "CHEF_SIGNATURE", label: "Chef's Signature"),
-                    ReasonTagResponse(code: "HOUSE_SPECIALTY", label: "House Specialty")
+                tags: [
+                    FoodTagResponse(code: "CHEF_SIGNATURE", label: "Chef's Signature"),
+                    FoodTagResponse(code: "HOUSE_SPECIALTY", label: "House Specialty")
                 ],
-                pairingIds: ["w2"],
                 photoUrl: "https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400",
                 price: "$42.00",
                 category: "entree"
@@ -349,11 +345,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "f3",
                 title: "Mapo Tofu",
                 description: "Silky tofu in a fiery, aromatic sauce with minced pork and Sichuan peppercorns. Bold and satisfying.",
-                reasons: [
-                    ReasonTagResponse(code: "ADVENTUROUS_PICK", label: "Adventurous Pick"),
-                    ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
+                tags: [
+                    FoodTagResponse(code: "ADVENTUROUS_PICK", label: "Adventurous Pick"),
+                    FoodTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
-                pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1582452919408-39bddf60a4a2?w=400",
                 price: "$14.50",
                 category: "entree"
@@ -363,10 +358,9 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "f6",
                 title: "Mango Sticky Rice",
                 description: "Sweet coconut sticky rice topped with fresh mango slices and drizzled with coconut cream. A refreshing finish.",
-                reasons: [
-                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser")
+                tags: [
+                    FoodTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser")
                 ],
-                pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1621293954908-907159247fc8?w=400",
                 price: "$9.50",
                 category: "dessert"
@@ -375,10 +369,9 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "f7",
                 title: "Sesame Balls",
                 description: "Crispy fried glutinous rice balls filled with sweet red bean paste and coated in sesame seeds.",
-                reasons: [
-                    ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
+                tags: [
+                    FoodTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
-                pairingIds: nil,
                 photoUrl: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400",
                 price: "$6.00",
                 category: "dessert"
@@ -391,11 +384,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "w3",
                 title: "NV Moët & Chandon Brut Imperial",
                 description: "Celebratory bubbles with toasty brioche notes. A versatile pairing that elevates any meal.",
-                reasons: [
-                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
-                    ReasonTagResponse(code: "GREAT_VALUE", label: "Great Value")
+                tags: [
+                    WineTagResponse(code: "FAMOUS", label: "Famous"),
+                    WineTagResponse(code: "HIGH_CP_VALUE", label: "High CP Value")
                 ],
-                pairingIds: nil,
                 grapeVarietal: "Chardonnay, Pinot Noir, Pinot Meunier",
                 region: "Champagne",
                 country: "France",
@@ -408,11 +400,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "w1",
                 title: "2021 Trimbach Riesling",
                 description: "A crisp, aromatic white with notes of green apple and lime. The slight sweetness pairs beautifully with spicy dishes.",
-                reasons: [
-                    ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
-                    ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
+                tags: [
+                    WineTagResponse(code: "HIGH_SCORE", label: "High Score"),
+                    WineTagResponse(code: "HIGH_CP_VALUE", label: "High CP Value")
                 ],
-                pairingIds: ["f1", "f3"],
                 grapeVarietal: "Riesling",
                 region: "Alsace",
                 country: "France",
@@ -424,11 +415,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "w4",
                 title: "2022 Cloudy Bay Sauvignon Blanc",
                 description: "Vibrant and zesty with passion fruit and citrus notes. Perfect with seafood and light dishes.",
-                reasons: [
-                    ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh"),
-                    ReasonTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
+                tags: [
+                    WineTagResponse(code: "FAMOUS", label: "Famous"),
+                    WineTagResponse(code: "AWARD_WINNING", label: "Award Winning")
                 ],
-                pairingIds: nil,
                 grapeVarietal: "Sauvignon Blanc",
                 region: "Marlborough",
                 country: "New Zealand",
@@ -441,11 +431,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "w5",
                 title: "2023 Whispering Angel Rosé",
                 description: "Elegant Provence rosé with delicate strawberry and peach flavors. Refreshingly dry and versatile.",
-                reasons: [
-                    ReasonTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
-                    ReasonTagResponse(code: "LIGHT_FRESH", label: "Light & Fresh")
+                tags: [
+                    WineTagResponse(code: "FAMOUS", label: "Famous"),
+                    WineTagResponse(code: "RISING_STAR", label: "Rising Star")
                 ],
-                pairingIds: nil,
                 grapeVarietal: "Grenache, Cinsault, Rolle",
                 region: "Provence",
                 country: "France",
@@ -458,11 +447,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "w2",
                 title: "2019 Willamette Valley Pinot Noir",
                 description: "Elegant and fruit-forward with cherry and earthy notes. Its medium body complements rich, savory dishes.",
-                reasons: [
-                    ReasonTagResponse(code: "PAIRS_WITH_DISH", label: "Perfect Pairing"),
-                    ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
+                tags: [
+                    WineTagResponse(code: "RISING_STAR", label: "Rising Star"),
+                    WineTagResponse(code: "HIGH_SCORE", label: "High Score")
                 ],
-                pairingIds: ["f2"],
                 grapeVarietal: "Pinot Noir",
                 region: "Willamette Valley",
                 country: "USA",
@@ -474,11 +462,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 id: "w6",
                 title: "2018 Caymus Cabernet Sauvignon",
                 description: "Rich and full-bodied with blackberry, cassis, and vanilla oak notes. A bold choice for hearty dishes.",
-                reasons: [
-                    ReasonTagResponse(code: "CHEF_SIGNATURE", label: "Chef's Signature"),
-                    ReasonTagResponse(code: "RICH_BOLD", label: "Rich & Bold")
+                tags: [
+                    WineTagResponse(code: "FINE_AND_RARE", label: "Fine & Rare"),
+                    WineTagResponse(code: "AWARD_WINNING", label: "Award Winning")
                 ],
-                pairingIds: ["f2"],
                 grapeVarietal: "Cabernet Sauvignon",
                 region: "Napa Valley",
                 country: "USA",
