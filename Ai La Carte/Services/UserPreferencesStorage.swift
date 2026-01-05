@@ -33,7 +33,7 @@ final class UserPreferencesStorage: UserPreferencesStorageProtocol, Sendable {
 
         do {
             let preferences = try JSONDecoder().decode(UserPreferences.self, from: data)
-            AppLogger.shared.info("[Preferences] Loaded preferences: adventurous=\(preferences.food.adventurousness), spice=\(preferences.food.spiceTolerance), richness=\(preferences.food.richness)", category: AppLogger.Category.session)
+            AppLogger.shared.info("[Preferences] Loaded preferences: ingredients=\(preferences.food.ingredients.count), spice=\(preferences.food.spicePreference), richness=\(preferences.food.richness)", category: AppLogger.Category.session)
             return preferences
         } catch {
             AppLogger.shared.error("[Preferences] Failed to decode preferences: \(error)", category: AppLogger.Category.session)
@@ -45,7 +45,7 @@ final class UserPreferencesStorage: UserPreferencesStorageProtocol, Sendable {
         do {
             let data = try JSONEncoder().encode(preferences)
             UserDefaults.standard.set(data, forKey: key)
-            AppLogger.shared.info("[Preferences] Saved preferences: adventurous=\(preferences.food.adventurousness), spice=\(preferences.food.spiceTolerance), richness=\(preferences.food.richness)", category: AppLogger.Category.session)
+            AppLogger.shared.info("[Preferences] Saved preferences: ingredients=\(preferences.food.ingredients.count), spice=\(preferences.food.spicePreference), richness=\(preferences.food.richness)", category: AppLogger.Category.session)
         } catch {
             AppLogger.shared.error("[Preferences] Failed to encode preferences: \(error)", category: AppLogger.Category.session)
         }

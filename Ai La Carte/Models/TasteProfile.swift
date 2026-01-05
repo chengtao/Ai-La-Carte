@@ -32,14 +32,12 @@ final class TasteProfile {
 
     func updateFromSession(_ preference: FoodPreference) {
         // Session preference uses 1-5 scale, we use 0-1
-        let newSpice = Double(preference.spiceTolerance - 1) / 4.0
-        let newAdventurous = Double(preference.adventurousness - 1) / 4.0
+        let newSpice = Double(preference.spicePreference - 1) / 4.0
         let newRichness = Double(preference.richness - 1) / 4.0
 
         // Weighted average: give more weight to newer data
         let weight = 0.7
         self.spicePreference = (spicePreference * (1 - weight)) + (newSpice * weight)
-        self.adventurousness = (adventurousness * (1 - weight)) + (newAdventurous * weight)
         self.richnessPreference = ((richnessPreference ?? 0.5) * (1 - weight)) + (newRichness * weight)
         self.lastUpdatedAt = Date()
     }

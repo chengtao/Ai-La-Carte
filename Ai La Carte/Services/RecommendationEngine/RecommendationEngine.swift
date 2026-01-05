@@ -24,7 +24,6 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
         static let houseSpecialty: Double = 0.10
 
         // Preference matching
-        static let adventurousnessMatch: Double = 0.10
         static let spiceMatch: Double = 0.10
 
         // Wine-specific
@@ -102,17 +101,10 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
             score += 0.08
         }
 
-        // Adventurousness matching
-        score += calculateAdventurousnessBoost(
-            hasAdventurousPick: reasonCodes.contains(ReasonCode.adventurousPick),
-            hasCrowdPleaser: reasonCodes.contains(ReasonCode.crowdPleaser),
-            preference: preferences.adventurousness
-        )
-
-        // Spice matching
+        // Spice preference matching
         score += calculateSpiceBoost(
             hasSpiceMatch: reasonCodes.contains(ReasonCode.matchesSpice),
-            preference: preferences.spiceTolerance
+            preference: preferences.spicePreference
         )
 
         return clamp(score)
@@ -147,51 +139,17 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
             score += Weights.winePairingBoost
         }
 
-        // Bold vs light preference based on adventurousness
+        // Bold vs light preference based on richness preference
         score += calculateWineBoldnessBoost(
             hasRichBold: reasonCodes.contains(ReasonCode.richAndBold),
             hasLightFresh: reasonCodes.contains(ReasonCode.lightAndFresh),
-            adventurousness: preferences.adventurousness
+            richness: preferences.richness
         )
 
         return clamp(score)
     }
 
     // MARK: - Preference Matching
-
-    private func calculateAdventurousnessBoost(
-        hasAdventurousPick: Bool,
-        hasCrowdPleaser: Bool,
-        preference: Int
-    ) -> Double {
-        // High adventurousness (4-5) prefers ADVENTUROUS_PICK
-        // Low adventurousness (1-2) prefers CROWD_PLEASER
-        // Preference 3 is neutral
-
-        if hasAdventurousPick {
-            switch preference {
-            case 5: return Weights.adventurousnessMatch
-            case 4: return Weights.adventurousnessMatch * 0.7
-            case 3: return Weights.adventurousnessMatch * 0.3
-            case 2: return -0.02  // Slight penalty
-            case 1: return -0.05  // Penalty for conservative users
-            default: return 0.0
-            }
-        }
-
-        if hasCrowdPleaser {
-            switch preference {
-            case 1: return Weights.adventurousnessMatch
-            case 2: return Weights.adventurousnessMatch * 0.7
-            case 3: return Weights.adventurousnessMatch * 0.3
-            case 4: return -0.02  // Slight penalty
-            case 5: return -0.05  // Penalty for adventurous users
-            default: return 0.0
-            }
-        }
-
-        return 0.0
-    }
 
     private func calculateSpiceBoost(
         hasSpiceMatch: Bool,
@@ -209,13 +167,13 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
     private func calculateWineBoldnessBoost(
         hasRichBold: Bool,
         hasLightFresh: Bool,
-        adventurousness: Int
+        richness: Int
     ) -> Double {
-        // Adventurous users tend to prefer bolder wines
-        // Conservative users tend to prefer lighter wines
+        // Users preferring rich food tend to prefer bolder wines
+        // Users preferring light food tend to prefer lighter wines
 
         if hasRichBold {
-            switch adventurousness {
+            switch richness {
             case 5: return Weights.wineBoldnessMatch
             case 4: return Weights.wineBoldnessMatch * 0.6
             case 3: return 0.0
@@ -226,7 +184,7 @@ final class RecommendationEngine: RecommendationEngineProtocol, Sendable {
         }
 
         if hasLightFresh {
-            switch adventurousness {
+            switch richness {
             case 1: return Weights.wineBoldnessMatch
             case 2: return Weights.wineBoldnessMatch * 0.6
             case 3: return 0.0

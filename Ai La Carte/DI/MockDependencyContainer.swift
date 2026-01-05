@@ -622,7 +622,7 @@ final class MockUserPreferencesStorage: UserPreferencesStorageProtocol, Sendable
             AppLogger.shared.debug("[MOCK] No saved preferences found, using defaults", category: AppLogger.Category.session)
             return .default
         }
-        AppLogger.shared.debug("[MOCK] Loaded preferences: adventurous=\(preferences.food.adventurousness), spice=\(preferences.food.spiceTolerance)", category: AppLogger.Category.session)
+        AppLogger.shared.debug("[MOCK] Loaded preferences: ingredients=\(preferences.food.ingredients.count), spice=\(preferences.food.spicePreference)", category: AppLogger.Category.session)
         return preferences
     }
 
@@ -630,7 +630,7 @@ final class MockUserPreferencesStorage: UserPreferencesStorageProtocol, Sendable
         if let data = try? JSONEncoder().encode(preferences) {
             UserDefaults.standard.set(data, forKey: key)
         }
-        AppLogger.shared.debug("[MOCK] Saved preferences: adventurous=\(preferences.food.adventurousness), spice=\(preferences.food.spiceTolerance)", category: AppLogger.Category.session)
+        AppLogger.shared.debug("[MOCK] Saved preferences: ingredients=\(preferences.food.ingredients.count), spice=\(preferences.food.spicePreference)", category: AppLogger.Category.session)
     }
 
     func resetPreferences() {

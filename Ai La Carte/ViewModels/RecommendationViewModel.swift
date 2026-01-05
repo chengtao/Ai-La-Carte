@@ -106,8 +106,8 @@ final class RecommendationViewModel: BaseViewModel {
             event: .preferenceAdjusted,
             sessionId: sessionId,
             meta: [
-                "adventurousness": "\(currentPreferences.food.adventurousness)",
-                "spice": "\(currentPreferences.food.spiceTolerance)",
+                "ingredients": currentPreferences.food.ingredients.map { $0.rawValue }.joined(separator: ","),
+                "spice": "\(currentPreferences.food.spicePreference)",
                 "richness": "\(currentPreferences.food.richness)"
             ]
         )

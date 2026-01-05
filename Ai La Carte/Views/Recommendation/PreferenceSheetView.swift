@@ -197,51 +197,28 @@ struct PreferenceSheetView: View {
 struct FoodPreferencesTab: View {
     @Binding var preferences: FoodPreference
 
-    @State private var localAdventurousness: Double
-    @State private var localSpiceTolerance: Double
     @State private var localRichness: Double
+    @State private var localSpicePreference: Double
 
     init(preferences: Binding<FoodPreference>) {
         self._preferences = preferences
-        self._localAdventurousness = State(initialValue: Double(preferences.wrappedValue.adventurousness))
-        self._localSpiceTolerance = State(initialValue: Double(preferences.wrappedValue.spiceTolerance))
         self._localRichness = State(initialValue: Double(preferences.wrappedValue.richness))
+        self._localSpicePreference = State(initialValue: Double(preferences.wrappedValue.spicePreference))
     }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // Adventurousness Slider
-                PreferenceSliderCompact(
-                    title: "Adventurousness",
-                    value: $localAdventurousness,
-                    leftIcon: "heart.fill",
-                    leftLabel: "Classic",
-                    rightIcon: "star.fill",
-                    rightLabel: "Adventurous",
-                    label: preferences.adventurousnessLabel,
+                // 1. Ingredient Preference (checkboxes)
+                PreferenceCheckboxGroup(
+                    title: "Ingredients",
+                    icon: "fork.knife",
+                    options: FoodIngredient.allCases,
+                    selection: $preferences.ingredients,
                     accentColor: .magicPurple
                 )
-                .onChange(of: localAdventurousness) { _, newValue in
-                    preferences.adventurousness = Int(newValue)
-                }
 
-                // Spice Tolerance Slider
-                PreferenceSliderCompact(
-                    title: "Spice Tolerance",
-                    value: $localSpiceTolerance,
-                    leftIcon: "leaf.fill",
-                    leftLabel: "Mild",
-                    rightIcon: "flame.fill",
-                    rightLabel: "Spicy",
-                    label: preferences.spiceLabel,
-                    accentColor: .magicCoral
-                )
-                .onChange(of: localSpiceTolerance) { _, newValue in
-                    preferences.spiceTolerance = Int(newValue)
-                }
-
-                // Richness Slider
+                // 2. Richness Slider
                 PreferenceSliderCompact(
                     title: "Richness",
                     value: $localRichness,
@@ -255,15 +232,29 @@ struct FoodPreferencesTab: View {
                 .onChange(of: localRichness) { _, newValue in
                     preferences.richness = Int(newValue)
                 }
+
+                // 3. Spice Preference Slider
+                PreferenceSliderCompact(
+                    title: "Spice Preference",
+                    value: $localSpicePreference,
+                    leftIcon: "leaf.fill",
+                    leftLabel: "Mild",
+                    rightIcon: "flame.fill",
+                    rightLabel: "Spicy",
+                    label: preferences.spiceLabel,
+                    accentColor: .magicCoral
+                )
+                .onChange(of: localSpicePreference) { _, newValue in
+                    preferences.spicePreference = Int(newValue)
+                }
             }
             .padding(.horizontal, AppConstants.UI.defaultPadding)
             .padding(.vertical, 20)
         }
         // Sync local state when preferences change externally (e.g., reset button)
         .onChange(of: preferences) { _, newValue in
-            localAdventurousness = Double(newValue.adventurousness)
-            localSpiceTolerance = Double(newValue.spiceTolerance)
             localRichness = Double(newValue.richness)
+            localSpicePreference = Double(newValue.spicePreference)
         }
     }
 }

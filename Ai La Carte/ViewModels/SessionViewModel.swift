@@ -235,8 +235,8 @@ final class SessionViewModel: BaseViewModel {
             event: .sliderSet,
             sessionId: currentSession?.id,
             meta: [
-                "adventurousness": "\(preferences.food.adventurousness)",
-                "spice": "\(preferences.food.spiceTolerance)",
+                "ingredients": preferences.food.ingredients.map { $0.rawValue }.joined(separator: ","),
+                "spice": "\(preferences.food.spicePreference)",
                 "richness": "\(preferences.food.richness)"
             ]
         )

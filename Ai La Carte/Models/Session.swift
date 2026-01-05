@@ -17,9 +17,9 @@ final class Session {
     var statusRaw: String
 
     // Session preferences
-    var adventurousClassic: Int? // 1-5
-    var spiceTolerance: Int? // 1-5
+    var ingredientsJSON: String? // JSON encoded Set<FoodIngredient>
     var richness: Int? // 1-5
+    var spicePreference: Int? // 1-5
 
     // Relationships
     @Relationship(deleteRule: .cascade, inverse: \PhotoAsset.session) var photos: [PhotoAsset] = []
@@ -46,14 +46,25 @@ final class Session {
     }
 
     var foodPreference: FoodPreference? {
-        guard let adv = adventurousClassic, let spice = spiceTolerance else { return nil }
-        return FoodPreference(adventurousness: adv, spiceTolerance: spice, richness: richness ?? 3)
+        guard let spice = spicePreference else { return nil }
+        let ingredients: Set<FoodIngredient>
+        if let json = ingredientsJSON,
+           let data = json.data(using: .utf8),
+           let decoded = try? JSONDecoder().decode(Set<FoodIngredient>.self, from: data) {
+            ingredients = decoded
+        } else {
+            ingredients = []
+        }
+        return FoodPreference(ingredients: ingredients, richness: richness ?? 3, spicePreference: spice)
     }
 
     func setPreference(_ preference: FoodPreference) {
-        self.adventurousClassic = preference.adventurousness
-        self.spiceTolerance = preference.spiceTolerance
+        if let data = try? JSONEncoder().encode(preference.ingredients),
+           let json = String(data: data, encoding: .utf8) {
+            self.ingredientsJSON = json
+        }
         self.richness = preference.richness
+        self.spicePreference = preference.spicePreference
     }
 
     var foodRecommendations: [RecommendationItem] {
@@ -121,28 +132,30 @@ enum SessionStatus: String, Codable {
     }
 }
 
+// MARK: - Food Ingredient
+
+enum FoodIngredient: String, Codable, CaseIterable, Identifiable {
+    case beef = "Beef"
+    case pork = "Pork"
+    case chicken = "Chicken"
+    case seafood = "Seafood"
+    case noodle = "Noodle"
+    case rice = "Rice"
+
+    var id: String { rawValue }
+}
+
 // MARK: - Food Preference
 
 struct FoodPreference: Codable, Equatable {
-    var adventurousness: Int // 1 = Classic, 5 = Adventurous
-    var spiceTolerance: Int  // 1 = Non-spicy, 5 = The spicier the better
-    var richness: Int        // 1 = Light, 5 = Rich
+    var ingredients: Set<FoodIngredient>  // Selected ingredient preferences
+    var richness: Int                      // 1 = Light, 5 = Rich
+    var spicePreference: Int               // 1 = Non-spicy, 5 = The spicier the better
 
-    static let `default` = FoodPreference(adventurousness: 3, spiceTolerance: 3, richness: 3)
-
-    var adventurousnessLabel: String {
-        switch adventurousness {
-        case 1: return "Classic comfort"
-        case 2: return "Mostly familiar"
-        case 3: return "Balanced"
-        case 4: return "Open to new"
-        case 5: return "Adventurous"
-        default: return "Balanced"
-        }
-    }
+    static let `default` = FoodPreference(ingredients: [], richness: 3, spicePreference: 3)
 
     var spiceLabel: String {
-        switch spiceTolerance {
+        switch spicePreference {
         case 1: return "No spice"
         case 2: return "Mild"
         case 3: return "Medium"
