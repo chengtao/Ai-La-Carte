@@ -297,7 +297,7 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 title: "Dim Sum Platter",
                 description: "An assortment of hand-crafted dumplings including har gow, siu mai, and char siu bao. Perfect for sharing.",
                 tags: [
-                    FoodTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser"),
+                    FoodTagResponse(code : "CROWD_PLEASER", label: "Crowd Pleaser"),
                     FoodTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
