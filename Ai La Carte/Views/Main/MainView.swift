@@ -77,6 +77,7 @@ struct MainView: View {
                 PreferenceSheetView(
                     preferences: $viewModel.userPreferences,
                     isPresented: $viewModel.showPreferenceSheet,
+                    isLoading: viewModel.isPreparingRecommendation,
                     onContinue: {
                         Task {
                             await viewModel.confirmPreferencesAndProceed()

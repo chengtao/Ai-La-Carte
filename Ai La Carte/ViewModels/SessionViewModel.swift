@@ -33,6 +33,9 @@ final class SessionViewModel: BaseViewModel {
     var showPreferenceSheet = false
     var showCalculating = false
 
+    // Loading state for preference sheet (while creating job)
+    var isPreparingRecommendation = false
+
     // Recommendation generation
     var jobId: String?
     var calculatingViewModel: CalculatingViewModel?
@@ -177,7 +180,8 @@ final class SessionViewModel: BaseViewModel {
 
     /// Called when user confirms preferences and wants to proceed with recommendations
     func confirmPreferencesAndProceed(preferences: UserPreferences, location: LocationCoordinate?) async {
-        showPreferenceSheet = false
+        // Show loading state while preparing (don't dismiss sheet yet!)
+        isPreparingRecommendation = true
 
         // Update session with location if not already set (photo scan flow)
         if let session = currentSession, session.latitude == nil, let location = location {
@@ -203,11 +207,17 @@ final class SessionViewModel: BaseViewModel {
         )
 
         await startRecommendationGeneration(preferences: preferences)
+
+        // Clear loading state after completion
+        isPreparingRecommendation = false
     }
 
     /// Triggers recommendation generation and navigates to CalculatingView
     func startRecommendationGeneration(preferences: UserPreferences) async {
-        guard let session = currentSession else { return }
+        guard let session = currentSession else {
+            self.error = AppError.notFound("No active session")
+            return
+        }
 
         // FLOW A: Restaurant has existing menus -> artificial delay mode (no createMenus call)
         if session.hasExistingMenus {
@@ -217,6 +227,8 @@ final class SessionViewModel: BaseViewModel {
                 preferences: preferences,
                 menuService: menuService
             )
+            // Dismiss sheet and show calculating view TOGETHER to prevent race condition
+            showPreferenceSheet = false
             showCalculating = true
             return
         }
@@ -237,9 +249,13 @@ final class SessionViewModel: BaseViewModel {
                 preferences: preferences,
                 menuService: menuService
             )
+            // Dismiss sheet and show calculating view TOGETHER to prevent race condition
+            showPreferenceSheet = false
             showCalculating = true
         } catch {
+            // On error, keep sheet open and show error to user
             self.error = handleNetworkError(error)
+            AppLogger.shared.error("Failed to create menus: \(error)", category: AppLogger.Category.recommendation)
         }
     }
 
@@ -256,6 +272,7 @@ final class SessionViewModel: BaseViewModel {
         // Reset navigation state
         showCalculating = false
         showPreferenceSheet = false
+        isPreparingRecommendation = false
 
         // Reset recommendation state
         jobId = nil
