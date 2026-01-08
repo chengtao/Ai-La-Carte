@@ -74,6 +74,16 @@ struct CalculatingView: View {
                 )
             )
         }
+        .alert("No Menu Detected", isPresented: $viewModel.noMenusDetected) {
+            Button("Try Again") {
+                NotificationCenter.default.post(
+                    name: AppConstants.Notifications.dismissToMain,
+                    object: nil
+                )
+            }
+        } message: {
+            Text("We couldn't detect a menu from your photos. Please try again with clearer photos.")
+        }
     }
 
     // MARK: - Animated Illustration

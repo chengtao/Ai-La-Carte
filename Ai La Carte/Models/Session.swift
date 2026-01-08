@@ -263,8 +263,21 @@ struct SessionResponse: Codable {
 struct JobStatusResponse: Codable {
     let status: String
     let progress: Double?
+    let foodMenuId: String?
+    let wineMenuId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case status, progress
+        case foodMenuId = "food_menu_id"
+        case wineMenuId = "wine_menu_id"
+    }
 
     var sessionStatus: SessionStatus {
         SessionStatus(rawValue: status) ?? .created
+    }
+
+    /// Returns true if at least one menu ID exists
+    var hasMenus: Bool {
+        foodMenuId != nil || wineMenuId != nil
     }
 }

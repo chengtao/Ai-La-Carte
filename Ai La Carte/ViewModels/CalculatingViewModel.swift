@@ -24,6 +24,9 @@ final class CalculatingViewModel: BaseViewModel {
     var foodMenuId: String?
     var wineMenuId: String?
 
+    // Error state for no menus detected
+    var noMenusDetected = false
+
     private let menuService: MenuAPIServiceProtocol
     private var pollingTask: Task<Void, Never>?
 
@@ -110,7 +113,10 @@ final class CalculatingViewModel: BaseViewModel {
                 await self.pollStatus(jobId: jobId)
 
                 if self.status == .done {
-                    self.showRecommendations = true
+                    // Only show recommendations if menus were detected
+                    if !self.noMenusDetected {
+                        self.showRecommendations = true
+                    }
                     break
                 }
 
@@ -144,8 +150,18 @@ final class CalculatingViewModel: BaseViewModel {
                 progress = newProgress
             }
 
-            // TODO: Extract foodMenuId and wineMenuId from response when status is done
-            // The backend should return these in the status response when complete
+            // Extract menu IDs when job completes
+            if newStatus == .done {
+                if response.hasMenus {
+                    foodMenuId = response.foodMenuId
+                    wineMenuId = response.wineMenuId
+                    AppLogger.shared.info("Menu creation complete: food=\(response.foodMenuId ?? "nil"), wine=\(response.wineMenuId ?? "nil")", category: AppLogger.Category.recommendation)
+                } else {
+                    // No menus detected - trigger error alert
+                    noMenusDetected = true
+                    AppLogger.shared.warning("Menu creation complete but no menus detected", category: AppLogger.Category.recommendation)
+                }
+            }
         } catch {
             AppLogger.shared.error("Polling error: \(error)", category: AppLogger.Category.recommendation)
         }
