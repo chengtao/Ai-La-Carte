@@ -60,7 +60,7 @@ enum AppConstants {
 
     enum Recommendation {
         static let pollingInterval: TimeInterval = 1.0
-        static let maxPollingAttempts = 30
+        static let maxPollingAttempts = 90
         static let foodRecommendationCount = 5
         static let wineRecommendationCount = 5
     }
