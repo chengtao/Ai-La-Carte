@@ -15,8 +15,8 @@ final class Restaurant {
     var name: String
     var latitude: Double
     var longitude: Double
-    var latestFoodMenuId: String?
-    var latestWineMenuId: String?
+    var latestFoodMenuId: Int?
+    var latestWineMenuId: Int?
     var menuUpdatedAt: Date?
     var confidenceScore: Int // 0-100
 
@@ -25,8 +25,8 @@ final class Restaurant {
         name: String,
         latitude: Double,
         longitude: Double,
-        latestFoodMenuId: String? = nil,
-        latestWineMenuId: String? = nil,
+        latestFoodMenuId: Int? = nil,
+        latestWineMenuId: Int? = nil,
         menuUpdatedAt: Date? = nil,
         confidenceScore: Int = 0
     ) {
