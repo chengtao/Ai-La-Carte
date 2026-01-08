@@ -11,8 +11,8 @@ import Foundation
 @Observable
 final class RecommendationViewModel: BaseViewModel {
     let sessionId: String
-    let foodMenuId: String?
-    let wineMenuId: String?
+    let foodMenuId: Int?
+    let wineMenuId: Int?
 
     // Raw items from server (no confidence scores)
     private var rawFoodItems: [FoodItemResponse] = []
@@ -51,8 +51,8 @@ final class RecommendationViewModel: BaseViewModel {
 
     init(
         sessionId: String,
-        foodMenuId: String?,
-        wineMenuId: String?,
+        foodMenuId: Int?,
+        wineMenuId: Int?,
         menuService: MenuAPIServiceProtocol,
         recommendationEngine: RecommendationEngineProtocol,
         analyticsService: AnalyticsServiceProtocol,

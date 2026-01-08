@@ -139,7 +139,7 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
         )
     }
 
-    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: String?, wineMenuId: String?, preferences: UserPreferences) -> RecommendationViewModel {
+    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: Int?, wineMenuId: Int?, preferences: UserPreferences) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
             foodMenuId: foodMenuId,
@@ -227,7 +227,7 @@ final class MenuAPIService: MenuAPIServiceProtocol, Sendable {
         )
     }
 
-    func getMenus(foodMenuId: String?, wineMenuId: String?) async throws -> RecommendationResponse {
+    func getMenus(foodMenuId: Int?, wineMenuId: Int?) async throws -> RecommendationResponse {
         return try await networkManager.request(
             endpoint: .getMenus(foodMenuId: foodMenuId, wineMenuId: wineMenuId),
             method: .GET,

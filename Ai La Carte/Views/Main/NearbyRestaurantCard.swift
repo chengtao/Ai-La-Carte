@@ -134,7 +134,7 @@ struct MenuBadge: View {
                 name: "Golden Dragon",
                 cuisine: "Chinese",
                 address: "123 Main Street",
-                latestFoodMenuId: "menu_food_1",
+                latestFoodMenuId: 101,
                 latestWineMenuId: nil,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date())
             )
@@ -146,8 +146,8 @@ struct MenuBadge: View {
                 name: "Trattoria Milano",
                 cuisine: "Italian",
                 address: "456 Oak Avenue",
-                latestFoodMenuId: "menu_food_2",
-                latestWineMenuId: "menu_wine_2",
+                latestFoodMenuId: 102,
+                latestWineMenuId: 202,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3))
             )
         ) {}

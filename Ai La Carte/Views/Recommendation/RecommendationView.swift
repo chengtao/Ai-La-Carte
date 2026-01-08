@@ -1160,8 +1160,8 @@ struct FlowLayout: Layout {
         RecommendationView(
             viewModel: container.makeRecommendationViewModel(
                 sessionId: "test",
-                foodMenuId: "mock_food_menu",
-                wineMenuId: "mock_wine_menu",
+                foodMenuId: 999,
+                wineMenuId: 998,
                 preferences: .default
             )
         )

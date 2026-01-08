@@ -21,8 +21,8 @@ final class CalculatingViewModel: BaseViewModel {
     var pollingAttempts = 0
 
     // Menu IDs to pass to RecommendationView
-    var foodMenuId: String?
-    var wineMenuId: String?
+    var foodMenuId: Int?
+    var wineMenuId: Int?
 
     // Error state for no menus detected
     var noMenusDetected = false
@@ -68,7 +68,7 @@ final class CalculatingViewModel: BaseViewModel {
 
     // MARK: - Artificial Delay Flow (for nearby restaurants with existing menus)
 
-    private func startArtificialDelay(foodMenuId: String?, wineMenuId: String?) {
+    private func startArtificialDelay(foodMenuId: Int?, wineMenuId: Int?) {
         self.foodMenuId = foodMenuId
         self.wineMenuId = wineMenuId
 
@@ -155,7 +155,7 @@ final class CalculatingViewModel: BaseViewModel {
                 if response.hasMenus {
                     foodMenuId = response.foodMenuId
                     wineMenuId = response.wineMenuId
-                    AppLogger.shared.info("Menu creation complete: food=\(response.foodMenuId ?? "nil"), wine=\(response.wineMenuId ?? "nil")", category: AppLogger.Category.recommendation)
+                    AppLogger.shared.info("Menu creation complete: food=\(response.foodMenuId.map(String.init) ?? "nil"), wine=\(response.wineMenuId.map(String.init) ?? "nil")", category: AppLogger.Category.recommendation)
                 } else {
                     // No menus detected - trigger error alert
                     noMenusDetected = true

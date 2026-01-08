@@ -61,8 +61,8 @@ struct RestaurantResponse: Codable, Identifiable, Hashable {
     let name: String
     let cuisine: String?
     let address: String?
-    let latestFoodMenuId: String?
-    let latestWineMenuId: String?
+    let latestFoodMenuId: Int?
+    let latestWineMenuId: Int?
     let menuUpdatedAt: String?
 
     enum CodingKeys: String, CodingKey {

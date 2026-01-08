@@ -210,8 +210,8 @@ struct SessionInfo {
     let id: String
     let restaurantId: String?
     let restaurantName: String?
-    let foodMenuId: String?
-    let wineMenuId: String?
+    let foodMenuId: Int?
+    let wineMenuId: Int?
     let latitude: Double?
     let longitude: Double?
 
@@ -219,8 +219,8 @@ struct SessionInfo {
         id: String,
         restaurantId: String? = nil,
         restaurantName: String? = nil,
-        foodMenuId: String? = nil,
-        wineMenuId: String? = nil,
+        foodMenuId: Int? = nil,
+        wineMenuId: Int? = nil,
         latitude: Double? = nil,
         longitude: Double? = nil
     ) {

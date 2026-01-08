@@ -263,8 +263,8 @@ struct SessionResponse: Codable {
 struct JobStatusResponse: Codable {
     let status: String
     let progress: Double?
-    let foodMenuId: String?
-    let wineMenuId: String?
+    let foodMenuId: Int?
+    let wineMenuId: Int?
 
     enum CodingKeys: String, CodingKey {
         case status, progress

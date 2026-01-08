@@ -133,7 +133,7 @@ final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
         )
     }
 
-    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: String?, wineMenuId: String?, preferences: UserPreferences) -> RecommendationViewModel {
+    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: Int?, wineMenuId: Int?, preferences: UserPreferences) -> RecommendationViewModel {
         RecommendationViewModel(
             sessionId: sessionId,
             foodMenuId: foodMenuId,
@@ -177,7 +177,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Golden Dragon",
                 cuisine: "Chinese",
                 address: "123 Main Street",
-                latestFoodMenuId: "menu_food_r1",
+                latestFoodMenuId: 101,
                 latestWineMenuId: nil,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 2))
             ),
@@ -186,8 +186,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Trattoria Milano",
                 cuisine: "Italian",
                 address: "456 Oak Avenue",
-                latestFoodMenuId: "menu_food_r2",
-                latestWineMenuId: "menu_wine_r2",
+                latestFoodMenuId: 102,
+                latestWineMenuId: 202,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400))
             ),
             RestaurantResponse(
@@ -195,8 +195,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Sakura Sushi",
                 cuisine: "Japanese",
                 address: "789 Cherry Lane",
-                latestFoodMenuId: "menu_food_r3",
-                latestWineMenuId: "menu_wine_r3",
+                latestFoodMenuId: 103,
+                latestWineMenuId: 203,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 5))
             ),
             RestaurantResponse(
@@ -204,7 +204,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "The Spice Room",
                 cuisine: "Indian",
                 address: "321 Curry Road",
-                latestFoodMenuId: "menu_food_r4",
+                latestFoodMenuId: 104,
                 latestWineMenuId: nil,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3))
             ),
@@ -213,8 +213,8 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 name: "Bistro Parisien",
                 cuisine: "French",
                 address: "555 French Quarter",
-                latestFoodMenuId: "menu_food_r5",
-                latestWineMenuId: "menu_wine_r5",
+                latestFoodMenuId: 105,
+                latestWineMenuId: 205,
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date())
             )
         ]
@@ -284,8 +284,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
         AppLogger.shared.debug("[MOCK] Job \(jobId) status: \(status.rawValue)", category: AppLogger.Category.recommendation)
 
         // Return menu IDs when job is complete
-        let foodMenuId: String? = status == .done ? "mock_food_menu_\(jobId)" : nil
-        let wineMenuId: String? = status == .done ? "mock_wine_menu_\(jobId)" : nil
+        let foodMenuId: Int? = status == .done ? 999 : nil
+        let wineMenuId: Int? = status == .done ? 998 : nil
 
         return JobStatusResponse(
             status: status.rawValue,
@@ -295,10 +295,10 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
         )
     }
 
-    func getMenus(foodMenuId: String?, wineMenuId: String?) async throws -> RecommendationResponse {
+    func getMenus(foodMenuId: Int?, wineMenuId: Int?) async throws -> RecommendationResponse {
         try await Task.sleep(nanoseconds: 500_000_000)
 
-        AppLogger.shared.info("[MOCK] Fetching menus - food: \(foodMenuId ?? "nil"), wine: \(wineMenuId ?? "nil")", category: AppLogger.Category.recommendation)
+        AppLogger.shared.info("[MOCK] Fetching menus - food: \(foodMenuId.map(String.init) ?? "nil"), wine: \(wineMenuId.map(String.init) ?? "nil")", category: AppLogger.Category.recommendation)
 
         let foodItems: [FoodItemResponse] = [
             // Appetizers

@@ -293,7 +293,7 @@ enum APIEndpoint: Sendable {
     // Menus
     case createMenus(sessionId: String, lat: Double?, lon: Double?)
     case menusCreationStatus(jobId: String)
-    case getMenus(foodMenuId: String?, wineMenuId: String?)
+    case getMenus(foodMenuId: Int?, wineMenuId: Int?)
 
     // Events & Feedback
     case trackEvent

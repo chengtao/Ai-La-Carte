@@ -45,7 +45,7 @@ protocol DependencyContainer: Sendable {
     @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel
     @MainActor func makePhotoCarouselReviewViewModel(photos: [CapturedPhoto], sessionId: String?) -> PhotoCarouselReviewViewModel
     @MainActor func makeCalculatingViewModel(sessionId: String, mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel
-    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: String?, wineMenuId: String?, preferences: UserPreferences) -> RecommendationViewModel
+    @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: Int?, wineMenuId: Int?, preferences: UserPreferences) -> RecommendationViewModel
     @MainActor func makeSurveyViewModel(sessionId: String, items: [ScoredFoodItem]) -> SurveyViewModel
 }
 
@@ -79,7 +79,7 @@ protocol MenuAPIServiceProtocol: Sendable {
     /// Gets the status of menu creation job
     func getMenusCreationStatus(jobId: String) async throws -> JobStatusResponse
     /// Gets menus by their IDs
-    func getMenus(foodMenuId: String?, wineMenuId: String?) async throws -> RecommendationResponse
+    func getMenus(foodMenuId: Int?, wineMenuId: Int?) async throws -> RecommendationResponse
     /// Submit feedback for a menu item
     func submitFeedback(sessionId: String, itemId: String, rating: FeedbackRating) async throws
 }
@@ -143,7 +143,7 @@ protocol RecommendationEngineProtocol: Sendable {
 /// Mode for the calculating view - either artificial delay (for nearby restaurants) or real polling
 enum CalculationMode: Sendable {
     /// Artificial delay when restaurant has existing menus
-    case artificialDelay(foodMenuId: String?, wineMenuId: String?)
+    case artificialDelay(foodMenuId: Int?, wineMenuId: Int?)
     /// Real polling for photo scan flow
     case polling(jobId: String)
 }
