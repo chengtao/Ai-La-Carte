@@ -282,7 +282,17 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
         }
 
         AppLogger.shared.debug("[MOCK] Job \(jobId) status: \(status.rawValue)", category: AppLogger.Category.recommendation)
-        return JobStatusResponse(status: status.rawValue, progress: status.progress)
+
+        // Return menu IDs when job is complete
+        let foodMenuId: String? = status == .done ? "mock_food_menu_\(jobId)" : nil
+        let wineMenuId: String? = status == .done ? "mock_wine_menu_\(jobId)" : nil
+
+        return JobStatusResponse(
+            status: status.rawValue,
+            progress: status.progress,
+            foodMenuId: foodMenuId,
+            wineMenuId: wineMenuId
+        )
     }
 
     func getMenus(foodMenuId: String?, wineMenuId: String?) async throws -> RecommendationResponse {
