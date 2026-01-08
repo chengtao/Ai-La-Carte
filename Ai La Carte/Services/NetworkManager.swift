@@ -16,14 +16,21 @@ struct NetworkConfiguration: Sendable {
     let retryDelay: TimeInterval
 
     static let `default` = NetworkConfiguration(
-        baseURL: "https://api.ailacarte.app",
+        baseURL: "https://api.ailacarte.app/api",
         timeout: 30,
         retryAttempts: 3,
         retryDelay: 1
     )
 
+    static let development = NetworkConfiguration(
+        baseURL: "http://192.168.86.54:3000/api",
+        timeout: 30,
+        retryAttempts: 2,
+        retryDelay: 1
+    )
+
     static let mock = NetworkConfiguration(
-        baseURL: "https://mock.ailacarte.app",
+        baseURL: "https://mock.ailacarte.app/api",
         timeout: 5,
         retryAttempts: 1,
         retryDelay: 0.1

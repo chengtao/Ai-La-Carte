@@ -21,7 +21,7 @@ final class AppDependencyContainer: DependencyContainer, @unchecked Sendable {
     // MARK: - Core Services
 
     lazy var networkManager: NetworkManagerProtocol = {
-        NetworkManager(configuration: .default)
+        NetworkManager(configuration: .development)
     }()
 
     lazy var deviceIdentifierService: DeviceIdentifierServiceProtocol = {

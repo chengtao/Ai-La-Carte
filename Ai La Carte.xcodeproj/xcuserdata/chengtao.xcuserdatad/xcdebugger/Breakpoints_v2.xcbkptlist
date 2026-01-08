@@ -36,5 +36,113 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "AB400B2D-559A-48EA-85FD-D3B08B3A5C89"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Ai La Carte/Services/NetworkManager.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "107"
+            endingLineNumber = "107"
+            landmarkName = "request(endpoint:method:body:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "50A5FD44-7B84-4AC7-A375-C7AA82E4AD72"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Ai La Carte/Services/NetworkManager.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "394"
+            endingLineNumber = "394"
+            landmarkName = "extractDecodingErrorContext(_:)"
+            landmarkType = "9">
+            <Locations>
+               <Location
+                  uuid = "50A5FD44-7B84-4AC7-A375-C7AA82E4AD72 - 976ffc1bf8028f21"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Ai_La_Carte.extractDecodingErrorContext(Swift.DecodingError) -&gt; Swift.String"
+                  moduleName = "Ai La Carte.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/NetworkManager.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "394"
+                  endingLineNumber = "394">
+               </Location>
+               <Location
+                  uuid = "50A5FD44-7B84-4AC7-A375-C7AA82E4AD72 - 976ffc1bf8028f21"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Ai_La_Carte.extractDecodingErrorContext(Swift.DecodingError) -&gt; Swift.String"
+                  moduleName = "Ai La Carte.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/NetworkManager.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "394"
+                  endingLineNumber = "394">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "B76368E6-6AF5-475F-A529-092B326B891C"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Ai La Carte/Services/NetworkManager.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "123"
+            endingLineNumber = "123"
+            landmarkName = "request(endpoint:method:body:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "B76368E6-6AF5-475F-A529-092B326B891C - be05f091b2fe3a39"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for Ai_La_Carte.NetworkManager.request&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable, &#x3c4;_0_0: Swift.Encodable&gt;(endpoint: Ai_La_Carte.APIEndpoint, method: Ai_La_Carte.HTTPMethod, body: Swift.Optional&lt;Foundation.Data&gt;) async throws -&gt; &#x3c4;_0_0"
+                  moduleName = "Ai La Carte.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/NetworkManager.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "123"
+                  endingLineNumber = "123">
+               </Location>
+               <Location
+                  uuid = "B76368E6-6AF5-475F-A529-092B326B891C - d631f906e73da7fa"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(4) suspend resume partial function for Ai_La_Carte.NetworkManager.request&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable, &#x3c4;_0_0: Swift.Encodable&gt;(endpoint: Ai_La_Carte.APIEndpoint, method: Ai_La_Carte.HTTPMethod, body: Swift.Optional&lt;Foundation.Data&gt;) async throws -&gt; &#x3c4;_0_0"
+                  moduleName = "Ai La Carte.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/chengtao/Development/Ai%20La%20Carte/Ai%20La%20Carte/Services/NetworkManager.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "123"
+                  endingLineNumber = "123">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

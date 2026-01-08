@@ -31,8 +31,8 @@ struct Ai_La_CarteApp: App {
     }()
 
     var body: some Scene {
-        // Default to mock for local development
-        let env = ProcessInfo.processInfo.environment["ENV"] ?? "mock"
+        // Default to production (connects to development server)
+        let env = ProcessInfo.processInfo.environment["ENV"] ?? "production"
 
         let dependencyContainer: DependencyContainer = {
             switch env {
