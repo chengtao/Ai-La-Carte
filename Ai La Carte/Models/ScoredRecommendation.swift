@@ -14,14 +14,15 @@ struct ScoredFoodItem: Identifiable, Hashable {
     let item: FoodItemResponse
     let confidence: Double  // 0.0 - 1.0, locally calculated by RecommendationEngine
 
-    var id: String { item.id }
+    var id: Int { item.id }
 
     // Convenience accessors
     var title: String { item.title }
     var description: String { item.description }
     var foodTags: [FoodTag] { item.foodTags }
     var photoUrl: String? { item.photoUrl }
-    var price: String? { item.price }
+    var price: Double? { item.price }
+    var priceFormatted: String? { item.priceFormatted }
     var foodCategory: FoodCategory { item.foodCategory }
     var spice: Int? { item.spice }
     var richness: Int? { item.richness }
@@ -43,7 +44,7 @@ struct ScoredWineItem: Identifiable, Hashable {
     let item: WineItemResponse
     let confidence: Double  // 0.0 - 1.0, locally calculated by RecommendationEngine
 
-    var id: String { item.id }
+    var id: Int { item.id }
 
     // Convenience accessors
     var title: String { item.title }
@@ -52,8 +53,10 @@ struct ScoredWineItem: Identifiable, Hashable {
     var grapeVarietal: String? { item.grapeVarietal }
     var region: String? { item.region }
     var country: String? { item.country }
-    var priceGlass: String? { item.priceGlass }
-    var priceBottle: String? { item.priceBottle }
+    var priceGlass: Double? { item.priceGlass }
+    var priceBottle: Double? { item.priceBottle }
+    var priceGlassFormatted: String? { item.priceGlassFormatted }
+    var priceBottleFormatted: String? { item.priceBottleFormatted }
     var wineCategory: WineCategory { item.wineCategory }
     var wineOrigin: String? { item.wineOrigin }
     var hasWinePricing: Bool { item.hasWinePricing }

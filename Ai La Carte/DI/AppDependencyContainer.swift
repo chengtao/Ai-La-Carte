@@ -235,7 +235,7 @@ final class MenuAPIService: MenuAPIServiceProtocol, Sendable {
         )
     }
 
-    func submitFeedback(sessionId: String, itemId: String, rating: FeedbackRating) async throws {
+    func submitFeedback(sessionId: String, itemId: Int, rating: FeedbackRating) async throws {
         let request = FeedbackRequest(itemId: itemId, action: rating.rawValue)
         let body = try JSONEncoder().encode(request)
         try await networkManager.requestWithoutResponse(
@@ -255,13 +255,28 @@ final class AnalyticsService: AnalyticsServiceProtocol, Sendable {
         self.deviceIdentifierService = deviceIdentifierService
     }
 
-    func track(event: AnalyticsEventType, sessionId: String?, meta: [String: String]?) {
+    func track(event: AnalyticsEventType, sessionId: String?, meta: [String: Any]?) {
+        // Convert Any values to String for JSON encoding
+        let metaStrings = meta?.mapValues { value -> String in
+            if let stringValue = value as? String {
+                return stringValue
+            } else if let intValue = value as? Int {
+                return String(intValue)
+            } else if let doubleValue = value as? Double {
+                return String(doubleValue)
+            } else if let boolValue = value as? Bool {
+                return String(boolValue)
+            } else {
+                return "\(value)"
+            }
+        }
+
         let analyticsEvent = AnalyticsEvent(
             sessionId: sessionId,
             userId: nil,
             deviceId: deviceIdentifierService.getDeviceId(),
             event: event.rawValue,
-            meta: meta
+            meta: metaStrings
         )
 
         Task {

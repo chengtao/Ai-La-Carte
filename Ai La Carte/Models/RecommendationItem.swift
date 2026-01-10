@@ -248,20 +248,21 @@ struct RecommendationResponse: Codable {
 // MARK: - Food Item Response
 
 struct FoodItemResponse: Codable, Identifiable, Hashable {
-    let id: String
+    let id: Int
     let title: String
     let description: String
     let tags: [FoodTagResponse]
     let photoUrl: String?
-    let price: String?
+    let price: Double?
     let category: String?
     let spice: Int?           // 1-5 scale
     let richness: Int?        // 1-5 scale
     let ingredients: [String]? // Maps to FoodIngredient raw values
+    let createdAt: String?
 
     enum CodingKeys: String, CodingKey {
         case id
-        case title
+        case title = "name"     // Server sends "name", we use "title"
         case description
         case tags
         case photoUrl = "photo_url"
@@ -270,6 +271,50 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
         case spice
         case richness
         case ingredients
+        case createdAt = "created_at"
+    }
+
+    // Memberwise initializer for testing/preview
+    init(
+        id: Int,
+        title: String,
+        description: String,
+        tags: [FoodTagResponse] = [],
+        photoUrl: String? = nil,
+        price: Double? = nil,
+        category: String? = nil,
+        spice: Int? = nil,
+        richness: Int? = nil,
+        ingredients: [String]? = nil,
+        createdAt: String? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.tags = tags
+        self.photoUrl = photoUrl
+        self.price = price
+        self.category = category
+        self.spice = spice
+        self.richness = richness
+        self.ingredients = ingredients
+        self.createdAt = createdAt
+    }
+
+    // Custom decoder to handle missing tags
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decode(String.self, forKey: .description)
+        tags = (try? container.decode([FoodTagResponse].self, forKey: .tags)) ?? []
+        photoUrl = try container.decodeIfPresent(String.self, forKey: .photoUrl)
+        price = try container.decodeIfPresent(Double.self, forKey: .price)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+        spice = try container.decodeIfPresent(Int.self, forKey: .spice)
+        richness = try container.decodeIfPresent(Int.self, forKey: .richness)
+        ingredients = try container.decodeIfPresent([String].self, forKey: .ingredients)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
     }
 
     var foodTags: [FoodTag] {
@@ -285,6 +330,12 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
         (ingredients ?? []).compactMap { FoodIngredient(rawValue: $0) }
     }
 
+    // Formatted price string for UI display
+    var priceFormatted: String? {
+        guard let price = price else { return nil }
+        return String(format: "$%.0f", price)
+    }
+
     // Hashable conformance
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -298,21 +349,22 @@ struct FoodItemResponse: Codable, Identifiable, Hashable {
 // MARK: - Wine Item Response
 
 struct WineItemResponse: Codable, Identifiable, Hashable {
-    let id: String
+    let id: Int
     let title: String
     let description: String
     let tags: [WineTagResponse]
     let grapeVarietal: String?
     let region: String?
     let country: String?
-    let priceGlass: String?
-    let priceBottle: String?
+    let priceGlass: Double?
+    let priceBottle: Double?
     let category: String?
     let flavor: String?        // Maps to WineFlavor raw value
+    let createdAt: String?
 
     enum CodingKeys: String, CodingKey {
         case id
-        case title
+        case title = "name"     // Server sends "name", we use "title"
         case description
         case tags
         case grapeVarietal = "grape_varietal"
@@ -322,6 +374,53 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
         case priceBottle = "price_bottle"
         case category
         case flavor
+        case createdAt = "created_at"
+    }
+
+    // Memberwise initializer for testing/preview
+    init(
+        id: Int,
+        title: String,
+        description: String,
+        tags: [WineTagResponse] = [],
+        grapeVarietal: String? = nil,
+        region: String? = nil,
+        country: String? = nil,
+        priceGlass: Double? = nil,
+        priceBottle: Double? = nil,
+        category: String? = nil,
+        flavor: String? = nil,
+        createdAt: String? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.tags = tags
+        self.grapeVarietal = grapeVarietal
+        self.region = region
+        self.country = country
+        self.priceGlass = priceGlass
+        self.priceBottle = priceBottle
+        self.category = category
+        self.flavor = flavor
+        self.createdAt = createdAt
+    }
+
+    // Custom decoder to handle missing tags
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decode(String.self, forKey: .description)
+        tags = (try? container.decode([WineTagResponse].self, forKey: .tags)) ?? []
+        grapeVarietal = try container.decodeIfPresent(String.self, forKey: .grapeVarietal)
+        region = try container.decodeIfPresent(String.self, forKey: .region)
+        country = try container.decodeIfPresent(String.self, forKey: .country)
+        priceGlass = try container.decodeIfPresent(Double.self, forKey: .priceGlass)
+        priceBottle = try container.decodeIfPresent(Double.self, forKey: .priceBottle)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+        flavor = try container.decodeIfPresent(String.self, forKey: .flavor)
+        createdAt = try container.decodeIfPresent(String.self, forKey: .createdAt)
     }
 
     var wineTags: [WineTag] {
@@ -345,6 +444,17 @@ struct WineItemResponse: Codable, Identifiable, Hashable {
 
     var hasWinePricing: Bool {
         priceGlass != nil || priceBottle != nil
+    }
+
+    // Formatted price strings for UI display
+    var priceGlassFormatted: String? {
+        guard let price = priceGlass else { return nil }
+        return String(format: "$%.0f", price)
+    }
+
+    var priceBottleFormatted: String? {
+        guard let price = priceBottle else { return nil }
+        return String(format: "$%.0f", price)
     }
 
     // Hashable conformance

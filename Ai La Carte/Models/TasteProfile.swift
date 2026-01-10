@@ -42,7 +42,7 @@ final class TasteProfile {
         self.lastUpdatedAt = Date()
     }
 
-    func updateFromFeedback(itemId: String, rating: FeedbackRating, itemAttributes: ItemAttributes?) {
+    func updateFromFeedback(itemId: Int, rating: FeedbackRating, itemAttributes: ItemAttributes?) {
         guard let attributes = itemAttributes else { return }
 
         let adjustment: Double
@@ -101,7 +101,7 @@ struct ItemAttributes: Codable {
 // MARK: - Feedback Request/Response
 
 struct FeedbackRequest: Codable {
-    let itemId: String
+    let itemId: Int
     let action: String
 
     enum CodingKeys: String, CodingKey {

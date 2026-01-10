@@ -303,7 +303,7 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
         let foodItems: [FoodItemResponse] = [
             // Appetizers
             FoodItemResponse(
-                id: "f4",
+                id: 4,
                 title: "Dim Sum Platter",
                 description: "An assortment of hand-crafted dumplings including har gow, siu mai, and char siu bao. Perfect for sharing.",
                 tags: [
@@ -311,14 +311,14 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                     FoodTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400",
-                price: "$24.00",
+                price: 24.00,
                 category: "appetizer",
                 spice: 1,
                 richness: 3,
                 ingredients: ["Pork", "Seafood"]
             ),
             FoodItemResponse(
-                id: "f5",
+                id: 5,
                 title: "Spring Rolls",
                 description: "Crispy golden rolls filled with vegetables and glass noodles. Served with sweet chili dipping sauce.",
                 tags: [
@@ -326,7 +326,7 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                     FoodTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1548507243-d1f7c03cb2ac?w=400",
-                price: "$8.95",
+                price: 8.95,
                 category: "appetizer",
                 spice: 2,
                 richness: 2,
@@ -334,7 +334,7 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
             ),
             // Entrees
             FoodItemResponse(
-                id: "f1",
+                id: 1,
                 title: "Kung Pao Chicken",
                 description: "Tender chicken with peanuts, vegetables, and chili peppers in a savory-sweet sauce. A perfect balance of spice and flavor.",
                 tags: [
@@ -342,14 +342,14 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                     FoodTagResponse(code: "MATCHES_SPICE", label: "Matches Your Spice Level")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400",
-                price: "$18.95",
+                price: 18.95,
                 category: "entree",
                 spice: 4,
                 richness: 3,
                 ingredients: ["Chicken"]
             ),
             FoodItemResponse(
-                id: "f2",
+                id: 2,
                 title: "Peking Duck",
                 description: "Crispy roasted duck served with thin pancakes, scallions, and hoisin sauce. A house specialty that's been perfected over generations.",
                 tags: [
@@ -357,14 +357,14 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                     FoodTagResponse(code: "HOUSE_SPECIALTY", label: "House Specialty")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=400",
-                price: "$42.00",
+                price: 42.00,
                 category: "entree",
                 spice: 1,
                 richness: 5,
                 ingredients: nil
             ),
             FoodItemResponse(
-                id: "f3",
+                id: 3,
                 title: "Mapo Tofu",
                 description: "Silky tofu in a fiery, aromatic sauce with minced pork and Sichuan peppercorns. Bold and satisfying.",
                 tags: [
@@ -372,7 +372,7 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                     FoodTagResponse(code: "GREAT_VALUE", label: "Great Value")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1582452919408-39bddf60a4a2?w=400",
-                price: "$14.50",
+                price: 14.50,
                 category: "entree",
                 spice: 5,
                 richness: 4,
@@ -380,28 +380,28 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
             ),
             // Dessert
             FoodItemResponse(
-                id: "f6",
+                id: 6,
                 title: "Mango Sticky Rice",
                 description: "Sweet coconut sticky rice topped with fresh mango slices and drizzled with coconut cream. A refreshing finish.",
                 tags: [
                     FoodTagResponse(code: "CROWD_PLEASER", label: "Crowd Pleaser")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1621293954908-907159247fc8?w=400",
-                price: "$9.50",
+                price: 9.50,
                 category: "dessert",
                 spice: 1,
                 richness: 3,
                 ingredients: ["Rice"]
             ),
             FoodItemResponse(
-                id: "f7",
+                id: 7,
                 title: "Sesame Balls",
                 description: "Crispy fried glutinous rice balls filled with sweet red bean paste and coated in sesame seeds.",
                 tags: [
                     FoodTagResponse(code: "COMMUNITY_FAVORITE", label: "Community Favorite")
                 ],
                 photoUrl: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400",
-                price: "$6.00",
+                price: 6.00,
                 category: "dessert",
                 spice: 1,
                 richness: 4,
@@ -412,7 +412,7 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
         let wineItems: [WineItemResponse] = [
             // Sparkling
             WineItemResponse(
-                id: "w3",
+                id: 3,
                 title: "NV Moët & Chandon Brut Imperial",
                 description: "Celebratory bubbles with toasty brioche notes. A versatile pairing that elevates any meal.",
                 tags: [
@@ -423,13 +423,13 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 region: "Champagne",
                 country: "France",
                 priceGlass: nil,
-                priceBottle: "$85",
+                priceBottle: 85.00,
                 category: "sparkling",
                 flavor: "Elegant"
             ),
             // White Wines
             WineItemResponse(
-                id: "w1",
+                id: 1,
                 title: "2021 Trimbach Riesling",
                 description: "A crisp, aromatic white with notes of green apple and lime. The slight sweetness pairs beautifully with spicy dishes.",
                 tags: [
@@ -439,13 +439,13 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 grapeVarietal: "Riesling",
                 region: "Alsace",
                 country: "France",
-                priceGlass: "$14",
-                priceBottle: "$52",
+                priceGlass: 14.00,
+                priceBottle: 52.00,
                 category: "white",
                 flavor: "Acidic"
             ),
             WineItemResponse(
-                id: "w4",
+                id: 4,
                 title: "2022 Cloudy Bay Sauvignon Blanc",
                 description: "Vibrant and zesty with passion fruit and citrus notes. Perfect with seafood and light dishes.",
                 tags: [
@@ -455,14 +455,14 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 grapeVarietal: "Sauvignon Blanc",
                 region: "Marlborough",
                 country: "New Zealand",
-                priceGlass: "$15",
-                priceBottle: "$58",
+                priceGlass: 15.00,
+                priceBottle: 58.00,
                 category: "white",
                 flavor: "Fruity"
             ),
             // Rosé
             WineItemResponse(
-                id: "w5",
+                id: 5,
                 title: "2023 Whispering Angel Rosé",
                 description: "Elegant Provence rosé with delicate strawberry and peach flavors. Refreshingly dry and versatile.",
                 tags: [
@@ -472,14 +472,14 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 grapeVarietal: "Grenache, Cinsault, Rolle",
                 region: "Provence",
                 country: "France",
-                priceGlass: "$14",
-                priceBottle: "$48",
+                priceGlass: 14.00,
+                priceBottle: 48.00,
                 category: "rose",
                 flavor: "Fruity"
             ),
             // Red Wines
             WineItemResponse(
-                id: "w2",
+                id: 2,
                 title: "2019 Willamette Valley Pinot Noir",
                 description: "Elegant and fruit-forward with cherry and earthy notes. Its medium body complements rich, savory dishes.",
                 tags: [
@@ -489,13 +489,13 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 grapeVarietal: "Pinot Noir",
                 region: "Willamette Valley",
                 country: "USA",
-                priceGlass: "$16",
-                priceBottle: "$64",
+                priceGlass: 16.00,
+                priceBottle: 64.00,
                 category: "red",
                 flavor: "Elegant"
             ),
             WineItemResponse(
-                id: "w6",
+                id: 6,
                 title: "2018 Caymus Cabernet Sauvignon",
                 description: "Rich and full-bodied with blackberry, cassis, and vanilla oak notes. A bold choice for hearty dishes.",
                 tags: [
@@ -505,8 +505,8 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
                 grapeVarietal: "Cabernet Sauvignon",
                 region: "Napa Valley",
                 country: "USA",
-                priceGlass: "$22",
-                priceBottle: "$95",
+                priceGlass: 22.00,
+                priceBottle: 95.00,
                 category: "red",
                 flavor: "Full-Body"
             )
@@ -520,7 +520,7 @@ final class MockMenuAPIService: MenuAPIServiceProtocol, @unchecked Sendable {
         )
     }
 
-    func submitFeedback(sessionId: String, itemId: String, rating: FeedbackRating) async throws {
+    func submitFeedback(sessionId: String, itemId: Int, rating: FeedbackRating) async throws {
         try await Task.sleep(nanoseconds: 300_000_000)
         AppLogger.shared.info("[MOCK] Submitted feedback for item \(itemId): \(rating.rawValue)", category: AppLogger.Category.recommendation)
     }
@@ -560,7 +560,7 @@ final class MockLocationService: LocationServiceProtocol, @unchecked Sendable {
 // MARK: - Mock Analytics Service
 
 final class MockAnalyticsService: AnalyticsServiceProtocol, Sendable {
-    func track(event: AnalyticsEventType, sessionId: String?, meta: [String: String]?) {
+    func track(event: AnalyticsEventType, sessionId: String?, meta: [String: Any]?) {
         var logMessage = "[MOCK] Analytics: \(event.rawValue)"
         if let sessionId = sessionId {
             logMessage += " | session: \(sessionId)"

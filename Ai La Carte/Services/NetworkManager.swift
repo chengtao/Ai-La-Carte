@@ -23,7 +23,7 @@ struct NetworkConfiguration: Sendable {
     )
 
     static let development = NetworkConfiguration(
-        baseURL: "http://192.168.86.54:3000/api",
+        baseURL: "https://ct.ngrok.app/api",
         timeout: 30,
         retryAttempts: 2,
         retryDelay: 1

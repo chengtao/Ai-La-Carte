@@ -81,7 +81,7 @@ protocol MenuAPIServiceProtocol: Sendable {
     /// Gets menus by their IDs
     func getMenus(foodMenuId: Int?, wineMenuId: Int?) async throws -> RecommendationResponse
     /// Submit feedback for a menu item
-    func submitFeedback(sessionId: String, itemId: String, rating: FeedbackRating) async throws
+    func submitFeedback(sessionId: String, itemId: Int, rating: FeedbackRating) async throws
 }
 
 protocol LocationServiceProtocol: Sendable {
@@ -103,7 +103,7 @@ protocol CameraServiceProtocol: Sendable {
 }
 
 protocol AnalyticsServiceProtocol: Sendable {
-    func track(event: AnalyticsEventType, sessionId: String?, meta: [String: String]?)
+    func track(event: AnalyticsEventType, sessionId: String?, meta: [String: Any]?)
 }
 
 protocol ImageCacheServiceProtocol: Sendable {

@@ -432,9 +432,9 @@ struct RecommendationView: View {
 struct FoodSectionView: View {
     let category: FoodCategory
     let items: [ScoredFoodItem]
-    let expandedItemId: String?
+    let expandedItemId: Int?
     let isInCart: (ScoredFoodItem) -> Bool
-    let onTap: (String) -> Void
+    let onTap: (Int) -> Void
     let onCartToggle: (ScoredFoodItem) -> Void
     let animateIn: Bool
 
@@ -528,9 +528,9 @@ struct FoodSectionView: View {
 struct WineSectionView: View {
     let category: WineCategory
     let items: [ScoredWineItem]
-    let expandedItemId: String?
+    let expandedItemId: Int?
     let isInCart: (ScoredWineItem) -> Bool
-    let onTap: (String) -> Void
+    let onTap: (Int) -> Void
     let onCartToggle: (ScoredWineItem) -> Void
     let animateIn: Bool
 
@@ -626,7 +626,7 @@ struct WineSectionView: View {
 // MARK: - Cart Item Row
 
 struct CartItemRow: View {
-    let id: String
+    let id: Int
     let title: String
     let price: String?
     let isFood: Bool
@@ -746,9 +746,9 @@ struct FoodItemCard: View {
                             .font(.headline)
                             .foregroundColor(.primary)
 
-                        if let price = item.price {
+                        if let priceFormatted = item.priceFormatted {
                             Spacer()
-                            Text(price)
+                            Text(priceFormatted)
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color.magicCoral)
@@ -942,7 +942,7 @@ struct WineItemCard: View {
     @ViewBuilder
     private var winePricingView: some View {
         HStack(spacing: 16) {
-            if let glassPrice = item.priceGlass {
+            if let glassPriceFormatted = item.priceGlassFormatted {
                 HStack(spacing: 4) {
                     Image(systemName: "wineglass")
                         .font(.caption)
@@ -950,14 +950,14 @@ struct WineItemCard: View {
                     Text("Glass")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text(glassPrice)
+                    Text(glassPriceFormatted)
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.magicPurple)
                 }
             }
 
-            if let bottlePrice = item.priceBottle {
+            if let bottlePriceFormatted = item.priceBottleFormatted {
                 HStack(spacing: 4) {
                     Image(systemName: "bottle.wine.fill")
                         .font(.caption)
@@ -965,7 +965,7 @@ struct WineItemCard: View {
                     Text("Bottle")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text(bottlePrice)
+                    Text(bottlePriceFormatted)
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.magicPink)

@@ -13,7 +13,7 @@ final class SurveyViewModel: BaseViewModel {
     let sessionId: String
     let items: [ScoredFoodItem]
 
-    var ratings: [String: FeedbackRating] = [:]
+    var ratings: [Int: FeedbackRating] = [:]
     var currentItemIndex = 0
     var isComplete = false
 

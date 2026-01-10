@@ -23,7 +23,7 @@ final class RecommendationViewModel: BaseViewModel {
     var scoredWineRecommendations: [ScoredWineItem] = []
 
     var profileSummary: String?
-    var expandedItemId: String?
+    var expandedItemId: Int?
     var selectedTab: RecommendationTab = .food
 
     // Preference state - triggers re-scoring on change
@@ -130,7 +130,7 @@ final class RecommendationViewModel: BaseViewModel {
 
     // MARK: - Item Interaction
 
-    func toggleExpanded(_ itemId: String) {
+    func toggleExpanded(_ itemId: Int) {
         if expandedItemId == itemId {
             expandedItemId = nil
         } else {
@@ -139,7 +139,7 @@ final class RecommendationViewModel: BaseViewModel {
         }
     }
 
-    func trackItemTap(_ itemId: String) {
+    func trackItemTap(_ itemId: Int) {
         analyticsService.track(event: .itemTapped, sessionId: sessionId, meta: ["item_id": itemId])
     }
 
@@ -197,9 +197,9 @@ final class RecommendationViewModel: BaseViewModel {
         foodCartItems.count + wineCartItems.count
     }
 
-    var totalCartItems: [(id: String, title: String, price: String?, isFood: Bool)] {
-        let foodItems = foodCartItems.map { (id: $0.id, title: $0.title, price: $0.price, isFood: true) }
-        let wineItems = wineCartItems.map { (id: $0.id, title: $0.title, price: $0.priceGlass ?? $0.priceBottle, isFood: false) }
+    var totalCartItems: [(id: Int, title: String, price: String?, isFood: Bool)] {
+        let foodItems = foodCartItems.map { (id: $0.id, title: $0.title, price: $0.priceFormatted, isFood: true) }
+        let wineItems = wineCartItems.map { (id: $0.id, title: $0.title, price: $0.priceGlassFormatted ?? $0.priceBottleFormatted, isFood: false) }
         return foodItems + wineItems
     }
 
@@ -263,7 +263,7 @@ final class RecommendationViewModel: BaseViewModel {
         }
     }
 
-    func removeFromCartById(_ id: String) {
+    func removeFromCartById(_ id: Int) {
         if let index = foodCartItems.firstIndex(where: { $0.id == id }) {
             let item = foodCartItems[index]
             removeFoodFromCart(item)

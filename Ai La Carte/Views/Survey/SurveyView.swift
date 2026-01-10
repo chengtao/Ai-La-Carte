@@ -218,12 +218,12 @@ struct SurveyView: View {
             items: [
                 ScoredFoodItem(
                     item: FoodItemResponse(
-                        id: "1",
+                        id: 1,
                         title: "Kung Pao Chicken",
                         description: "Tender chicken with peanuts and chili peppers",
                         tags: [],
                         photoUrl: nil,
-                        price: "$18.95",
+                        price: 18.95,
                         category: "entree",
                         spice: 4,
                         richness: 3,
