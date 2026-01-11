@@ -208,7 +208,7 @@ enum CameraState {
 
 struct SessionInfo {
     let id: String
-    let restaurantId: String?
+    let restaurantId: Int?
     let restaurantName: String?
     let foodMenuId: Int?
     let wineMenuId: Int?
@@ -217,7 +217,7 @@ struct SessionInfo {
 
     init(
         id: String,
-        restaurantId: String? = nil,
+        restaurantId: Int? = nil,
         restaurantName: String? = nil,
         foodMenuId: Int? = nil,
         wineMenuId: Int? = nil,

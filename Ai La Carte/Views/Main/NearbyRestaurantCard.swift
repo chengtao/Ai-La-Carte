@@ -130,7 +130,7 @@ struct MenuBadge: View {
     VStack(spacing: 20) {
         NearbyRestaurantCard(
             restaurant: RestaurantResponse(
-                id: "1",
+                id: 1,
                 name: "Golden Dragon",
                 cuisine: "Chinese",
                 address: "123 Main Street",
@@ -142,7 +142,7 @@ struct MenuBadge: View {
 
         NearbyRestaurantCard(
             restaurant: RestaurantResponse(
-                id: "2",
+                id: 2,
                 name: "Trattoria Milano",
                 cuisine: "Italian",
                 address: "456 Oak Avenue",

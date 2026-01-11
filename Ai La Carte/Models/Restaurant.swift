@@ -57,7 +57,7 @@ final class Restaurant {
 // MARK: - Restaurant Response DTO
 
 struct RestaurantResponse: Codable, Identifiable, Hashable {
-    let id: String
+    let id: Int
     let name: String
     let cuisine: String?
     let address: String?

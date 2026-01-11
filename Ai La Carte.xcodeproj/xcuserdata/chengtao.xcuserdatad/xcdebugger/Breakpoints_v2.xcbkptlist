@@ -102,7 +102,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "B76368E6-6AF5-475F-A529-092B326B891C"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Ai La Carte/Services/NetworkManager.swift"
@@ -112,36 +112,6 @@
             endingLineNumber = "123"
             landmarkName = "request(endpoint:method:body:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "B76368E6-6AF5-475F-A529-092B326B891C - 1a540d5ee3daa806"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for Ai_La_Carte.NetworkManager.request&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable, &#x3c4;_0_0: Swift.Encodable&gt;(endpoint: Ai_La_Carte.APIEndpoint, method: Ai_La_Carte.HTTPMethod, body: Swift.Optional&lt;Foundation.Data&gt;) async throws -&gt; &#x3c4;_0_0"
-                  moduleName = "Ai La Carte.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/chengtao/Development/Ai-La-Carte/Ai%20La%20Carte/Services/NetworkManager.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "123"
-                  endingLineNumber = "123">
-               </Location>
-               <Location
-                  uuid = "B76368E6-6AF5-475F-A529-092B326B891C - 726004c9b61935c5"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(4) suspend resume partial function for Ai_La_Carte.NetworkManager.request&lt;&#x3c4;_0_0 where &#x3c4;_0_0: Swift.Decodable, &#x3c4;_0_0: Swift.Encodable&gt;(endpoint: Ai_La_Carte.APIEndpoint, method: Ai_La_Carte.HTTPMethod, body: Swift.Optional&lt;Foundation.Data&gt;) async throws -&gt; &#x3c4;_0_0"
-                  moduleName = "Ai La Carte.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/chengtao/Development/Ai-La-Carte/Ai%20La%20Carte/Services/NetworkManager.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "123"
-                  endingLineNumber = "123">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

@@ -173,7 +173,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
 
         return [
             RestaurantResponse(
-                id: "r1",
+                id: 1,
                 name: "Golden Dragon",
                 cuisine: "Chinese",
                 address: "123 Main Street",
@@ -182,7 +182,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 2))
             ),
             RestaurantResponse(
-                id: "r2",
+                id: 2,
                 name: "Trattoria Milano",
                 cuisine: "Italian",
                 address: "456 Oak Avenue",
@@ -191,7 +191,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400))
             ),
             RestaurantResponse(
-                id: "r3",
+                id: 3,
                 name: "Sakura Sushi",
                 cuisine: "Japanese",
                 address: "789 Cherry Lane",
@@ -200,7 +200,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 5))
             ),
             RestaurantResponse(
-                id: "r4",
+                id: 4,
                 name: "The Spice Room",
                 cuisine: "Indian",
                 address: "321 Curry Road",
@@ -209,7 +209,7 @@ final class MockRestaurantAPIService: RestaurantAPIServiceProtocol, Sendable {
                 menuUpdatedAt: ISO8601DateFormatter().string(from: Date().addingTimeInterval(-86400 * 3))
             ),
             RestaurantResponse(
-                id: "r5",
+                id: 5,
                 name: "Bistro Parisien",
                 cuisine: "French",
                 address: "555 French Quarter",
