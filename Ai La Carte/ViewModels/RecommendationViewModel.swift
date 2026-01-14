@@ -40,6 +40,9 @@ final class RecommendationViewModel: BaseViewModel {
     // Preference sheet state
     var isPreferenceSheetPresented: Bool = false
 
+    // Disclaimer state
+    var showPhotoDisclaimer: Bool = false
+
     // Cart state (using scored items)
     var foodCartItems: [ScoredFoodItem] = []
     var wineCartItems: [ScoredWineItem] = []
@@ -77,10 +80,15 @@ final class RecommendationViewModel: BaseViewModel {
             let response = try await menuService.getMenus(foodMenuId: foodMenuId, wineMenuId: wineMenuId)
             rawFoodItems = response.food
             rawWineItems = response.wine
-            profileSummary = "Dish photos are for illustrative purposes only and not from the restaurant."
+
+            // Remove static disclaimer - now shown as popup
+            profileSummary = nil
 
             // Calculate initial scores with default preferences
             recalculateScores()
+
+            // Check if we should show disclaimer popup
+            checkAndShowDisclaimer()
 
             analyticsService.track(event: .recommendationViewed, sessionId: sessionId, meta: [
                 "food_count": "\(response.food.count)",
@@ -91,6 +99,21 @@ final class RecommendationViewModel: BaseViewModel {
         }
 
         isLoading = false
+    }
+
+    private func checkAndShowDisclaimer() {
+        let hasSeenDisclaimer = UserDefaults.standard.bool(forKey: AppConstants.Storage.hasSeenPhotoDisclaimerKey)
+        if !hasSeenDisclaimer {
+            // Small delay to ensure view is loaded and animations are complete
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3s
+                showPhotoDisclaimer = true
+            }
+        }
+    }
+
+    func markDisclaimerAsSeen() {
+        UserDefaults.standard.set(true, forKey: AppConstants.Storage.hasSeenPhotoDisclaimerKey)
     }
 
     // MARK: - Score Recalculation

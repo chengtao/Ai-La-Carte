@@ -87,6 +87,18 @@ struct RecommendationView: View {
                 }
             }
         }
+        .overlay {
+            if viewModel.showPhotoDisclaimer {
+                DisclaimerAlertView(
+                    isPresented: $viewModel.showPhotoDisclaimer,
+                    onDontShowAgain: {
+                        viewModel.markDisclaimerAsSeen()
+                    }
+                )
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                .zIndex(999)
+            }
+        }
         .task {
             await viewModel.loadRecommendations()
             withAnimation(.easeOut(duration: 0.5)) {
@@ -154,17 +166,11 @@ struct RecommendationView: View {
 
     private var contentView: some View {
         VStack(spacing: 0) {
-            // Profile summary
-            if let summary = viewModel.profileSummary, viewModel.selectedTab != .cart {
-                profileSummaryCard(summary)
-                    .opacity(animateIn ? 1 : 0)
-                    .offset(y: animateIn ? 0 : 10)
-            }
-
             // Tab selector (always show if wine available or cart has items)
             if viewModel.hasWineRecommendations || viewModel.cartItemCount > 0 {
                 tabSelector
                     .opacity(animateIn ? 1 : 0)
+                    .padding(.top, 8)
             }
 
             // Content based on selected tab
@@ -337,44 +343,6 @@ struct RecommendationView: View {
         }
         .padding(AppConstants.UI.cardPadding)
         .magicCard(glowColor: .magicPurple)
-    }
-
-    // MARK: - Profile Summary
-
-    private func profileSummaryCard(_ summary: String) -> some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.magicPurple.opacity(0.2), Color.magicPink.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 40, height: 40)
-
-                Image(systemName: "sparkles")
-                    .font(.body)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.magicPurple, Color.magicPink],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-
-            Text(summary)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .lineLimit(2)
-        }
-        .padding(AppConstants.UI.cardPadding)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .magicCard(glowColor: .magicPurple)
-        .padding(.horizontal, AppConstants.UI.defaultPadding)
-        .padding(.top, 8)
     }
 
     // MARK: - Tab Selector
