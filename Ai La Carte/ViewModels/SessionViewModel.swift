@@ -35,6 +35,7 @@ final class SessionViewModel: BaseViewModel {
 
     // Navigation
     var showCalculating = false
+    var showRecommendations = false
 
     // Loading state for calculating view (while creating job)
     var isPreparingRecommendation = false
@@ -42,19 +43,26 @@ final class SessionViewModel: BaseViewModel {
     // Recommendation generation
     var jobId: String?
     var calculatingViewModel: CalculatingViewModel?
+    var recommendationViewModel: RecommendationViewModel?
 
     private let sessionService: SessionAPIServiceProtocol
     private let menuService: MenuAPIServiceProtocol
     private let analyticsService: AnalyticsServiceProtocol
+    private let makeCalculatingViewModel: (CalculationMode, UserPreferences) -> CalculatingViewModel
+    private let makeRecommendationViewModel: (String, Int?, Int?, UserPreferences) -> RecommendationViewModel
 
     init(
         sessionService: SessionAPIServiceProtocol,
         menuService: MenuAPIServiceProtocol,
-        analyticsService: AnalyticsServiceProtocol
+        analyticsService: AnalyticsServiceProtocol,
+        makeCalculatingViewModel: @escaping (CalculationMode, UserPreferences) -> CalculatingViewModel,
+        makeRecommendationViewModel: @escaping (String, Int?, Int?, UserPreferences) -> RecommendationViewModel
     ) {
         self.sessionService = sessionService
         self.menuService = menuService
         self.analyticsService = analyticsService
+        self.makeCalculatingViewModel = makeCalculatingViewModel
+        self.makeRecommendationViewModel = makeRecommendationViewModel
         super.init()
     }
 
@@ -104,8 +112,34 @@ final class SessionViewModel: BaseViewModel {
             longitude: location?.longitude
         )
 
-        // Start recommendation generation immediately with default preferences
-        await startRecommendationGeneration(preferences: preferences)
+        analyticsService.track(
+            event: .sliderSet,
+            sessionId: session.id,
+            meta: [
+                "ingredients": preferences.food.ingredients.map { $0.rawValue }.joined(separator: ","),
+                "spice": "\(preferences.food.spicePreference)",
+                "richness": "\(preferences.food.richness)"
+            ]
+        )
+
+        // FLOW A: Restaurant has existing menus → Go directly to RecommendationView
+        if restaurant.hasExistingMenus {
+            recommendationViewModel = makeRecommendationViewModel(
+                session.id,
+                restaurant.latestFoodMenuId,
+                restaurant.latestWineMenuId,
+                preferences
+            )
+            showRecommendations = true
+            return
+        }
+
+        // FLOW B: Restaurant without menus (rare) → Show CalculatingView
+        calculatingViewModel = makeCalculatingViewModel(
+            .createAndPoll(sessionId: session.id, location: location),
+            preferences
+        )
+        showCalculating = true
     }
 
     // MARK: - Photo Management
@@ -119,11 +153,11 @@ final class SessionViewModel: BaseViewModel {
         pendingPhotos.append(photo)
     }
 
-    /// Accepts photos from review, moves to capturedPhotos, uploads, and starts recommendations
+    /// Accepts photos from review and navigates immediately to CalculatingView
     func acceptPhotosFromReview(_ photos: [CapturedPhoto], location: LocationCoordinate?, preferences: UserPreferences) async {
         guard let session = currentSession else { return }
 
-        // Move reviewed photos to capturedPhotos
+        // Move reviewed photos to capturedPhotos (don't upload yet!)
         capturedPhotos = photos
         pendingPhotos.removeAll()
 
@@ -133,8 +167,15 @@ final class SessionViewModel: BaseViewModel {
             meta: ["count": "\(photos.count)"]
         )
 
-        // Upload all accepted photos with coordination
-        await uploadAllPhotos(sessionId: session.id)
+        analyticsService.track(
+            event: .sliderSet,
+            sessionId: session.id,
+            meta: [
+                "ingredients": preferences.food.ingredients.map { $0.rawValue }.joined(separator: ","),
+                "spice": "\(preferences.food.spicePreference)",
+                "richness": "\(preferences.food.richness)"
+            ]
+        )
 
         // Update session with location if not already set (photo scan flow)
         if session.latitude == nil, let location = location {
@@ -149,8 +190,12 @@ final class SessionViewModel: BaseViewModel {
             )
         }
 
-        // Start recommendation generation immediately with default preferences
-        await startRecommendationGeneration(preferences: preferences)
+        // Navigate to CalculatingView immediately - it will handle uploads
+        calculatingViewModel = makeCalculatingViewModel(
+            .uploadAndPoll(photos: photos, sessionId: session.id, location: location),
+            preferences
+        )
+        showCalculating = true
     }
 
     /// Clears all pending photos
@@ -276,65 +321,6 @@ final class SessionViewModel: BaseViewModel {
         uploadProgress[photoId] = status
     }
 
-    // MARK: - Recommendation Generation
-
-    /// Triggers recommendation generation and navigates to CalculatingView
-    func startRecommendationGeneration(preferences: UserPreferences) async {
-        guard let session = currentSession else {
-            self.error = AppError.notFound("No active session")
-            return
-        }
-
-        isPreparingRecommendation = true
-
-        analyticsService.track(
-            event: .sliderSet,
-            sessionId: session.id,
-            meta: [
-                "ingredients": preferences.food.ingredients.map { $0.rawValue }.joined(separator: ","),
-                "spice": "\(preferences.food.spicePreference)",
-                "richness": "\(preferences.food.richness)"
-            ]
-        )
-
-        // FLOW A: Restaurant has existing menus -> artificial delay mode (no createMenus call)
-        if session.hasExistingMenus {
-            calculatingViewModel = CalculatingViewModel(
-                sessionId: session.id,
-                mode: .artificialDelay(foodMenuId: session.foodMenuId, wineMenuId: session.wineMenuId),
-                preferences: preferences,
-                menuService: menuService
-            )
-            showCalculating = true
-            isPreparingRecommendation = false
-            return
-        }
-
-        // FLOW B: Photo scan -> createMenus(sessionId, lat, lon) -> polling mode
-        // Location is optional - backend will handle missing location gracefully
-        do {
-            let jobResponse = try await menuService.createMenus(
-                sessionId: session.id,
-                lat: session.latitude,
-                lon: session.longitude
-            )
-            jobId = jobResponse.jobId
-
-            calculatingViewModel = CalculatingViewModel(
-                sessionId: session.id,
-                mode: .polling(jobId: jobResponse.jobId),
-                preferences: preferences,
-                menuService: menuService
-            )
-            showCalculating = true
-        } catch {
-            self.error = handleNetworkError(error)
-            AppLogger.shared.error("Failed to create menus: \(error)", category: AppLogger.Category.recommendation)
-        }
-
-        isPreparingRecommendation = false
-    }
-
     // MARK: - Session Reset
 
     func cancelSession() {
@@ -347,11 +333,13 @@ final class SessionViewModel: BaseViewModel {
     func resetSession() {
         // Reset navigation state
         showCalculating = false
+        showRecommendations = false
         isPreparingRecommendation = false
 
         // Reset recommendation state
         jobId = nil
         calculatingViewModel = nil
+        recommendationViewModel = nil
 
         // Reset session data
         capturedPhotos.removeAll()

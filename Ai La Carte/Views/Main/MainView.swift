@@ -76,6 +76,11 @@ struct MainView: View {
                     CalculatingView(viewModel: calculatingViewModel)
                 }
             }
+            .navigationDestination(isPresented: $viewModel.showRecommendations) {
+                if let recommendationViewModel = viewModel.recommendationViewModel {
+                    RecommendationView(viewModel: recommendationViewModel)
+                }
+            }
             .onReceive(NotificationCenter.default.publisher(for: AppConstants.Notifications.dismissToMain)) { _ in
                 viewModel.resetSession()
             }

@@ -44,7 +44,7 @@ protocol DependencyContainer: Sendable {
     @MainActor func makeSessionViewModel() -> SessionViewModel
     @MainActor func makePhotoReviewViewModel(sessionId: String, photo: UIImage) -> PhotoReviewViewModel
     @MainActor func makePhotoCarouselReviewViewModel(photos: [CapturedPhoto], sessionId: String?) -> PhotoCarouselReviewViewModel
-    @MainActor func makeCalculatingViewModel(sessionId: String, mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel
+    @MainActor func makeCalculatingViewModel(mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel
     @MainActor func makeRecommendationViewModel(sessionId: String, foodMenuId: Int?, wineMenuId: Int?, preferences: UserPreferences) -> RecommendationViewModel
     @MainActor func makeSurveyViewModel(sessionId: String, items: [ScoredFoodItem]) -> SurveyViewModel
 }
@@ -142,11 +142,13 @@ protocol RecommendationEngineProtocol: Sendable {
 
 // MARK: - Supporting Types
 
-/// Mode for the calculating view - either artificial delay (for nearby restaurants) or real polling
+/// Mode for the calculating view - handles different processing flows
 enum CalculationMode: Sendable {
-    /// Artificial delay when restaurant has existing menus
-    case artificialDelay(foodMenuId: Int?, wineMenuId: Int?)
-    /// Real polling for photo scan flow
+    /// Upload photos, create menus, then poll (photo scan flow)
+    case uploadAndPoll(photos: [CapturedPhoto], sessionId: String, location: LocationCoordinate?)
+    /// Create menus then poll (restaurant selected but no menus exist - rare edge case)
+    case createAndPoll(sessionId: String, location: LocationCoordinate?)
+    /// Real polling for existing job
     case polling(jobId: String)
 }
 

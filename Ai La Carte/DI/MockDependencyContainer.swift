@@ -83,7 +83,20 @@ final class MockDependencyContainer: DependencyContainer, Sendable {
         SessionViewModel(
             sessionService: sessionAPIService,
             menuService: menuAPIService,
-            analyticsService: analyticsService
+            analyticsService: analyticsService,
+            makeCalculatingViewModel: { [weak self] mode, preferences in
+                guard let self else { fatalError("Container deallocated") }
+                return self.makeCalculatingViewModel(mode: mode, preferences: preferences)
+            },
+            makeRecommendationViewModel: { [weak self] sessionId, foodMenuId, wineMenuId, preferences in
+                guard let self else { fatalError("Container deallocated") }
+                return self.makeRecommendationViewModel(
+                    sessionId: sessionId,
+                    foodMenuId: foodMenuId,
+                    wineMenuId: wineMenuId,
+                    preferences: preferences
+                )
+            }
         )
     }
 
@@ -109,12 +122,12 @@ final class MockDependencyContainer: DependencyContainer, Sendable {
         )
     }
 
-    @MainActor func makeCalculatingViewModel(sessionId: String, mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel {
+    @MainActor func makeCalculatingViewModel(mode: CalculationMode, preferences: UserPreferences) -> CalculatingViewModel {
         CalculatingViewModel(
-            sessionId: sessionId,
             mode: mode,
             preferences: preferences,
-            menuService: menuAPIService
+            menuService: menuAPIService,
+            sessionService: sessionAPIService
         )
     }
 

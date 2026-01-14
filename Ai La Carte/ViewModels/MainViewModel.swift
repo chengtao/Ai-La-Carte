@@ -77,7 +77,12 @@ final class MainViewModel: BaseViewModel {
         get { sessionViewModel.showCalculating }
         set { sessionViewModel.showCalculating = newValue }
     }
+    var showRecommendations: Bool {
+        get { sessionViewModel.showRecommendations }
+        set { sessionViewModel.showRecommendations = newValue }
+    }
     var calculatingViewModel: CalculatingViewModel? { sessionViewModel.calculatingViewModel }
+    var recommendationViewModel: RecommendationViewModel? { sessionViewModel.recommendationViewModel }
     var isPreparingRecommendation: Bool { sessionViewModel.isPreparingRecommendation }
 
     // MARK: - Camera Operations

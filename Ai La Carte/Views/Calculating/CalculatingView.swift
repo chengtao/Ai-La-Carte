@@ -280,10 +280,10 @@ struct CalculatingView: View {
     NavigationStack {
         CalculatingView(
             viewModel: CalculatingViewModel(
-                sessionId: "test",
                 mode: .polling(jobId: "job1"),
                 preferences: .default,
-                menuService: MockMenuAPIService()
+                menuService: MockMenuAPIService(),
+                sessionService: MockSessionAPIService()
             )
         )
     }
