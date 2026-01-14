@@ -34,10 +34,9 @@ final class SessionViewModel: BaseViewModel {
     var selectedRestaurant: RestaurantResponse?
 
     // Navigation
-    var showPreferenceSheet = false
     var showCalculating = false
 
-    // Loading state for preference sheet (while creating job)
+    // Loading state for calculating view (while creating job)
     var isPreparingRecommendation = false
 
     // Recommendation generation
@@ -79,7 +78,7 @@ final class SessionViewModel: BaseViewModel {
     // MARK: - Restaurant Selection
 
     /// Selects a nearby restaurant (with existing menus or for photo scan)
-    func selectRestaurant(_ restaurant: RestaurantResponse, location: LocationCoordinate?) async {
+    func selectRestaurant(_ restaurant: RestaurantResponse, location: LocationCoordinate?, preferences: UserPreferences) async {
         selectedRestaurant = restaurant
 
         ensureSession()
@@ -105,8 +104,8 @@ final class SessionViewModel: BaseViewModel {
             longitude: location?.longitude
         )
 
-        // Show preference sheet before starting recommendation generation
-        showPreferenceSheet = true
+        // Start recommendation generation immediately with default preferences
+        await startRecommendationGeneration(preferences: preferences)
     }
 
     // MARK: - Photo Management
@@ -120,8 +119,8 @@ final class SessionViewModel: BaseViewModel {
         pendingPhotos.append(photo)
     }
 
-    /// Accepts photos from review, moves to capturedPhotos, and starts uploads
-    func acceptPhotosFromReview(_ photos: [CapturedPhoto]) async {
+    /// Accepts photos from review, moves to capturedPhotos, uploads, and starts recommendations
+    func acceptPhotosFromReview(_ photos: [CapturedPhoto], location: LocationCoordinate?, preferences: UserPreferences) async {
         guard let session = currentSession else { return }
 
         // Move reviewed photos to capturedPhotos
@@ -136,6 +135,22 @@ final class SessionViewModel: BaseViewModel {
 
         // Upload all accepted photos with coordination
         await uploadAllPhotos(sessionId: session.id)
+
+        // Update session with location if not already set (photo scan flow)
+        if session.latitude == nil, let location = location {
+            currentSession = SessionInfo(
+                id: session.id,
+                restaurantId: session.restaurantId,
+                restaurantName: session.restaurantName,
+                foodMenuId: session.foodMenuId,
+                wineMenuId: session.wineMenuId,
+                latitude: location.latitude,
+                longitude: location.longitude
+            )
+        }
+
+        // Start recommendation generation immediately with default preferences
+        await startRecommendationGeneration(preferences: preferences)
     }
 
     /// Clears all pending photos
@@ -263,46 +278,24 @@ final class SessionViewModel: BaseViewModel {
 
     // MARK: - Recommendation Generation
 
-    /// Called when user confirms preferences and wants to proceed with recommendations
-    func confirmPreferencesAndProceed(preferences: UserPreferences, location: LocationCoordinate?) async {
-        // Show loading state while preparing (don't dismiss sheet yet!)
-        isPreparingRecommendation = true
-
-        // Update session with location if not already set (photo scan flow)
-        if let session = currentSession, session.latitude == nil, let location = location {
-            currentSession = SessionInfo(
-                id: session.id,
-                restaurantId: session.restaurantId,
-                restaurantName: session.restaurantName,
-                foodMenuId: session.foodMenuId,
-                wineMenuId: session.wineMenuId,
-                latitude: location.latitude,
-                longitude: location.longitude
-            )
-        }
-
-        analyticsService.track(
-            event: .sliderSet,
-            sessionId: currentSession?.id,
-            meta: [
-                "ingredients": preferences.food.ingredients.map { $0.rawValue }.joined(separator: ","),
-                "spice": "\(preferences.food.spicePreference)",
-                "richness": "\(preferences.food.richness)"
-            ]
-        )
-
-        await startRecommendationGeneration(preferences: preferences)
-
-        // Clear loading state after completion
-        isPreparingRecommendation = false
-    }
-
     /// Triggers recommendation generation and navigates to CalculatingView
     func startRecommendationGeneration(preferences: UserPreferences) async {
         guard let session = currentSession else {
             self.error = AppError.notFound("No active session")
             return
         }
+
+        isPreparingRecommendation = true
+
+        analyticsService.track(
+            event: .sliderSet,
+            sessionId: session.id,
+            meta: [
+                "ingredients": preferences.food.ingredients.map { $0.rawValue }.joined(separator: ","),
+                "spice": "\(preferences.food.spicePreference)",
+                "richness": "\(preferences.food.richness)"
+            ]
+        )
 
         // FLOW A: Restaurant has existing menus -> artificial delay mode (no createMenus call)
         if session.hasExistingMenus {
@@ -312,9 +305,8 @@ final class SessionViewModel: BaseViewModel {
                 preferences: preferences,
                 menuService: menuService
             )
-            // Dismiss sheet and show calculating view TOGETHER to prevent race condition
-            showPreferenceSheet = false
             showCalculating = true
+            isPreparingRecommendation = false
             return
         }
 
@@ -334,14 +326,13 @@ final class SessionViewModel: BaseViewModel {
                 preferences: preferences,
                 menuService: menuService
             )
-            // Dismiss sheet and show calculating view TOGETHER to prevent race condition
-            showPreferenceSheet = false
             showCalculating = true
         } catch {
-            // On error, keep sheet open and show error to user
             self.error = handleNetworkError(error)
             AppLogger.shared.error("Failed to create menus: \(error)", category: AppLogger.Category.recommendation)
         }
+
+        isPreparingRecommendation = false
     }
 
     // MARK: - Session Reset
@@ -356,7 +347,6 @@ final class SessionViewModel: BaseViewModel {
     func resetSession() {
         // Reset navigation state
         showCalculating = false
-        showPreferenceSheet = false
         isPreparingRecommendation = false
 
         // Reset recommendation state

@@ -73,10 +73,6 @@ final class MainViewModel: BaseViewModel {
     var currentSession: SessionInfo? { sessionViewModel.currentSession }
     var capturedPhotos: [CapturedPhoto] { sessionViewModel.capturedPhotos }
     var selectedRestaurant: RestaurantResponse? { sessionViewModel.selectedRestaurant }
-    var showPreferenceSheet: Bool {
-        get { sessionViewModel.showPreferenceSheet }
-        set { sessionViewModel.showPreferenceSheet = newValue }
-    }
     var showCalculating: Bool {
         get { sessionViewModel.showCalculating }
         set { sessionViewModel.showCalculating = newValue }
@@ -122,7 +118,11 @@ final class MainViewModel: BaseViewModel {
     // MARK: - Restaurant Selection
 
     func selectRestaurant(_ restaurant: RestaurantResponse) async {
-        await sessionViewModel.selectRestaurant(restaurant, location: locationViewModel.currentLocation)
+        await sessionViewModel.selectRestaurant(
+            restaurant,
+            location: locationViewModel.currentLocation,
+            preferences: userPreferences
+        )
     }
 
     // MARK: - Photo Management
@@ -147,11 +147,14 @@ final class MainViewModel: BaseViewModel {
         showPhotoCarouselReview = true
     }
 
-    /// Completes the review and proceeds to preference sheet
+    /// Completes the review and proceeds directly to recommendation generation
     func completeReview(withPhotos photos: [CapturedPhoto]) async {
         showPhotoCarouselReview = false
-        await sessionViewModel.acceptPhotosFromReview(photos)
-        sessionViewModel.showPreferenceSheet = true
+        await sessionViewModel.acceptPhotosFromReview(
+            photos,
+            location: locationViewModel.currentLocation,
+            preferences: userPreferences
+        )
     }
 
     /// Returns to camera from review, syncing any deleted photos
@@ -164,17 +167,6 @@ final class MainViewModel: BaseViewModel {
     func discardAllPendingPhotos() {
         sessionViewModel.clearPendingPhotos()
         showPhotoCarouselReview = false
-    }
-
-    // MARK: - Recommendation Flow
-
-    func confirmPreferencesAndProceed() async {
-        // Use current location if available, otherwise pass nil
-        // Backend will handle missing location gracefully
-        await sessionViewModel.confirmPreferencesAndProceed(
-            preferences: userPreferences,
-            location: locationViewModel.currentLocation
-        )
     }
 
     // MARK: - Preferences

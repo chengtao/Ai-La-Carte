@@ -212,7 +212,7 @@ struct PhotoCarouselReviewView: View {
                 }
                 .disabled(!viewModel.canTakeMore)
             } else {
-                // Launched from Recommend button - show Preferences button only
+                // Launched from Recommend button - show Get Recommendations button
                 Button {
                     viewModel.trackReviewCompleted()
                     onContinue(viewModel.photos)
@@ -221,7 +221,7 @@ struct PhotoCarouselReviewView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "sparkles")
                             .font(.bodyLarge)
-                        Text("Preferences")
+                        Text("Get Recommendations")
                             .font(.labelLarge)
                     }
                     .foregroundStyle(.white)

@@ -76,24 +76,6 @@ struct MainView: View {
                     CalculatingView(viewModel: calculatingViewModel)
                 }
             }
-            .sheet(isPresented: $viewModel.showPreferenceSheet) {
-                PreferenceSheetView(
-                    preferences: $viewModel.userPreferences,
-                    isPresented: $viewModel.showPreferenceSheet,
-                    isLoading: viewModel.isPreparingRecommendation,
-                    isUploadingPhotos: viewModel.sessionViewModel.isUploadingPhotos,
-                    onContinue: {
-                        Task {
-                            await viewModel.confirmPreferencesAndProceed()
-                        }
-                    },
-                    onReset: {
-                        viewModel.resetPreferences()
-                    }
-                )
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-            }
             .onReceive(NotificationCenter.default.publisher(for: AppConstants.Notifications.dismissToMain)) { _ in
                 viewModel.resetSession()
             }
