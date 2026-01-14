@@ -110,6 +110,8 @@ protocol ImageCacheServiceProtocol: Sendable {
     func loadImage(from url: URL) async -> UIImage?
     func cacheImage(_ image: UIImage, for url: URL) async
     func clearCache() async
+    func clearExpiredCache() async
+    func getCacheSize() async -> Int64
 }
 
 // MARK: - Recommendation Engine Protocol

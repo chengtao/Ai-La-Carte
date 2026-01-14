@@ -706,9 +706,16 @@ struct FoodItemCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Food photo (if available)
             if let photoUrl = item.photoUrl, let url = URL(string: photoUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
+                CachedAsyncImage(
+                    url: url,
+                    content: { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 140)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    },
+                    placeholder: {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.magicPurple.opacity(0.1))
                             .frame(height: 140)
@@ -716,25 +723,8 @@ struct FoodItemCard: View {
                                 ProgressView()
                                     .tint(Color.magicPurple)
                             )
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 140)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    case .failure:
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.magicPurple.opacity(0.1))
-                            .frame(height: 140)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .font(.largeTitle)
-                                    .foregroundStyle(Color.magicPurple.opacity(0.4))
-                            )
-                    @unknown default:
-                        EmptyView()
                     }
-                }
+                )
             }
 
             // Header

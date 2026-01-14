@@ -9,69 +9,54 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-final class MockDependencyContainer: DependencyContainer, @unchecked Sendable {
-    // Note: @unchecked because lazy vars are not Sendable-safe by default
+final class MockDependencyContainer: DependencyContainer, Sendable {
     // MARK: - Core Services
-
-    lazy var networkManager: NetworkManagerProtocol = {
-        NetworkManager(configuration: .mock)
-    }()
-
-    lazy var deviceIdentifierService: DeviceIdentifierServiceProtocol = {
-        MockDeviceIdentifierService()
-    }()
+    let networkManager: NetworkManagerProtocol
+    let deviceIdentifierService: DeviceIdentifierServiceProtocol
 
     // MARK: - API Services
-
-    lazy var restaurantAPIService: RestaurantAPIServiceProtocol = {
-        MockRestaurantAPIService()
-    }()
-
-    lazy var sessionAPIService: SessionAPIServiceProtocol = {
-        MockSessionAPIService()
-    }()
-
-    lazy var menuAPIService: MenuAPIServiceProtocol = {
-        MockMenuAPIService()
-    }()
+    let restaurantAPIService: RestaurantAPIServiceProtocol
+    let sessionAPIService: SessionAPIServiceProtocol
+    let menuAPIService: MenuAPIServiceProtocol
 
     // MARK: - Device Services
-
-    lazy var locationService: LocationServiceProtocol = {
-        // Use real location service even in mock mode for permission dialogs
-        LocationService()
-    }()
-
-    lazy var cameraService: CameraServiceProtocol = {
-        // Use real camera service even in mock mode for better UX
-        CameraService()
-    }()
-
-    lazy var analyticsService: AnalyticsServiceProtocol = {
-        MockAnalyticsService()
-    }()
+    let locationService: LocationServiceProtocol
+    let cameraService: CameraServiceProtocol
+    let analyticsService: AnalyticsServiceProtocol
 
     // MARK: - Local Engines
-
-    lazy var recommendationEngine: RecommendationEngineProtocol = {
-        // Use real RecommendationEngine even in mock mode for consistent behavior
-        RecommendationEngine()
-    }()
+    let recommendationEngine: RecommendationEngineProtocol
 
     // MARK: - Utilities
+    let imageCacheService: ImageCacheServiceProtocol
+    let userPreferencesStorage: UserPreferencesStorageProtocol
+    let preferenceManager: PreferenceManagerProtocol
 
-    lazy var imageCacheService: ImageCacheServiceProtocol = {
-        MockImageCacheService()
-    }()
+    init() {
+        // Initialize core services
+        self.networkManager = NetworkManager(configuration: .mock)
+        self.deviceIdentifierService = MockDeviceIdentifierService()
 
-    lazy var userPreferencesStorage: UserPreferencesStorageProtocol = {
-        MockUserPreferencesStorage()
-    }()
+        // Initialize API services
+        self.restaurantAPIService = MockRestaurantAPIService()
+        self.sessionAPIService = MockSessionAPIService()
+        self.menuAPIService = MockMenuAPIService()
 
-    lazy var preferenceManager: PreferenceManagerProtocol = {
-        let manager = PreferenceManager(storage: userPreferencesStorage)
-        return manager
-    }()
+        // Initialize device services
+        // Use real services even in mock mode for permission dialogs and better UX
+        self.locationService = LocationService()
+        self.cameraService = CameraService()
+        self.analyticsService = MockAnalyticsService()
+
+        // Initialize local engines
+        // Use real RecommendationEngine even in mock mode for consistent behavior
+        self.recommendationEngine = RecommendationEngine()
+
+        // Initialize utilities
+        self.imageCacheService = MockImageCacheService()
+        self.userPreferencesStorage = MockUserPreferencesStorage()
+        self.preferenceManager = PreferenceManager(storage: userPreferencesStorage)
+    }
 
     // MARK: - ViewModel Factory Methods
 
@@ -612,6 +597,15 @@ final class MockImageCacheService: ImageCacheServiceProtocol, @unchecked Sendabl
 
     func clearCache() async {
         lock.withLock { _cache.removeAll() }
+    }
+
+    func clearExpiredCache() async {
+        // No-op for mock - memory cache doesn't expire
+    }
+
+    func getCacheSize() async -> Int64 {
+        // Return 0 for mock - we don't track size in memory cache
+        return 0
     }
 }
 

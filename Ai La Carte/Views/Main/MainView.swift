@@ -42,8 +42,11 @@ struct MainView: View {
                 }
             }
             .task {
-                await viewModel.startCamera()
-                await viewModel.fetchNearbyRestaurants()
+                // Run camera and location fetch in parallel for faster startup
+                async let camera: Void = viewModel.startCamera()
+                async let restaurants: Void = viewModel.fetchNearbyRestaurants()
+                await camera
+                await restaurants
             }
             .onDisappear {
                 viewModel.stopCamera()
@@ -78,6 +81,7 @@ struct MainView: View {
                     preferences: $viewModel.userPreferences,
                     isPresented: $viewModel.showPreferenceSheet,
                     isLoading: viewModel.isPreparingRecommendation,
+                    isUploadingPhotos: viewModel.sessionViewModel.isUploadingPhotos,
                     onContinue: {
                         Task {
                             await viewModel.confirmPreferencesAndProceed()
@@ -302,7 +306,7 @@ struct MainView: View {
             HStack(spacing: 4) {
                 Image(systemName: "sparkles")
                     .font(.subheadline.weight(.semibold))
-                Text("Review")
+                Text("Ai La Carte")
                     .font(.subheadline.weight(.semibold))
             }
             .foregroundStyle(.white)

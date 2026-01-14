@@ -26,6 +26,10 @@ final class SessionViewModel: BaseViewModel {
         pendingPhotos.count >= AppConstants.Photo.maxPhotos
     }
 
+    // Upload state tracking
+    var isUploadingPhotos: Bool = false
+    var uploadProgress: [String: UploadStatus] = [:]
+
     // Restaurant selection
     var selectedRestaurant: RestaurantResponse?
 
@@ -130,12 +134,8 @@ final class SessionViewModel: BaseViewModel {
             meta: ["count": "\(photos.count)"]
         )
 
-        // Upload all accepted photos
-        for photo in photos {
-            Task {
-                await uploadPhoto(photo, sessionId: session.id)
-            }
-        }
+        // Upload all accepted photos with coordination
+        await uploadAllPhotos(sessionId: session.id)
     }
 
     /// Clears all pending photos
@@ -157,23 +157,108 @@ final class SessionViewModel: BaseViewModel {
 
         analyticsService.track(event: .photoAccepted, sessionId: session.id, meta: nil)
 
-        // Upload photo in background
-        Task {
-            await uploadPhoto(capturedPhoto, sessionId: session.id)
-        }
+        // Upload all photos with coordination
+        await uploadAllPhotos(sessionId: session.id)
     }
 
-    private func uploadPhoto(_ photo: CapturedPhoto, sessionId: String) async {
-        guard let imageData = photo.image.jpegData(compressionQuality: AppConstants.Camera.compressionQuality) else {
-            return
+    // MARK: - Photo Upload with Coordination
+
+    /// Uploads all photos that haven't been successfully uploaded yet using structured concurrency
+    private func uploadAllPhotos(sessionId: String) async {
+        // Filter photos that need uploading
+        let photosToUpload = capturedPhotos.filter { photo in
+            photo.uploadStatus != .uploaded
         }
 
-        do {
-            _ = try await sessionService.uploadPhoto(sessionId: sessionId, imageData: imageData)
-            // Mark as uploaded (in real app, update the photo state)
-        } catch {
-            AppLogger.shared.error("Failed to upload photo: \(error)", category: AppLogger.Category.network)
+        guard !photosToUpload.isEmpty else { return }
+
+        isUploadingPhotos = true
+
+        // Use TaskGroup for structured concurrency with limited parallelism
+        await withTaskGroup(of: (String, UploadStatus).self) { group in
+            var activeUploads = 0
+            let maxConcurrentUploads = 3
+            var photoIterator = photosToUpload.makeIterator()
+
+            // Start initial batch of uploads
+            while activeUploads < maxConcurrentUploads, let photo = photoIterator.next() {
+                group.addTask {
+                    await self.uploadPhotoWithRetry(photo, sessionId: sessionId)
+                }
+                activeUploads += 1
+            }
+
+            // Process completed uploads and start new ones
+            for await (photoId, status) in group {
+                // Update photo status
+                if let index = capturedPhotos.firstIndex(where: { $0.id == photoId }) {
+                    capturedPhotos[index].uploadStatus = status
+                    if case .failed(let error) = status {
+                        capturedPhotos[index].uploadError = error
+                    }
+                }
+                uploadProgress[photoId] = status
+
+                // Start next upload if available
+                if let nextPhoto = photoIterator.next() {
+                    group.addTask {
+                        await self.uploadPhotoWithRetry(nextPhoto, sessionId: sessionId)
+                    }
+                }
+            }
         }
+
+        isUploadingPhotos = false
+    }
+
+    /// Uploads a single photo with retry logic (3 attempts with exponential backoff)
+    private func uploadPhotoWithRetry(_ photo: CapturedPhoto, sessionId: String) async -> (String, UploadStatus) {
+        let maxRetries = 3
+        var attempt = 0
+
+        while attempt < maxRetries {
+            attempt += 1
+
+            // Update status to uploading on first attempt
+            if attempt == 1 {
+                updatePhotoStatus(photoId: photo.id, status: .uploading)
+            }
+
+            guard let imageData = photo.image.jpegData(compressionQuality: AppConstants.Camera.compressionQuality) else {
+                let error = "Failed to convert image to JPEG data"
+                AppLogger.shared.error("Upload failed for photo \(photo.id): \(error)", category: AppLogger.Category.network)
+                return (photo.id, .failed(error))
+            }
+
+            do {
+                _ = try await sessionService.uploadPhoto(sessionId: sessionId, imageData: imageData)
+                AppLogger.shared.info("Successfully uploaded photo \(photo.id)", category: AppLogger.Category.network)
+                return (photo.id, .uploaded)
+            } catch {
+                let errorMessage = error.localizedDescription
+                AppLogger.shared.error("Upload attempt \(attempt)/\(maxRetries) failed for photo \(photo.id): \(errorMessage)", category: AppLogger.Category.network)
+
+                // If not the last attempt, wait with exponential backoff
+                if attempt < maxRetries {
+                    let delaySeconds = pow(2.0, Double(attempt - 1)) // 1s, 2s, 4s
+                    try? await Task.sleep(nanoseconds: UInt64(delaySeconds * 1_000_000_000))
+                } else {
+                    // All retries exhausted
+                    return (photo.id, .failed(errorMessage))
+                }
+            }
+        }
+
+        // Fallback (shouldn't reach here)
+        return (photo.id, .failed("Upload failed after \(maxRetries) attempts"))
+    }
+
+    /// Helper to update photo upload status on MainActor
+    private func updatePhotoStatus(photoId: String, status: UploadStatus) {
+        if let index = capturedPhotos.firstIndex(where: { $0.id == photoId }) {
+            capturedPhotos[index].uploadStatus = status
+        }
+        uploadProgress[photoId] = status
     }
 
     // MARK: - Recommendation Generation

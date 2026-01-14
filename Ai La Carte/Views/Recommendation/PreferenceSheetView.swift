@@ -27,6 +27,7 @@ struct PreferenceSheetView: View {
     @Binding var preferences: UserPreferences
     @Binding var isPresented: Bool
     var isLoading: Bool = false
+    var isUploadingPhotos: Bool = false
     var onContinue: (() -> Void)?
     var onReset: (() -> Void)?
 
@@ -166,7 +167,14 @@ struct PreferenceSheetView: View {
     }
 
     private var continueButtonText: String {
-        isDefaultPreferences ? "Continue with Default Settings" : "Continue with Your Settings"
+        if isUploadingPhotos {
+            return "Uploading Photos..."
+        }
+        return isDefaultPreferences ? "Continue with Default Settings" : "Continue with Your Settings"
+    }
+
+    private var isButtonDisabled: Bool {
+        isLoading || isUploadingPhotos
     }
 
     private func continueButton(action: @escaping () -> Void) -> some View {
@@ -174,10 +182,10 @@ struct PreferenceSheetView: View {
             action()
         } label: {
             HStack(spacing: 8) {
-                if isLoading {
+                if isLoading || isUploadingPhotos {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    Text("Preparing...")
+                    Text(isUploadingPhotos ? "Uploading Photos..." : "Preparing...")
                         .font(.headline)
                 } else {
                     Text(continueButtonText)
@@ -191,12 +199,12 @@ struct PreferenceSheetView: View {
             .padding(.vertical, 16)
             .background(
                 LinearGradient.magicPrimary
-                    .opacity(isLoading ? 0.7 : 1.0)
+                    .opacity(isButtonDisabled ? 0.7 : 1.0)
             )
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .shadow(color: Color.magicPurple.opacity(0.3), radius: 8, y: 4)
         }
-        .disabled(isLoading)
+        .disabled(isButtonDisabled)
         .padding(.horizontal, AppConstants.UI.defaultPadding)
         .padding(.vertical, 16)
     }

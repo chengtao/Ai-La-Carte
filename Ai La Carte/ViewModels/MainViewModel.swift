@@ -238,8 +238,35 @@ struct SessionInfo {
     }
 }
 
+enum UploadStatus: Equatable {
+    case pending
+    case uploading
+    case uploaded
+    case failed(String)
+
+    var isComplete: Bool {
+        if case .uploaded = self {
+            return true
+        }
+        return false
+    }
+
+    var isFailed: Bool {
+        if case .failed = self {
+            return true
+        }
+        return false
+    }
+}
+
 struct CapturedPhoto: Identifiable {
     let id: String
     let image: UIImage
-    var uploaded: Bool = false
+    var uploadStatus: UploadStatus = .pending
+    var uploadError: String?
+
+    // Computed property for backward compatibility
+    var uploaded: Bool {
+        uploadStatus.isComplete
+    }
 }
