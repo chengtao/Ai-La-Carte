@@ -35,8 +35,8 @@ struct RecommendationView: View {
                 contentView
             }
 
-            // Floating preferences button
-            if !viewModel.isLoading && (!viewModel.scoredFoodRecommendations.isEmpty || !viewModel.scoredWineRecommendations.isEmpty) {
+            // Floating preferences button (hide on cart tab)
+            if !viewModel.isLoading && (!viewModel.scoredFoodRecommendations.isEmpty || !viewModel.scoredWineRecommendations.isEmpty) && viewModel.selectedTab != .cart {
                 VStack {
                     Spacer()
                     HStack {
