@@ -13,6 +13,14 @@ struct RecommendationView: View {
     @Bindable var viewModel: RecommendationViewModel
     @State private var animateIn = false
 
+    private var preferenceMode: PreferenceMode {
+        switch viewModel.selectedTab {
+        case .food: return .food
+        case .wine: return .wine
+        case .cart: return .both
+        }
+    }
+
     var body: some View {
         ZStack {
             // Magical background
@@ -44,6 +52,7 @@ struct RecommendationView: View {
             PreferenceSheetView(
                 preferences: $viewModel.currentPreferences,
                 isPresented: $viewModel.isPreferenceSheetPresented,
+                mode: preferenceMode,
                 onReset: {
                     viewModel.resetPreferences()
                 }

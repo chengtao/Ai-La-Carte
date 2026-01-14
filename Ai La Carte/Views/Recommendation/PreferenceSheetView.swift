@@ -7,6 +7,14 @@
 
 import SwiftUI
 
+// MARK: - Preference Mode
+
+enum PreferenceMode {
+    case food
+    case wine
+    case both
+}
+
 // MARK: - Preference Tab
 
 enum PreferenceTab: String, CaseIterable {
@@ -26,6 +34,7 @@ enum PreferenceTab: String, CaseIterable {
 struct PreferenceSheetView: View {
     @Binding var preferences: UserPreferences
     @Binding var isPresented: Bool
+    var mode: PreferenceMode = .both
     var isLoading: Bool = false
     var isUploadingPhotos: Bool = false
     var onContinue: (() -> Void)?
@@ -38,20 +47,31 @@ struct PreferenceSheetView: View {
             // Header
             headerView
 
-            // Tab Picker
-            tabPicker
-                .padding(.horizontal, AppConstants.UI.defaultPadding)
-                .padding(.top, 16)
+            // Conditionally show content based on mode
+            if mode == .both {
+                // Tab Picker
+                tabPicker
+                    .padding(.horizontal, AppConstants.UI.defaultPadding)
+                    .padding(.top, 16)
 
-            // Tab Content
-            TabView(selection: $selectedTab) {
+                // Tab Content
+                TabView(selection: $selectedTab) {
+                    FoodPreferencesTab(preferences: $preferences.food)
+                        .tag(PreferenceTab.food)
+
+                    WinePreferencesTab(preferences: $preferences.wine)
+                        .tag(PreferenceTab.wine)
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+            } else if mode == .food {
+                // Show only food preferences
                 FoodPreferencesTab(preferences: $preferences.food)
-                    .tag(PreferenceTab.food)
-
+                    .padding(.top, 8)
+            } else {
+                // Show only wine preferences
                 WinePreferencesTab(preferences: $preferences.wine)
-                    .tag(PreferenceTab.wine)
+                    .padding(.top, 8)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
 
             // Continue Button (only shown when onContinue is provided)
             if let onContinue = onContinue {
@@ -59,6 +79,16 @@ struct PreferenceSheetView: View {
             }
         }
         .background(Color.appCardBackground)
+    }
+
+    // MARK: - Computed Properties
+
+    private var headerSubtitle: String {
+        switch mode {
+        case .food: return "Help us find the perfect food for you"
+        case .wine: return "Help us find the perfect wine for you"
+        case .both: return "Help us find the perfect recommendations"
+        }
     }
 
     // MARK: - Header
@@ -97,7 +127,7 @@ struct PreferenceSheetView: View {
                                 endPoint: .trailing
                             )
                         )
-                    Text("Help us find the perfect recommendations")
+                    Text(headerSubtitle)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
