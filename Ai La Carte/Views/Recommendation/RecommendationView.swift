@@ -13,6 +13,11 @@ struct RecommendationView: View {
     @Bindable var viewModel: RecommendationViewModel
     @State private var animateIn = false
 
+    // TOC state
+    @State private var isTOCOpen = false
+    @State private var activeFoodCategory: FoodCategory?
+    @State private var activeWineCategory: WineCategory?
+
     private var preferenceMode: PreferenceMode {
         switch viewModel.selectedTab {
         case .food: return .food
@@ -47,7 +52,56 @@ struct RecommendationView: View {
                     }
                 }
             }
+
+            // TOC Peek Indicator (hide on cart tab)
+            if !viewModel.isLoading && !isTOCOpen && viewModel.selectedTab != .cart {
+                VStack {
+                    Spacer()
+                    HStack {
+                        TOCPeekIndicator()
+                            .padding(.leading, 8)
+                            .padding(.bottom, 24)
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    isTOCOpen = true
+                                }
+                            }
+                        Spacer()
+                    }
+                }
+            }
+
+            // TOC Drawer
+            if isTOCOpen {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isTOCOpen = false
+                        }
+                    }
+                    .transition(.opacity)
+
+                if viewModel.selectedTab == .food {
+                    foodTOCView
+                        .transition(.move(edge: .leading))
+                } else if viewModel.selectedTab == .wine {
+                    wineTOCView
+                        .transition(.move(edge: .leading))
+                }
+            }
         }
+        .gesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                    // Swipe from left edge to open TOC
+                    if value.startLocation.x < 30 && value.translation.width > 50 && viewModel.selectedTab != .cart && !isTOCOpen {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isTOCOpen = true
+                        }
+                    }
+                }
+        )
         .sheet(isPresented: $viewModel.isPreferenceSheetPresented) {
             PreferenceSheetView(
                 preferences: $viewModel.currentPreferences,
@@ -189,54 +243,74 @@ struct RecommendationView: View {
     // MARK: - Food Sectioned Content
 
     private var foodSectionedContent: some View {
-        ScrollView {
-            LazyVStack(spacing: 24) {
-                ForEach(viewModel.groupedFoodRecommendations, id: \.category) { group in
-                    FoodSectionView(
-                        category: group.category,
-                        items: group.items,
-                        expandedItemId: viewModel.expandedItemId,
-                        isInCart: viewModel.isFoodInCart,
-                        onTap: { itemId in
-                            viewModel.toggleExpanded(itemId)
-                        },
-                        onCartToggle: { item in
-                            viewModel.toggleFoodCart(item)
-                        },
-                        animateIn: animateIn
-                    )
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                LazyVStack(spacing: 24) {
+                    ForEach(viewModel.groupedFoodRecommendations, id: \.category) { group in
+                        FoodSectionView(
+                            category: group.category,
+                            items: group.items,
+                            expandedItemId: viewModel.expandedItemId,
+                            isInCart: viewModel.isFoodInCart,
+                            onTap: { itemId in
+                                viewModel.toggleExpanded(itemId)
+                            },
+                            onCartToggle: { item in
+                                viewModel.toggleFoodCart(item)
+                            },
+                            animateIn: animateIn
+                        )
+                        .id(group.category)
+                    }
+                }
+                .padding(.horizontal, AppConstants.UI.defaultPadding)
+                .padding(.vertical, 16)
+                .padding(.bottom, 80) // Space for floating button
+            }
+            .onChange(of: activeFoodCategory) { _, newCategory in
+                if let category = newCategory {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        scrollProxy.scrollTo(category, anchor: .top)
+                    }
                 }
             }
-            .padding(.horizontal, AppConstants.UI.defaultPadding)
-            .padding(.vertical, 16)
-            .padding(.bottom, 80) // Space for floating button
         }
     }
 
     // MARK: - Wine Sectioned Content
 
     private var wineListContent: some View {
-        ScrollView {
-            LazyVStack(spacing: 24) {
-                ForEach(viewModel.groupedWineRecommendations, id: \.category) { group in
-                    WineSectionView(
-                        category: group.category,
-                        items: group.items,
-                        expandedItemId: viewModel.expandedItemId,
-                        isInCart: viewModel.isWineInCart,
-                        onTap: { itemId in
-                            viewModel.toggleExpanded(itemId)
-                        },
-                        onCartToggle: { item in
-                            viewModel.toggleWineCart(item)
-                        },
-                        animateIn: animateIn
-                    )
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                LazyVStack(spacing: 24) {
+                    ForEach(viewModel.groupedWineRecommendations, id: \.category) { group in
+                        WineSectionView(
+                            category: group.category,
+                            items: group.items,
+                            expandedItemId: viewModel.expandedItemId,
+                            isInCart: viewModel.isWineInCart,
+                            onTap: { itemId in
+                                viewModel.toggleExpanded(itemId)
+                            },
+                            onCartToggle: { item in
+                                viewModel.toggleWineCart(item)
+                            },
+                            animateIn: animateIn
+                        )
+                        .id(group.category)
+                    }
+                }
+                .padding(.horizontal, AppConstants.UI.defaultPadding)
+                .padding(.vertical, 16)
+                .padding(.bottom, 80) // Space for floating button
+            }
+            .onChange(of: activeWineCategory) { _, newCategory in
+                if let category = newCategory {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        scrollProxy.scrollTo(category, anchor: .top)
+                    }
                 }
             }
-            .padding(.horizontal, AppConstants.UI.defaultPadding)
-            .padding(.vertical, 16)
-            .padding(.bottom, 80) // Space for floating button
         }
     }
 
@@ -343,6 +417,48 @@ struct RecommendationView: View {
         }
         .padding(AppConstants.UI.cardPadding)
         .magicCard(glowColor: .magicPurple)
+    }
+
+    // MARK: - TOC Views
+
+    private var foodTOCView: some View {
+        TableOfContentsView(
+            categories: viewModel.groupedFoodRecommendations.map { (category: $0.category, itemCount: $0.items.count) },
+            activeCategory: activeFoodCategory,
+            onCategoryTap: { category in
+                activeFoodCategory = category
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8).delay(0.1)) {
+                    isTOCOpen = false
+                }
+            },
+            onClose: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    isTOCOpen = false
+                }
+            },
+            categoryIcon: { $0.icon },
+            categoryName: { $0.displayName }
+        )
+    }
+
+    private var wineTOCView: some View {
+        TableOfContentsView(
+            categories: viewModel.groupedWineRecommendations.map { (category: $0.category, itemCount: $0.items.count) },
+            activeCategory: activeWineCategory,
+            onCategoryTap: { category in
+                activeWineCategory = category
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8).delay(0.1)) {
+                    isTOCOpen = false
+                }
+            },
+            onClose: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    isTOCOpen = false
+                }
+            },
+            categoryIcon: { $0.icon },
+            categoryName: { $0.displayName }
+        )
     }
 
     // MARK: - Tab Selector
